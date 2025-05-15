@@ -12,11 +12,12 @@
 void run(std::string &source)
 {
     auto scanner = new Scanner(source);
-    std::vector<Token> tokens = scanner->scanTokens();
+    std::vector<Token*> tokens = scanner->scanTokens();
 
     for (auto &token: tokens) {
-        std::cout << token.toString() << " ";
+        std::cout << token->toString() << ", ";
     }
+    std::cout << std::endl;
 }
 
 void runFile(char *filepath)
@@ -32,15 +33,11 @@ void runFile(char *filepath)
 void runPrompt()
 {
     std::string line;
-    while (1) {
-        std::cout << "> ";
-        std::getline(std::cin, line);
-        std::cout << "You entered: " << line << '\n';
+    std::cout << "> ";
+    for (std::string line; std::getline(std::cin, line);) {
+        // std::cout << "You entered: " << line << '\n';
         run(line);
-        if (!std::cin.eof()) {
-            std::cerr << "Error reading input\n";
-            return;
-        }
+        std::cout << "> ";
     }
 }
 
