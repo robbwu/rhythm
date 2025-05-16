@@ -2,17 +2,8 @@
 #include "scanner.hpp"
 #include <iostream>
 #include <memory>
+#include "ast_printer.hpp";
 
-class AstPrinter: public ExprVisitor {
-private:
-    void parenthesize(const std::string& name, const std::vector<const Expr*>& exprs);
-public:
-    void print(const Expr& expr);
-    void visit(const Binary& binary) override ;
-    void visit(const Grouping& group) override ;
-    void visit(const Literal& lit) override ;
-    void visit(const Unary& unary) override ;
-};
 
 using string = std::string;
 
@@ -53,21 +44,21 @@ void AstPrinter::visit(const Unary& unary) {
     return parenthesize(unary.op.lexeme, {unary.right.get()});
 }
 
-
-int main() {
-    // Example usage of the expression factory methods
-    auto expression = Binary::create(
-        Unary::create(
-            Token(TokenType::MINUS, "-", nullptr, 1),
-            Literal::create(123.0)),
-        Token(TokenType::STAR, "*", nullptr, 1),
-        Grouping::create(
-            Literal::create(45.67)));
-
-    // Print the expression using AstPrinter
-    AstPrinter printer;
-    printer.print(*expression);
-    std::cout << std::endl;
-
-    return 0;
-}
+//
+// int main() {
+//     // Example usage of the expression factory methods
+//     auto expression = Binary::create(
+//         Unary::create(
+//             Token(TokenType::MINUS, "-", nullptr, 1),
+//             Literal::create(123.0)),
+//         Token(TokenType::STAR, "*", nullptr, 1),
+//         Grouping::create(
+//             Literal::create(45.67)));
+//
+//     // Print the expression using AstPrinter
+//     AstPrinter printer;
+//     printer.print(*expression);
+//     std::cout << std::endl;
+//
+//     return 0;
+// }

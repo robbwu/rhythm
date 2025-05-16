@@ -6,19 +6,28 @@
 #include <string>
 #include <stdlib.h>
 
+#include "ast_printer.hpp"
 #include "scanner.hpp"
 #include "interpreter.hpp"
 #include "expr.hpp"
+#include "parser.hpp"
 
 void run(std::string &source)
 {
     auto scanner = new Scanner(source);
-    std::vector<Token*> tokens = scanner->scanTokens();
+    std::vector<Token> tokens = scanner->scanTokens();
 
     for (auto &token: tokens) {
-        std::cout << token->toString() << ", ";
+        std::cout << token.toString() << ", ";
     }
     std::cout << std::endl;
+
+    auto parser = Parser(tokens);
+    auto expr = parser.parse();
+    AstPrinter printer;
+    printer.print(*expr);
+    std::cout << std::endl;
+
 }
 
 void runFile(char *filepath)

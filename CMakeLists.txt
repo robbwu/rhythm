@@ -13,18 +13,20 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 
 # Add executable
 add_executable(${PROJECT_NAME}
-    src/main.cpp
-    src/scanner.cpp
-    src/interpreter.cpp
-    src/expr.cpp
+        src/main.cpp
+        src/scanner.cpp
+        src/interpreter.cpp
+        src/expr.cpp
+        src/parser.cpp
+        src/ast_printer.cpp
 )
 
 # Add example executable
 add_executable(astprint
         src/ast_printer.cpp
-    src/scanner.cpp
-    src/interpreter.cpp
-    src/expr.cpp
+        src/scanner.cpp
+        src/interpreter.cpp
+        src/expr.cpp
 )
 
 # Add any libraries if needed

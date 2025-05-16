@@ -122,14 +122,16 @@ void Scanner::addToken(TokenType type) {
 
 void Scanner::addToken(TokenType type, Value literal) {
     auto text = source.substr(start, current-start);
-    tokens.push_back(new Token(type, text, literal, line));
+    Token token(type, text, literal, line);
+    tokens.push_back(token);
 }
 
-std::vector<Token*> Scanner::scanTokens() {
+std::vector<Token> Scanner::scanTokens() {
     while (!isAtEnd()) {
         start = current;
         scanToken();
     }
-    tokens.push_back(new Token(TokenType::SCAN_END, "EOF", nullptr, line));
+    Token token(TokenType::END_TOKEN, "EOF", nullptr, line);
+    tokens.push_back(token);
     return tokens;
 }

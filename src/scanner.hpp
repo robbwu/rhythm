@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include "magic_enum.hpp"
 
-using Value = std::variant<double, std::string, std::nullptr_t>;
+using Value = std::variant<double, std::string, std::nullptr_t, bool>;
 
 enum class TokenType {
     // Single-character tokens.
@@ -27,7 +27,7 @@ enum class TokenType {
       AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
       PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
 
-      SCAN_END
+      END_TOKEN
 };
 
 // A global (or namespace-scope) constant map of keyword strings to TokenType
@@ -63,18 +63,18 @@ public:
     Token(const Token& other)
     : type(other.type), lexeme(other.lexeme), literal(other.literal), line(other.line) {}
 
-    std::string toString() const {
+    [[nodiscard]] std::string toString() const {
         return std::format("T:{:} V:{}", magic_enum::enum_name(type), lexeme);
     }
 };
 
 template<>
 struct std::formatter<Token> {
-    constexpr auto parse(format_parse_context& ctx) {
+    static constexpr auto parse(format_parse_context& ctx) {
         return ctx.begin();  // Simple parser that doesn't handle format specifiers
     }
 
-    auto format(const Token& token, format_context& ctx) const {
+    static auto format(const Token& token, format_context& ctx) {
         return format_to(ctx.out(), "{}", token.toString());  // Format using Token's data
     }
 };
@@ -85,7 +85,7 @@ private:
     int current = 0;
     int line = 1;
     std::string source;
-    std::vector<Token*> tokens = {};
+    std::vector<Token> tokens = {};
 
     bool isAtEnd();
     bool match(char expected);
@@ -101,6 +101,6 @@ private:
     void addToken(TokenType type, Value literal);
 
 public:
-    Scanner(std::string _source): source(_source) {}
-    std::vector<Token*> scanTokens();
+    explicit Scanner(std::string _source): source(std::move(_source)) {}
+    std::vector<Token> scanTokens();
 };
