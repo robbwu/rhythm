@@ -3,15 +3,56 @@
 #include <iostream>
 #include <memory>
 
-// Example of building an expression tree using the factory methods
-// Equivalent to the Java code:
-// Expr expression = new Expr.Binary(
-//     new Expr.Unary(
-//         new Token(TokenType.MINUS, "-", null, 1),
-//         new Expr.Literal(123)),
-//     new Token(TokenType.STAR, "*", null, 1),
-//     new Expr.Grouping(
-//         new Expr.Literal(45.67)));
+class AstPrinter: public ExprVisitor {
+private:
+    void parenthesize(const std::string& name, const std::vector<const Expr*>& exprs);
+public:
+    void print(const Expr& expr);
+    void visit(const Binary& binary) override ;
+    void visit(const Grouping& group) override ;
+    void visit(const Literal& lit) override ;
+    void visit(const Unary& unary) override ;
+};
+
+using string = std::string;
+
+void AstPrinter::parenthesize(const std::string& name, const std::vector<const Expr*>& exprs) {
+    std::cout << "(" << name;
+    for (const auto& expr : exprs) {
+        std::cout << " ";
+        expr->accept(*this);
+    }
+    std::cout << ")";
+}
+
+void  AstPrinter::print(const Expr& expr) {
+    return expr.accept(*this);
+}
+
+void  AstPrinter::visit(const Binary& binary) {
+    return parenthesize(binary.op.lexeme, {binary.left.get(), binary.right.get()});
+}
+
+void AstPrinter::visit(const Grouping& group) {
+    return parenthesize("group", {group.expression.get()});
+}
+
+void AstPrinter::visit(const Literal& lit) {
+    if (std::holds_alternative<std::nullptr_t>(lit.value)) {
+        std::cout <<  "nil";
+    } else if (std::holds_alternative<double>(lit.value)) {
+        std::cout <<  std::to_string(std::get<double>(lit.value));
+    } else if (std::holds_alternative<std::string>(lit.value)) {
+        std::cout <<  "\"" + std::get<std::string>(lit.value) + "\"";
+    } else {
+        std::cout <<  "unknown";
+    }
+}
+
+void AstPrinter::visit(const Unary& unary) {
+    return parenthesize(unary.op.lexeme, {unary.right.get()});
+}
+
 
 int main() {
     // Example usage of the expression factory methods
