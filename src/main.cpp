@@ -8,6 +8,7 @@
 
 #include "scanner.hpp"
 #include "interpreter.hpp"
+#include "expr.hpp"
 
 void run(std::string &source)
 {
@@ -43,6 +44,7 @@ void runPrompt()
 
 
 int main(int argc, char **argv) {
+
     // std::cout << std::format("{} {}", "hello", "world");
     if (argc > 2) {
         std::cout << "Usage: cclox [script]" << std::endl;

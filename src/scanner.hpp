@@ -9,22 +9,6 @@
 
 using Value = std::variant<double, std::string, std::nullptr_t>;
 
-// Specialize std::formatter for Value
-template <>
-struct std::formatter<Value> {
-    // Parse function (usually just returns the end iterator)
-    constexpr auto parse(std::format_parse_context& ctx) {
-        return ctx.begin(); // No format specifiers handled yet
-    }
-
-    // Format function
-    auto format(const Value& val, std::format_context& ctx) const {
-        return std::visit([&](const auto& v) {
-            return std::format_to(ctx.out(), "{}", v);
-        }, val);
-    }
-};
-
 enum class TokenType {
     // Single-character tokens.
       LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
@@ -75,6 +59,9 @@ public:
 
     Token(TokenType _type, std::string _lexeme, Value _literal, int _line)
     : type(_type), lexeme(_lexeme), literal(_literal), line(_line){}
+
+    Token(const Token& other)
+    : type(other.type), lexeme(other.lexeme), literal(other.literal), line(other.line) {}
 
     std::string toString() const {
         return std::format("T:{:} V:{}", magic_enum::enum_name(type), lexeme);
