@@ -21,7 +21,7 @@ add_executable(${PROJECT_NAME}
 
 # Add example executable
 add_executable(astprint
-    src/example.cpp
+        src/ast_printer.cpp
     src/scanner.cpp
     src/interpreter.cpp
     src/expr.cpp
