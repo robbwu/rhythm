@@ -17,25 +17,26 @@ void run(std::string &source)
     auto scanner = new Scanner(source);
     std::vector<Token> tokens = scanner->scanTokens();
 
-    for (auto &token: tokens) {
-        std::cout << token.toString() << ", ";
-    }
-    std::cout << std::endl;
+    // for (auto &token: tokens) {
+    //     std::cout << token.toString() << ", ";
+    // }
+    // std::cout << std::endl;
 
     auto parser = Parser(tokens);
-    auto expr = parser.parse();
-    AstPrinter printer;
-    printer.print(*expr);
-    std::cout << std::endl;
+    // auto expr = parser.parseExpr();
+    // AstPrinter printer;
+    // printer.print(*expr);
+    // std::cout << std::endl;
+    auto stmts = parser.parse();
     Interpreter interpreter;
-    try {
-        auto val = interpreter.eval(*expr);
-        std::visit([&](const auto& x) { std::cout << x; }, val);
-        std::cout << std::endl;
-    } catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
-    }
-
+    // try {
+    //     auto val = interpreter.eval(*expr);
+    //     std::visit([&](const auto& x) { std::cout << x; }, val);
+    //     std::cout << std::endl;
+    // } catch (const std::exception &e) {
+    //     std::cout << e.what() << std::endl;
+    // }
+    interpreter.interpret(stmts);
 
 }
 

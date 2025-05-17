@@ -18,16 +18,17 @@ add_executable(${PROJECT_NAME}
         src/interpreter.cpp
         src/expr.cpp
         src/parser.cpp
+        src/statement.cpp
         src/ast_printer.cpp
 )
 
 # Add example executable
-add_executable(astprint
-        src/ast_printer.cpp
-        src/scanner.cpp
-        src/interpreter.cpp
-        src/expr.cpp
-)
+#add_executable(astprint
+#        src/ast_printer.cpp
+#        src/scanner.cpp
+#        src/interpreter.cpp
+#        src/expr.cpp
+#)
 
 # Add any libraries if needed
 # target_link_libraries(${PROJECT_NAME} PRIVATE some_library)

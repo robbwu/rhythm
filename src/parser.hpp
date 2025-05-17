@@ -99,6 +99,23 @@ private:
         error(peek(), "expect expression");
     }
 
+    // statements
+    std::unique_ptr<Stmt> statement() {
+        if (match({TokenType::PRINT})) return printStatement();
+
+        return expressionStatement();
+    }
+    std::unique_ptr<Stmt> printStatement() {
+        auto value = expression();
+        consume(TokenType::SEMICOLON, "Expect ';' after value.");
+        return PrintStmt::create(std::move(value));
+    }
+    std::unique_ptr<Stmt> expressionStatement() {
+        auto value = expression();
+        consume(TokenType::SEMICOLON, "Expect ';' after value.");
+        return ExpressionStmt::create(std::move(value));
+    }
+
     // helper functions
     Token consume(TokenType type, std::string msg) {
         if (check(type))  return  advance();
@@ -148,11 +165,19 @@ private:
 public:
     Parser(std::vector<Token> tokens) : tokens(tokens) {}
 
-    std::unique_ptr<Expr> parse() {
+    std::unique_ptr<Expr> parseExpr() {
         try {
             return expression();
         } catch (const std::exception& e) {
             return nullptr;
         }
+    }
+
+    std::vector<std::unique_ptr<Stmt>> parse() {
+        std::vector<std::unique_ptr<Stmt>> stmts;
+        while (!isAtEnd()) {
+            stmts.push_back(statement());
+        }
+        return stmts;
     }
 };

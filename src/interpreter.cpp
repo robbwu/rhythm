@@ -80,11 +80,13 @@ bool  Interpreter::isTruthy(Value value) {
     return true;
 }
 
-// bool Interpreter::isEqual(Value left, Value right) {
-//     if (std::holds_alternative<std::nullptr_t>(left) && std::holds_alternative<std::nullptr_t>(right))
-//         return true;
-//     if (std::holds_alternative<std::nullptr_t>(left))
-//         return false;
-//
-//     return left == right;
-// }
+
+void Interpreter::visit(const ExpressionStmt& exprStmt) {
+    eval(*exprStmt.expr);
+}
+
+void Interpreter::visit(const PrintStmt& printStmt) {
+    auto val = eval(*printStmt.expr);
+    std::visit([&](const auto& x) { std::cout << x; }, val);
+    std::cout << std::endl;
+}
