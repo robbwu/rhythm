@@ -27,6 +27,15 @@ void run(std::string &source)
     AstPrinter printer;
     printer.print(*expr);
     std::cout << std::endl;
+    Interpreter interpreter;
+    try {
+        auto val = interpreter.eval(*expr);
+        std::visit([&](const auto& x) { std::cout << x; }, val);
+        std::cout << std::endl;
+    } catch (const std::exception &e) {
+        std::cout << e.what() << std::endl;
+    }
+
 
 }
 
