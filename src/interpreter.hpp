@@ -10,9 +10,12 @@
 
 class Environment {
 private:
+    Environment *enclosing = nullptr;
     std::unordered_map<std::string, Value> values;
 
 public:
+    explicit Environment(Environment *enclosing) : enclosing(enclosing) {}
+
     void define(const std::string& name, const Value& value) {
         values[name] = value;
     }
@@ -22,15 +25,21 @@ public:
             values[token.lexeme] = value;
             return;
         }
+        if (enclosing) {
+            enclosing->assign(token, value);
+            return;
+        }
         throw RuntimeError(token, "Assignment: Undefined variable '" + token.lexeme + "'.");
     }
 
     Value get(const Token& name) {
-        auto it = values.find(name.lexeme);
-        if (it == values.end()) {
-            throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
+        if (values.contains(name.lexeme)) {
+            return values[name.lexeme];
         }
-        return it->second;
+        if (enclosing) {
+            return enclosing->get(name);
+        }
+        throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
     }
 
 
@@ -38,7 +47,7 @@ public:
 class Interpreter: public ExprVisitor, public StmtVisitor {
 private:
     Value _result;
-    Environment env;
+    Environment env = Environment(nullptr);
 
     // void parenthesize(const std::string& name, const std::vector<const Expr*>& exprs);
     bool isTruthy(Value value);
