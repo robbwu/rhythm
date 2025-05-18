@@ -29,7 +29,11 @@ public:
     void visit(const Grouping& group) override;
     void visit(const Literal& lit) override;
     void visit(const Unary& unary) override;
+    void visit(const Variable &variable) override;
+
 
     void visit(const ExpressionStmt& exprStmt) override;
     void visit(const PrintStmt& printStmt) override;
+    void visit(const VarStmt& varStmt) override;
+
 };

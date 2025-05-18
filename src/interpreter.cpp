@@ -90,3 +90,11 @@ void Interpreter::visit(const PrintStmt& printStmt) {
     std::visit([&](const auto& x) { std::cout << x; }, val);
     std::cout << std::endl;
 }
+
+void Interpreter::visit(const VarStmt& varStmt) {
+
+}
+
+void Interpreter::visit(const Variable& variable) {
+
+}

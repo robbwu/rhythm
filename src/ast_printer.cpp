@@ -2,7 +2,7 @@
 #include "scanner.hpp"
 #include <iostream>
 #include <memory>
-#include "ast_printer.hpp";
+#include "ast_printer.hpp"
 
 
 using string = std::string;
@@ -42,6 +42,10 @@ void AstPrinter::visit(const Literal& lit) {
 
 void AstPrinter::visit(const Unary& unary) {
     return parenthesize(unary.op.lexeme, {unary.right.get()});
+}
+
+void AstPrinter::visit(const Variable& variable) {
+    std::cout << "VAR:" << variable.name.lexeme;
 }
 
 //

@@ -12,15 +12,17 @@
 #include "expr.hpp"
 #include "parser.hpp"
 
+
+
 void run(std::string &source)
 {
     auto scanner = new Scanner(source);
     std::vector<Token> tokens = scanner->scanTokens();
 
-    // for (auto &token: tokens) {
-    //     std::cout << token.toString() << ", ";
-    // }
-    // std::cout << std::endl;
+    for (auto &token: tokens) {
+        std::cout << token.toString() << ", ";
+    }
+    std::cout << std::endl;
 
     auto parser = Parser(tokens);
     // auto expr = parser.parseExpr();

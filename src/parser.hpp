@@ -81,7 +81,7 @@ private:
         }
         return primary();
     }
-    // primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
+    // primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER ;
     std::unique_ptr<Expr> primary() {
         if (match({TokenType::FALSE})) return Literal::create(false);
         if (match({TokenType::TRUE})) return Literal::create(true);
@@ -90,16 +90,34 @@ private:
         if (match({TokenType::NUMBER, TokenType::STRING})) {
             return Literal::create(previous().literal);
         }
+        if (match({TokenType::IDENTIFIER})) return Variable::create(previous());
 
         if (match({TokenType::LEFT_PAREN})) {
             auto expr = expression();
             consume(TokenType::RIGHT_PAREN, "expected ')'");
             return Grouping::create(std::move(expr));
         }
+
         error(peek(), "expect expression");
+        return nullptr;
     }
 
     // statements
+    std::unique_ptr<Stmt> declaration() {
+        if (match({TokenType::VAR}))
+            return varDeclaration();
+        return statement();
+    }
+    std::unique_ptr<Stmt> varDeclaration() {
+        Token name = consume(TokenType::IDENTIFIER, "expected variable name");
+        std::unique_ptr<Expr> initializer{};
+        if (match({TokenType::EQUAL})) {
+             initializer = expression();
+        }
+        consume(TokenType::SEMICOLON, "expected ';'");
+        return VarStmt::create(name, std::move(initializer));
+    }
+
     std::unique_ptr<Stmt> statement() {
         if (match({TokenType::PRINT})) return printStatement();
 
@@ -121,8 +139,8 @@ private:
         if (check(type))  return  advance();
         error(peek(), msg);
     }
-    bool match(std::vector<TokenType> types) {
-        for (auto type : types) {
+    bool match(const std::vector<TokenType>& types) {
+        for (const auto type : types) {
             if (check(type)) {
                 advance();
                 return true;
@@ -153,7 +171,7 @@ private:
         return tokens[current-1];
     }
 
-    static void error(Token token, std::string msg) {
+    static void error(const Token& token, const std::string& msg) {
         if (token.type == TokenType::END_TOKEN) {
             std::cout << token.line << " at end, " << msg << std::endl;
         } else {
@@ -163,7 +181,7 @@ private:
     }
 
 public:
-    Parser(std::vector<Token> tokens) : tokens(tokens) {}
+    explicit Parser(const std::vector<Token> &tokens) : tokens(tokens) {}
 
     std::unique_ptr<Expr> parseExpr() {
         try {
@@ -176,7 +194,7 @@ public:
     std::vector<std::unique_ptr<Stmt>> parse() {
         std::vector<std::unique_ptr<Stmt>> stmts;
         while (!isAtEnd()) {
-            stmts.push_back(statement());
+            stmts.push_back(declaration());
         }
         return stmts;
     }

@@ -7,6 +7,7 @@ class Binary;
 class Grouping;
 class Literal;
 class Unary;
+class Variable;
 
 class ExprVisitor {
 public:
@@ -16,6 +17,7 @@ public:
     virtual void visit(const Grouping&) = 0;
     virtual void visit(const Literal&) = 0;
     virtual void visit(const Unary&) = 0;
+    virtual void visit(const Variable&) =0;
 };
 
 class Expr {
@@ -83,11 +85,11 @@ public:
     Token op;
     std::unique_ptr<Expr> right;
 
-    Unary(Token _op, std::unique_ptr<Expr> _right)
+    Unary(const Token& _op, std::unique_ptr<Expr> _right)
         : op(_op), right(std::move(_right)) {}
 
     static std::unique_ptr<Unary> create(
-        Token _op,
+        const Token& _op,
         std::unique_ptr<Expr> _right) {
         return std::make_unique<Unary>(_op, std::move(_right));
     }
@@ -98,3 +100,16 @@ public:
 };
 
 
+class Variable : public Expr {
+public:
+    Token name;
+
+    explicit Variable(const Token& name): name(name) {}
+    static std::unique_ptr<Variable> create(const Token& name) {
+        return std::make_unique<Variable>(name);
+    }
+
+    void accept(ExprVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
