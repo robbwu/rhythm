@@ -65,7 +65,8 @@ void runPrompt(Interpreter &interpreter)
 
 
 int main(int argc, char **argv) {
-    Interpreter interpreter;
+    Environment env(nullptr);
+    Interpreter interpreter(&env);
     // std::cout << std::format("{} {}", "hello", "world");
     if (argc > 2) {
         std::cout << "Usage: cclox [script]" << std::endl;

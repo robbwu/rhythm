@@ -19,4 +19,5 @@ public:
     void visit(const ExpressionStmt&) override;
     void visit(const PrintStmt&) override;
     void visit(const VarStmt&) override;
+    void visit(const BlockStmt&) override;
 };

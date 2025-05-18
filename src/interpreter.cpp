@@ -96,15 +96,29 @@ void Interpreter::visit(const VarStmt& varStmt) {
     if (varStmt.initializer != nullptr) {
         value = eval(*varStmt.initializer);
     }
-    env.define(varStmt.name.lexeme, value);
+    env->define(varStmt.name.lexeme, value);
 }
 
 void Interpreter::visit(const Variable& variable) {
-    _result = env.get(variable.name);
+    _result = env->get(variable.name);
 }
 
 void Interpreter::visit(const Assignment& assignment) {
     auto value = eval(*assignment.right);
-    env.assign(assignment.name, value);
+    env->assign(assignment.name, value);
     _result = value; // Why? associated assignment?
+}
+
+void Interpreter::visit(const BlockStmt& block) {
+    executeBlock(block.statements, std::move(std::make_unique<Environment>(env)));
+}
+
+// this function owns the new environment
+void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, std::unique_ptr<Environment> new_env) {
+    auto previous = env;
+    env = new_env.get();
+    for (auto &statement : statements) {
+        execute(*statement);
+    }
+    env = previous;
 }

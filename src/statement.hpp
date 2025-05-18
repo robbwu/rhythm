@@ -6,6 +6,7 @@
 class ExpressionStmt;
 class PrintStmt;
 class VarStmt;
+class BlockStmt;
 
 class StmtVisitor {
 public:
@@ -13,6 +14,7 @@ public:
     virtual void visit(const ExpressionStmt&) = 0;
     virtual void visit(const PrintStmt&) = 0;
     virtual void visit(const VarStmt&) = 0;
+    virtual void visit(const BlockStmt&) = 0;
 };
 
 class Stmt {
@@ -54,6 +56,18 @@ public:
 
     static std::unique_ptr<VarStmt> create(Token name, std::unique_ptr<Expr> initilializer) {
         return std::make_unique<VarStmt>(VarStmt(std::move(name), std::move(initilializer)));
+    }
+    void accept(StmtVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+
+class BlockStmt: public Stmt {
+public:
+    std::vector<std::unique_ptr<Stmt>> statements;
+    explicit BlockStmt(std::vector<std::unique_ptr<Stmt>> statements): statements(std::move(statements)) {}
+    static std::unique_ptr<BlockStmt> create(std::vector<std::unique_ptr<Stmt>> statements) {
+        return std::make_unique<BlockStmt>(std::move(statements));
     }
     void accept(StmtVisitor& visitor) const override {
         visitor.visit(*this);

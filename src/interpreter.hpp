@@ -47,12 +47,14 @@ public:
 class Interpreter: public ExprVisitor, public StmtVisitor {
 private:
     Value _result;
-    Environment env = Environment(nullptr);
+    Environment *env = nullptr;
 
     // void parenthesize(const std::string& name, const std::vector<const Expr*>& exprs);
     bool isTruthy(Value value);
 
 public:
+    explicit Interpreter(Environment *env) : env(env) {}
+
     Value eval(const Expr& expr) {
         expr.accept(*this);         // result_ is filled by child
         return std::exchange(_result, {});   // grab & clear
@@ -76,6 +78,10 @@ public:
     void visit(const ExpressionStmt& exprStmt) override;
     void visit(const PrintStmt& printStmt) override;
     void visit(const VarStmt& varStmt) override;
+
+    void executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts,  std::unique_ptr<Environment> unique);
+
+    void visit(const BlockStmt&) override;
 };
 
 

@@ -136,9 +136,21 @@ private:
 
     std::unique_ptr<Stmt> statement() {
         if (match({TokenType::PRINT})) return printStatement();
+        if (match({TokenType::LEFT_BRACE})) return BlockStmt::create(block());
 
         return expressionStatement();
     }
+
+    std::vector<std::unique_ptr<Stmt>> block() {
+        std::vector<std::unique_ptr<Stmt>> statements;
+        while (!check(TokenType::RIGHT_BRACE) && !isAtEnd()) {
+            statements.push_back(declaration());
+        }
+
+        consume(TokenType::RIGHT_BRACE, "expected '}'");
+        return statements;
+    }
+
     std::unique_ptr<Stmt> printStatement() {
         auto value = expression();
         consume(TokenType::SEMICOLON, "Expect ';' after value.");

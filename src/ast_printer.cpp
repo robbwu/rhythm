@@ -68,21 +68,6 @@ void AstPrinter::visit(const VarStmt& varStmt) {
     parenthesize(varStmt.name.lexeme, {varStmt.initializer.get()});
 };
 
-//
-// int main() {
-//     // Example usage of the expression factory methods
-//     auto expression = Binary::create(
-//         Unary::create(
-//             Token(TokenType::MINUS, "-", nullptr, 1),
-//             Literal::create(123.0)),
-//         Token(TokenType::STAR, "*", nullptr, 1),
-//         Grouping::create(
-//             Literal::create(45.67)));
-//
-//     // Print the expression using AstPrinter
-//     AstPrinter printer;
-//     printer.print(*expression);
-//     std::cout << std::endl;
-//
-//     return 0;
-// }
+void AstPrinter::visit(const BlockStmt&blockStmt) {
+
+}
