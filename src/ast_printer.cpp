@@ -11,13 +11,19 @@ void AstPrinter::parenthesize(const std::string& name, const std::vector<const E
     std::cout << "(" << name;
     for (const auto& expr : exprs) {
         std::cout << " ";
-        expr->accept(*this);
+        if (expr) expr->accept(*this);
     }
     std::cout << ")";
 }
 
 void  AstPrinter::print(const Expr& expr) {
     return expr.accept(*this);
+}
+
+void AstPrinter::print(const std::vector<std::unique_ptr<Stmt>>& statements) {
+    for (const auto& stmt : statements) {
+        stmt->accept(*this);
+    }
 }
 
 void  AstPrinter::visit(const Binary& binary) {
@@ -41,12 +47,26 @@ void AstPrinter::visit(const Literal& lit) {
 }
 
 void AstPrinter::visit(const Unary& unary) {
-    return parenthesize(unary.op.lexeme, {unary.right.get()});
+    parenthesize(unary.op.lexeme, {unary.right.get()});
 }
 
 void AstPrinter::visit(const Variable& variable) {
     std::cout << "VAR:" << variable.name.lexeme;
 }
+
+void AstPrinter::visit(const Assignment& assignment) {
+    parenthesize(assignment.name.lexeme, {assignment.right.get()});
+}
+
+void AstPrinter::visit(const ExpressionStmt& stmt) {
+    print(*stmt.expr);
+};
+void AstPrinter::visit(const PrintStmt& stmt) {
+    parenthesize("print", {stmt.expr.get()});
+};
+void AstPrinter::visit(const VarStmt& varStmt) {
+    parenthesize(varStmt.name.lexeme, {varStmt.initializer.get()});
+};
 
 //
 // int main() {

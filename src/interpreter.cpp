@@ -92,9 +92,17 @@ void Interpreter::visit(const PrintStmt& printStmt) {
 }
 
 void Interpreter::visit(const VarStmt& varStmt) {
-
+    Value value = nullptr;
+    if (varStmt.initializer != nullptr) {
+        value = eval(*varStmt.initializer);
+    }
+    env.define(varStmt.name.lexeme, value);
 }
 
 void Interpreter::visit(const Variable& variable) {
+    _result = env.get(variable.name);
+}
+
+void Interpreter::visit(const Assignment& assignment) {
 
 }

@@ -24,8 +24,24 @@ private:
 
     // expression     → equality ;
     std::unique_ptr<Expr> expression() {
-        return equality();
+        return assignment();
     }
+
+    std::unique_ptr<Expr> assignment() {
+        auto expr = equality(); // may match l-value if in assignment
+
+        if (match({TokenType::EQUAL})) {
+            Token equals = previous();
+            auto value = assignment();
+            if (auto var = dynamic_cast<Variable*>(expr.get())) {
+                Token name = var->name;
+                return Assignment::create(name, std::move(value));
+            }
+            error(equals, "Invalid assignment target");
+        }
+        return expr;
+    }
+
     // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
     std::unique_ptr<Expr>  equality() {
         std::unique_ptr<Expr> expr = comparison();

@@ -8,6 +8,7 @@ class Grouping;
 class Literal;
 class Unary;
 class Variable;
+class Assignment;
 
 class ExprVisitor {
 public:
@@ -17,7 +18,8 @@ public:
     virtual void visit(const Grouping&) = 0;
     virtual void visit(const Literal&) = 0;
     virtual void visit(const Unary&) = 0;
-    virtual void visit(const Variable&) =0;
+    virtual void visit(const Variable&) = 0;
+    virtual void visit(const Assignment&) = 0;
 };
 
 class Expr {
@@ -107,6 +109,21 @@ public:
     explicit Variable(const Token& name): name(name) {}
     static std::unique_ptr<Variable> create(const Token& name) {
         return std::make_unique<Variable>(name);
+    }
+
+    void accept(ExprVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+
+class Assignment : public Expr {
+public:
+    Token name;
+    std::unique_ptr<Expr> right;
+
+    Assignment(const Token& _name, std::unique_ptr<Expr> _right): name(_name), right(std::move(_right)) {}
+    static std::unique_ptr<Assignment> create(const Token& _name, std::unique_ptr<Expr> _right) {
+        return std::make_unique<Assignment>(_name, std::move(_right));
     }
 
     void accept(ExprVisitor& visitor) const override {

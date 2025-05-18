@@ -14,7 +14,7 @@
 
 
 
-void run(std::string &source)
+void run(Interpreter &interpreter, std::string &source)
 {
     auto scanner = new Scanner(source);
     std::vector<Token> tokens = scanner->scanTokens();
@@ -26,11 +26,11 @@ void run(std::string &source)
 
     auto parser = Parser(tokens);
     // auto expr = parser.parseExpr();
-    // AstPrinter printer;
-    // printer.print(*expr);
-    // std::cout << std::endl;
+    AstPrinter printer;
+
     auto stmts = parser.parse();
-    Interpreter interpreter;
+    printer.print(stmts);
+    std::cout << std::endl;
     // try {
     //     auto val = interpreter.eval(*expr);
     //     std::visit([&](const auto& x) { std::cout << x; }, val);
@@ -42,37 +42,37 @@ void run(std::string &source)
 
 }
 
-void runFile(char *filepath)
+void runFile(Interpreter &interpreter, char *filepath)
 {
     std::ifstream file(filepath);
     if (!file.is_open()) {
         throw std::runtime_error("Could not open file: " + std::string(filepath));
     }
     auto str = std::string(std::istreambuf_iterator<char>(file),std::istreambuf_iterator<char>());
-    run(str);
+    run(interpreter, str);
 }
 
-void runPrompt()
+void runPrompt(Interpreter &interpreter)
 {
     std::string line;
     std::cout << "> ";
     for (std::string line; std::getline(std::cin, line);) {
         // std::cout << "You entered: " << line << '\n';
-        run(line);
+        run(interpreter, line);
         std::cout << "> ";
     }
 }
 
 
 int main(int argc, char **argv) {
-
+    Interpreter interpreter;
     // std::cout << std::format("{} {}", "hello", "world");
     if (argc > 2) {
         std::cout << "Usage: cclox [script]" << std::endl;
         exit(1);
     } else if (argc == 2) {
-        runFile(argv[1]);
+        runFile(interpreter, argv[1]);
     } else if (argc == 1) {
-        runPrompt();
+        runPrompt(interpreter);
     }
 }
