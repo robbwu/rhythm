@@ -2,6 +2,7 @@
 #include <utility>
 #include <unordered_map>
 #include <iostream>
+#include <variant>
 
 #include "expr.hpp"
 #include "statement.hpp"
@@ -16,6 +17,14 @@ public:
         values[name] = value;
     }
 
+    void assign(const Token& token, const Value& value) {
+        if (values.contains(token.lexeme)) {
+            values[token.lexeme] = value;
+            return;
+        }
+        throw RuntimeError(token, "Assignment: Undefined variable '" + token.lexeme + "'.");
+    }
+
     Value get(const Token& name) {
         auto it = values.find(name.lexeme);
         if (it == values.end()) {
@@ -23,6 +32,8 @@ public:
         }
         return it->second;
     }
+
+
 };
 class Interpreter: public ExprVisitor, public StmtVisitor {
 private:

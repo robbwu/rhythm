@@ -104,5 +104,7 @@ void Interpreter::visit(const Variable& variable) {
 }
 
 void Interpreter::visit(const Assignment& assignment) {
-
+    auto value = eval(*assignment.right);
+    env.assign(assignment.name, value);
+    _result = value; // Why? associated assignment?
 }
