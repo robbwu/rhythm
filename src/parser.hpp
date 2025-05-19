@@ -157,6 +157,7 @@ private:
     }
 
     std::unique_ptr<Stmt> statement() {
+        if (match({TokenType::FOR})) return forStatement();
         if (match({TokenType::IF})) return ifStatement();
         if (match({TokenType::PRINT})) return printStatement();
         if (match({TokenType::WHILE})) return whileStatement();
@@ -173,6 +174,54 @@ private:
 
         consume(TokenType::RIGHT_BRACE, "expected '}'");
         return statements;
+    }
+
+    // desugar for into while statement
+    std::unique_ptr<Stmt> forStatement() {
+        consume(TokenType::LEFT_PAREN, "Expect '(' after 'for'.");
+
+        std::unique_ptr<Stmt> initializer;
+        if (match({TokenType::SEMICOLON})) {
+            initializer = nullptr;
+        } else if (match({TokenType::VAR})) {
+            initializer = varDeclaration();
+        } else {
+            initializer = expressionStatement();
+        }
+
+        std::unique_ptr<Expr> condition{nullptr};
+        if (!check(TokenType::SEMICOLON)) {
+            condition = expression();
+        }
+        consume(TokenType::SEMICOLON, "Expect ';' after loop condition.");
+
+        std::unique_ptr<Expr> increment{nullptr};
+        if (!check(TokenType::RIGHT_PAREN)) {
+            increment = expression();
+        }
+        consume(TokenType::RIGHT_PAREN, "Expect ')' after for clauses");
+
+        std::unique_ptr<Stmt> body = statement();
+        // de-sugar for into while
+        if (increment) {
+            std::unique_ptr<Stmt> incrStmt = ExpressionStmt::create(std::move(increment));
+            std::vector<std::unique_ptr<Stmt>> block;
+            block.push_back(std::move(body));
+            block.push_back(std::move(incrStmt));
+            body = BlockStmt::create(std::move(block));
+
+        }
+
+        if (condition == nullptr) condition = Literal::create(true);
+        body = WhileStmt::create(std::move(condition), std::move(body));
+
+        if (initializer) {
+            std::vector<std::unique_ptr<Stmt>> block;
+            block.push_back(std::move(initializer));
+            block.push_back(std::move(body));
+            body = BlockStmt::create(std::move(block));
+        }
+        return body;
     }
 
     std::unique_ptr<Stmt> ifStatement() {

@@ -9,6 +9,7 @@ class VarStmt;
 class BlockStmt;
 class IfStmt;
 class WhileStmt;
+// class ForStmt;
 
 class StmtVisitor {
 public:
@@ -19,6 +20,7 @@ public:
     virtual void visit(const BlockStmt&) = 0;
     virtual void visit(const IfStmt&) = 0;
     virtual void visit(const WhileStmt&) = 0;
+    // virtual void visit(const ForStmt&) = 0;
 };
 
 class Stmt {
