@@ -121,3 +121,8 @@ void AstPrinter::visit(const FunctionStmt& funStmt) {
     std::cout << "FUNCTION ";
     // TODO
 }
+
+void AstPrinter::visit(const ReturnStmt& returnStmt) {
+    std::cout << "RETURN ";
+    returnStmt.value->accept(*this);
+}

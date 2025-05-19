@@ -1,7 +1,10 @@
 #pragma once
 #include <memory>
 
-#include "expr.hpp"
+// #include "expr.hpp"
+// Forward declarations
+class Expr;
+class Token;
 
 class ExpressionStmt;
 class PrintStmt;
@@ -11,6 +14,7 @@ class IfStmt;
 class WhileStmt;
 // class ForStmt;
 class FunctionStmt;
+class ReturnStmt;
 
 class StmtVisitor {
 public:
@@ -23,6 +27,7 @@ public:
     virtual void visit(const WhileStmt&) = 0;
     // virtual void visit(const ForStmt&) = 0;
     virtual void visit(const FunctionStmt&) = 0;
+    virtual void visit(const ReturnStmt&) = 0;
 };
 
 class Stmt {
@@ -121,6 +126,21 @@ public:
     static std::unique_ptr<FunctionStmt> create(Token name, std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body) {
         return std::make_unique<FunctionStmt>(std::move(name), params, std::move(body));
     }
+    void accept(StmtVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+
+class ReturnStmt: public Stmt {
+public:
+    Token kw;
+    std::unique_ptr<Expr> value;
+
+    ReturnStmt(Token& kw, std::unique_ptr<Expr> value): kw(std::move(kw)), value(std::move(value)) {}
+    static std::unique_ptr<ReturnStmt> create(Token& kw, std::unique_ptr<Expr> value) {
+        return std::make_unique<ReturnStmt>(kw, std::move(value));
+    }
+
     void accept(StmtVisitor& visitor) const override {
         visitor.visit(*this);
     }

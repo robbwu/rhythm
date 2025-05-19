@@ -5,6 +5,7 @@
 #include <variant>
 
 #include "expr.hpp"
+#include "scanner.hpp"
 #include "statement.hpp"
 #include "exception.hpp"
 
@@ -48,12 +49,12 @@ public:
 class Interpreter: public ExprVisitor, public StmtVisitor {
 private:
     Value _result;
-    Environment *env =&globals;
 
     // void parenthesize(const std::string& name, const std::vector<const Expr*>& exprs);
     static bool isTruthy(Value value);
 
 public:
+    Environment *env =&globals;
     Environment globals{nullptr};
 
     Interpreter();
@@ -86,13 +87,28 @@ public:
     void visit(const IfStmt& ifStmt) override;
     void visit(const WhileStmt& whileStmt) override;
     void visit(const FunctionStmt&) override;
+    void visit(const ReturnStmt& returnStmt) override;
 
-    void executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts,  std::unique_ptr<Environment> unique);
+    void executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts,  Environment*);
 
 };
 
-class LoxCallable {
+// Interpreter.hpp
+class EnvGuard {
 public:
-    virtual Value call(Interpreter *interpreter, std::vector<Value> arguments) = 0;
-    virtual int arity() = 0;
+    EnvGuard(Interpreter& I, Environment* newEnv)
+        : interp(I), previous(I.env)        // remember current env
+    {
+        interp.env = newEnv;               // switch to function-local env
+    }
+
+    // non-copyable
+    EnvGuard(const EnvGuard&)            = delete;
+    EnvGuard& operator=(const EnvGuard&) = delete;
+
+    ~EnvGuard() { interp.env = previous; } // always restore
+private:
+    Interpreter&  interp;
+    Environment*  previous;
 };
+

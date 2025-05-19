@@ -6,6 +6,7 @@
 
 #include "expr.hpp"
 #include "scanner.hpp"
+#include "statement.hpp"
 /*
 
 expression     → equality ;
@@ -208,6 +209,7 @@ private:
         if (match({TokenType::FOR})) return forStatement();
         if (match({TokenType::IF})) return ifStatement();
         if (match({TokenType::PRINT})) return printStatement();
+        if (match({TokenType::RETURN})) return returnStatement();
         if (match({TokenType::WHILE})) return whileStatement();
         if (match({TokenType::LEFT_BRACE})) return BlockStmt::create(block());
 
@@ -304,6 +306,16 @@ private:
         auto value = expression();
         consume(TokenType::SEMICOLON, "Expect ';' after value.");
         return ExpressionStmt::create(std::move(value));
+    }
+
+    std::unique_ptr<ReturnStmt> returnStatement() {
+        Token kw = previous(); // just for the position reporting in error
+        std::unique_ptr<Expr> value{nullptr};
+        if (!check(TokenType::SEMICOLON)) {
+            value = expression();
+        }
+        consume(TokenType::SEMICOLON, "Expect ';' after return value.");
+        return ReturnStmt::create(kw, std::move(value));
     }
 
     // helper functions

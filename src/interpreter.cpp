@@ -19,7 +19,7 @@ public:
         return static_cast<double>(now_ms);
     }
 
-    std::string toString() const { return "<native fn>"; }
+    std::string toString()  override { return "<native fn>"; }
 };
 
 Interpreter::Interpreter() {
@@ -66,7 +66,7 @@ void Interpreter::visit(const Binary &expr) {
         case TokenType::PLUS:
             if (std::holds_alternative<double>(left) && std::holds_alternative<double>(right))
                 _result = std::get<double>(left) + std::get<double>(right);
-            if (std::holds_alternative<std::string>(left) && std::holds_alternative<std::string>(right))
+            else if (std::holds_alternative<std::string>(left) && std::holds_alternative<std::string>(right))
                 _result = std::get<std::string>(left) + std::get<std::string>(right);
             break;
         case TokenType::GREATER:
@@ -167,7 +167,7 @@ void Interpreter::visit(const Assignment& assignment) {
 }
 
 void Interpreter::visit(const BlockStmt& block) {
-    executeBlock(block.statements, std::move(std::make_unique<Environment>(env)));
+    executeBlock(block.statements, env);
 }
 
 void Interpreter::visit(const IfStmt& ifStmt) {
@@ -185,17 +185,27 @@ void Interpreter::visit(const WhileStmt& whileStmt) {
 }
 
 // this function owns the new environment
-void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, std::unique_ptr<Environment> new_env) {
-    auto previous = env;
-    env = new_env.get();
+void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, Environment* new_env) {
+    // auto previous = env;
+    EnvGuard guard(*this, new_env);
+    // env = new_env;
+    // could throw--need to handle env restoration in such case
     for (auto &statement : statements) {
         execute(*statement);
     }
-    env = previous;
+    // env = previous;
 }
 
 void Interpreter::visit(const FunctionStmt& stmt) {
     // FIXME: who owns/deletes this function?
     LoxCallable* function = new LoxFunction(&stmt);
     env->define(stmt.name.lexeme, function);
+}
+
+void Interpreter::visit(const ReturnStmt& returnStmt) {
+    Value value = nullptr;
+    if (returnStmt.value != nullptr) {
+        value = eval(*returnStmt.value);
+    }
+    throw Return(value);
 }

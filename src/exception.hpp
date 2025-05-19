@@ -1,7 +1,8 @@
 #pragma once
 #include <stdexcept>   // std::runtime_error
 #include <string>
-#include <scanner.hpp>
+#include <utility>
+#include "scanner.hpp"
 
 class RuntimeError : public std::runtime_error {
 private:
@@ -16,4 +17,10 @@ public:
         *m += ": " + msg;
         return m->c_str();
     }
+};
+
+class Return: public std::runtime_error {
+public:
+    Value value;
+    explicit Return(Value value): value(std::move(value)), std::runtime_error("return") {}
 };

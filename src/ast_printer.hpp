@@ -25,4 +25,5 @@ public:
     void visit(const IfStmt&) override;
     void visit(const WhileStmt&) override;
     void visit(const FunctionStmt&) override;
+    void visit(const ReturnStmt&) override;
 };
