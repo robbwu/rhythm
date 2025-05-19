@@ -10,6 +10,7 @@ public:
     void print(const std::vector<std::unique_ptr<Stmt>> &statements);
 
     void visit(const Binary& binary) override ;
+    void visit(const Logical&) override ;
     void visit(const Grouping& group) override ;
     void visit(const Literal& lit) override ;
     void visit(const Unary& unary) override ;

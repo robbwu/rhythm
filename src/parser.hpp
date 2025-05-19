@@ -22,13 +22,14 @@ private:
     std::vector<Token> tokens;
     int current = 0; // next token index to consume
 
-    // expression     → equality ;
+    // expression     → assignment ;
     std::unique_ptr<Expr> expression() {
         return assignment();
     }
-
+    // assignment     → IDENTIFIER "=" assignment
+    //                | logic_or ;
     std::unique_ptr<Expr> assignment() {
-        auto expr = equality(); // may match l-value if in assignment
+        auto expr = logic_or(); // may match l-value if in assignment
 
         if (match({TokenType::EQUAL})) {
             Token equals = previous();
@@ -38,6 +39,27 @@ private:
                 return Assignment::create(name, std::move(value));
             }
             error(equals, "Invalid assignment target");
+        }
+        return expr;
+    }
+    // logic_or       → logic_and ( "or" logic_and )* ;
+    std::unique_ptr<Expr> logic_or() {
+        auto expr = logic_and();
+        while (match({TokenType::OR})) {
+            Token op = previous();
+            auto right = logic_and();
+            expr = Logical::create(std::move(expr), op, std::move(right));
+        }
+        return expr;
+    }
+
+    std::unique_ptr<Expr> logic_and() {
+        auto expr = equality();
+
+        while (match({TokenType::AND})) {
+            Token op = previous();
+            auto right = equality();
+            expr = Logical::create(std::move(expr), op, std::move(right));
         }
         return expr;
     }

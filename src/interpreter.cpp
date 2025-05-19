@@ -69,6 +69,26 @@ void Interpreter::visit(const Binary &expr) {
 
 }
 
+void Interpreter::visit(const Logical& logical) {
+    auto left = eval(*logical.left);
+
+    if (logical.op.type == TokenType::OR) {
+        if (isTruthy(left)) {
+            _result = left;
+            return;
+        }
+    } else if (logical.op.type == TokenType::AND) {
+        if (!isTruthy(left)) {
+            _result = left;
+            return;
+        }
+    } else {
+        throw std::runtime_error("Invalid logical operator");
+    }
+    _result = eval(*logical.right);
+};
+
+
 
 bool  Interpreter::isTruthy(Value value) {
     if (std::holds_alternative<bool>(value)) {

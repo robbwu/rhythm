@@ -4,6 +4,7 @@
 #include <memory>
 
 class Binary;
+class Logical;
 class Grouping;
 class Literal;
 class Unary;
@@ -15,6 +16,7 @@ public:
     virtual ~ExprVisitor() = default;
 
     virtual void visit(const Binary&) = 0;
+    virtual void visit(const Logical&) = 0;
     virtual void visit(const Grouping&) = 0;
     virtual void visit(const Literal&) = 0;
     virtual void visit(const Unary&) = 0;
@@ -44,6 +46,26 @@ public:
         Token _op,
         std::unique_ptr<Expr> _right) {
         return std::make_unique<Binary>(std::move(_left), _op, std::move(_right));
+    }
+    void accept(ExprVisitor& visitor) const override {
+        return visitor.visit(*this);
+    }
+};
+
+class Logical : public Expr {
+public:
+    std::unique_ptr<Expr> left;
+    Token op;
+    std::unique_ptr<Expr> right;
+
+    Logical(std::unique_ptr<Expr> _left, Token _op, std::unique_ptr<Expr> _right)
+        : left(std::move(_left)), op(_op), right(std::move(_right)) {}
+
+    static std::unique_ptr<Logical> create(
+        std::unique_ptr<Expr> _left,
+        Token _op,
+        std::unique_ptr<Expr> _right) {
+        return std::make_unique<Logical>(std::move(_left), _op, std::move(_right));
     }
     void accept(ExprVisitor& visitor) const override {
         return visitor.visit(*this);

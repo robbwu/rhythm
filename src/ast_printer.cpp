@@ -30,6 +30,10 @@ void  AstPrinter::visit(const Binary& binary) {
     return parenthesize(binary.op.lexeme, {binary.left.get(), binary.right.get()});
 }
 
+void  AstPrinter::visit(const Logical& logical) {
+    return parenthesize(logical.op.lexeme, {logical.left.get(), logical.right.get()});
+}
+
 void AstPrinter::visit(const Grouping& group) {
     return parenthesize("group", {group.expression.get()});
 }
