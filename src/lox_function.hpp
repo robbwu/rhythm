@@ -9,11 +9,8 @@ public:
     explicit LoxFunction(const FunctionStmt* declaration): declaration(declaration) {}
 
     Value call(Interpreter *interpreter, std::vector<Value> arguments) override {
-        // std::cout <<"calling function with parameters: ";
-        // for (const auto & argument : arguments) {
-        //     std::cout << argument << ",";
-        // }
-        // std::cout << std::endl;
+        // check arity
+
         auto env = new Environment(interpreter->globals); // FIXME: this is probably leaking!
         for (int i=0; i<declaration->params.size(); i++) {
             env->define(declaration->params[i].lexeme, arguments[i]);

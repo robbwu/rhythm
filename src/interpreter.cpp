@@ -123,6 +123,9 @@ void Interpreter::visit(const Call &call) {
         throw RuntimeError(call.paren, "Can only call functions and classes.");
     }
     auto f = std::get<LoxCallable*>(callee);
+    if (f->arity() != arguments.size()) {
+        throw RuntimeError(call.paren,std::format("expected {} arguments but got {}",f->arity(),arguments.size()));
+    }
     _result = f->call(this, arguments);
 }
 
