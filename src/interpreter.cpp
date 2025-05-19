@@ -113,6 +113,14 @@ void Interpreter::visit(const BlockStmt& block) {
     executeBlock(block.statements, std::move(std::make_unique<Environment>(env)));
 }
 
+void Interpreter::visit(const IfStmt& ifStmt) {
+    if (isTruthy(eval(*ifStmt.condition))) {
+        execute(*ifStmt.thenBlock);
+    } else if (ifStmt.elseBlock != nullptr) {
+        execute(*ifStmt.elseBlock);
+    }
+}
+
 // this function owns the new environment
 void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, std::unique_ptr<Environment> new_env) {
     auto previous = env;

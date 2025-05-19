@@ -20,4 +20,5 @@ public:
     void visit(const PrintStmt&) override;
     void visit(const VarStmt&) override;
     void visit(const BlockStmt&) override;
+    void visit(const IfStmt&) override;
 };

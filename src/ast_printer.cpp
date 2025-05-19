@@ -68,6 +68,25 @@ void AstPrinter::visit(const VarStmt& varStmt) {
     parenthesize(varStmt.name.lexeme, {varStmt.initializer.get()});
 };
 
-void AstPrinter::visit(const BlockStmt&blockStmt) {
+void AstPrinter::visit(const BlockStmt& blockStmt) {
+    std::cout << "BLOCK:" << blockStmt.statements.size() << "\n";
+    for (const auto& stmt : blockStmt.statements) {
+        std::cout << "  ";
+        stmt->accept(*this);
+        std::cout << "\n";
+    }
+}
+void AstPrinter::visit(const IfStmt& ifStmt) {
+    std::cout << "IF ";
+    ifStmt.condition->accept(*this);
+    std::cout << "\n";
+    std::cout << "  THEN ";
+    ifStmt.thenBlock->accept(*this);
+    std::cout << "\n";
+    if (ifStmt.elseBlock) {
+        std::cout << "  ELSE ";
+        ifStmt.elseBlock->accept(*this);
+        std::cout << "\n";
+    }
 
 }

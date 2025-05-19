@@ -78,10 +78,11 @@ public:
     void visit(const ExpressionStmt& exprStmt) override;
     void visit(const PrintStmt& printStmt) override;
     void visit(const VarStmt& varStmt) override;
+    void visit(const BlockStmt&) override;
+    void visit(const IfStmt& ifStmt) override;
 
     void executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts,  std::unique_ptr<Environment> unique);
 
-    void visit(const BlockStmt&) override;
 };
 
 

@@ -7,6 +7,7 @@ class ExpressionStmt;
 class PrintStmt;
 class VarStmt;
 class BlockStmt;
+class IfStmt;
 
 class StmtVisitor {
 public:
@@ -15,6 +16,7 @@ public:
     virtual void visit(const PrintStmt&) = 0;
     virtual void visit(const VarStmt&) = 0;
     virtual void visit(const BlockStmt&) = 0;
+    virtual void visit(const IfStmt&) = 0;
 };
 
 class Stmt {
@@ -68,6 +70,21 @@ public:
     explicit BlockStmt(std::vector<std::unique_ptr<Stmt>> statements): statements(std::move(statements)) {}
     static std::unique_ptr<BlockStmt> create(std::vector<std::unique_ptr<Stmt>> statements) {
         return std::make_unique<BlockStmt>(std::move(statements));
+    }
+    void accept(StmtVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+
+class IfStmt: public Stmt {
+public:
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Stmt> thenBlock;
+    std::unique_ptr<Stmt> elseBlock;
+    IfStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> thenBlock, std::unique_ptr<Stmt> elseBlock)
+        : condition(std::move(condition)), thenBlock(std::move(thenBlock)), elseBlock(std::move(elseBlock)) {}
+    static std::unique_ptr<IfStmt> create(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> thenBlock, std::unique_ptr<Stmt> elseBlock) {
+        return std::make_unique<IfStmt>(std::move(condition), std::move(thenBlock), std::move(elseBlock));
     }
     void accept(StmtVisitor& visitor) const override {
         visitor.visit(*this);

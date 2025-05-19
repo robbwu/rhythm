@@ -135,7 +135,8 @@ private:
     }
 
     std::unique_ptr<Stmt> statement() {
-        if (match({TokenType::PRINT})) return printStatement();
+        if (match({TokenType::IF})) return ifStatement();
+            if (match({TokenType::PRINT})) return printStatement();
         if (match({TokenType::LEFT_BRACE})) return BlockStmt::create(block());
 
         return expressionStatement();
@@ -149,6 +150,19 @@ private:
 
         consume(TokenType::RIGHT_BRACE, "expected '}'");
         return statements;
+    }
+
+    std::unique_ptr<Stmt> ifStatement() {
+        consume(TokenType::LEFT_PAREN, "expected '(' after if");
+        auto condition = expression();
+        consume(TokenType::RIGHT_PAREN, "expected ')' after if condition");
+
+        std::unique_ptr<Stmt> thenBranch = statement();
+        std::unique_ptr<Stmt> elseBranch = nullptr;
+        if (match({TokenType::ELSE}))
+            elseBranch = statement();
+
+        return IfStmt::create(std::move(condition), std::move(thenBranch), std::move(elseBranch));
     }
 
     std::unique_ptr<Stmt> printStatement() {
