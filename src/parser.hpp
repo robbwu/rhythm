@@ -158,7 +158,8 @@ private:
 
     std::unique_ptr<Stmt> statement() {
         if (match({TokenType::IF})) return ifStatement();
-            if (match({TokenType::PRINT})) return printStatement();
+        if (match({TokenType::PRINT})) return printStatement();
+        if (match({TokenType::WHILE})) return whileStatement();
         if (match({TokenType::LEFT_BRACE})) return BlockStmt::create(block());
 
         return expressionStatement();
@@ -185,6 +186,15 @@ private:
             elseBranch = statement();
 
         return IfStmt::create(std::move(condition), std::move(thenBranch), std::move(elseBranch));
+    }
+
+    std::unique_ptr<Stmt> whileStatement() {
+        consume(TokenType::LEFT_PAREN, "expected '(' after if");
+        auto condition = expression();
+        consume(TokenType::RIGHT_PAREN, "expected ')' after if condition");
+        std::unique_ptr<Stmt> body = statement();
+
+        return WhileStmt::create(std::move(condition), std::move(body));
     }
 
     std::unique_ptr<Stmt> printStatement() {

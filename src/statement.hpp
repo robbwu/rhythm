@@ -8,6 +8,7 @@ class PrintStmt;
 class VarStmt;
 class BlockStmt;
 class IfStmt;
+class WhileStmt;
 
 class StmtVisitor {
 public:
@@ -17,6 +18,7 @@ public:
     virtual void visit(const VarStmt&) = 0;
     virtual void visit(const BlockStmt&) = 0;
     virtual void visit(const IfStmt&) = 0;
+    virtual void visit(const WhileStmt&) = 0;
 };
 
 class Stmt {
@@ -85,6 +87,19 @@ public:
         : condition(std::move(condition)), thenBlock(std::move(thenBlock)), elseBlock(std::move(elseBlock)) {}
     static std::unique_ptr<IfStmt> create(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> thenBlock, std::unique_ptr<Stmt> elseBlock) {
         return std::make_unique<IfStmt>(std::move(condition), std::move(thenBlock), std::move(elseBlock));
+    }
+    void accept(StmtVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+
+class WhileStmt: public Stmt {
+public:
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Stmt> body;
+    WhileStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body): condition(std::move(condition)), body(std::move(body)) {}
+    static std::unique_ptr<WhileStmt> create(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body) {
+        return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
     }
     void accept(StmtVisitor& visitor) const override {
         visitor.visit(*this);

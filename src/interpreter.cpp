@@ -141,6 +141,12 @@ void Interpreter::visit(const IfStmt& ifStmt) {
     }
 }
 
+void Interpreter::visit(const WhileStmt& whileStmt) {
+    while (isTruthy(eval(*whileStmt.condition))) {
+        execute(*whileStmt.body);
+    }
+}
+
 // this function owns the new environment
 void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, std::unique_ptr<Environment> new_env) {
     auto previous = env;

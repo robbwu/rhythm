@@ -81,6 +81,7 @@ public:
     void visit(const VarStmt& varStmt) override;
     void visit(const BlockStmt&) override;
     void visit(const IfStmt& ifStmt) override;
+    void visit(const WhileStmt& whileStmt) override;
 
     void executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts,  std::unique_ptr<Environment> unique);
 

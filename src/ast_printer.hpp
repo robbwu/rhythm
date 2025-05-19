@@ -22,4 +22,5 @@ public:
     void visit(const VarStmt&) override;
     void visit(const BlockStmt&) override;
     void visit(const IfStmt&) override;
+    void visit(const WhileStmt&) override;
 };

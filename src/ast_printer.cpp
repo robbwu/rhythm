@@ -92,5 +92,12 @@ void AstPrinter::visit(const IfStmt& ifStmt) {
         ifStmt.elseBlock->accept(*this);
         std::cout << "\n";
     }
+}
 
+void AstPrinter::visit(const WhileStmt& whileStmt) {
+    std::cout << "WHILE ";
+    whileStmt.condition->accept(*this);
+    std::cout << "\n";
+    whileStmt.body->accept(*this);
+    std::cout << "\n";
 }
