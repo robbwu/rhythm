@@ -201,7 +201,7 @@ void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& stateme
 
 void Interpreter::visit(const FunctionStmt& stmt) {
     // FIXME: who owns/deletes this function?
-    LoxCallable* function = new LoxFunction(&stmt);
+    LoxCallable* function = new LoxFunction(&stmt, env);
     env->define(stmt.name.lexeme, function);
 }
 

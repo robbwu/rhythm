@@ -5,13 +5,12 @@
 class LoxFunction: public LoxCallable {
 private:
     const FunctionStmt* declaration;
+    Environment* closure;
 public:
-    explicit LoxFunction(const FunctionStmt* declaration): declaration(declaration) {}
+    explicit LoxFunction(const FunctionStmt* declaration, Environment* closure): declaration(declaration), closure(closure) {}
 
     Value call(Interpreter *interpreter, std::vector<Value> arguments) override {
-        // check arity
-
-        auto env = new Environment(interpreter->globals); // FIXME: this is probably leaking!
+        auto env = new Environment(closure); // FIXME: this is probably leaking!
         for (int i=0; i<declaration->params.size(); i++) {
             env->define(declaration->params[i].lexeme, arguments[i]);
         }

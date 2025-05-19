@@ -72,7 +72,7 @@ void AstPrinter::visit(const Call& call) {
         std::cout << ",";
     }
     std::cout << ")";
-    // std::cout << std::endl;
+    std::cout << std::endl;
 }
 
 // statements
