@@ -1,0 +1,13 @@
+var t0 = clock();
+var sum = 0;
+var niter = 100000;
+for (var i=0; i<100000; i=i+1) {
+    sum = sum + i;
+}
+print sum;
+//var t1 = clock();
+print "time (ms) elapsed";
+var elapsed = clock() - t0;
+print elapsed;
+print "time (us) per iteration";
+print elapsed / niter * 1000;

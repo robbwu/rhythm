@@ -9,12 +9,12 @@ public:
     // zero arguments
     int arity() override { return 0; }
 
-    // return seconds since Unix epoch, as a double
+    // return milli-seconds since Unix epoch, as a double
     Value call(Interpreter*, std::vector<Value>) override {
         using namespace std::chrono;
         auto now_ms = duration_cast<milliseconds>(
                           system_clock::now().time_since_epoch()).count();
-        return static_cast<double>(now_ms) / 1000.0;
+        return static_cast<double>(now_ms);
     }
 
     std::string toString() const { return "<native fn>"; }
