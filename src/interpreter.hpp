@@ -48,13 +48,14 @@ public:
 class Interpreter: public ExprVisitor, public StmtVisitor {
 private:
     Value _result;
-    Environment globals{nullptr};
     Environment *env =&globals;
 
     // void parenthesize(const std::string& name, const std::vector<const Expr*>& exprs);
     static bool isTruthy(Value value);
 
 public:
+    Environment globals{nullptr};
+
     Interpreter();
     Value eval(const Expr& expr) {
         expr.accept(*this);         // result_ is filled by child
@@ -84,6 +85,7 @@ public:
     void visit(const BlockStmt&) override;
     void visit(const IfStmt& ifStmt) override;
     void visit(const WhileStmt& whileStmt) override;
+    void visit(const FunctionStmt&) override;
 
     void executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts,  std::unique_ptr<Environment> unique);
 

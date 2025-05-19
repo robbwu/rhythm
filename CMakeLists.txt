@@ -22,13 +22,10 @@ add_executable(${PROJECT_NAME}
         src/ast_printer.cpp
 )
 
-# Add example executable
-#add_executable(astprint
-#        src/ast_printer.cpp
-#        src/scanner.cpp
-#        src/interpreter.cpp
-#        src/expr.cpp
-#)
+set(DEBUG_FLAGS -g -O0 -fno-omit-frame-pointer)
+set(SAN_FLAGS   -fsanitize=address,undefined)
 
-# Add any libraries if needed
-# target_link_libraries(${PROJECT_NAME} PRIVATE some_library)
+target_compile_options(${PROJECT_NAME} PRIVATE ${DEBUG_FLAGS} ${SAN_FLAGS})
+target_link_options   (${PROJECT_NAME} PRIVATE ${SAN_FLAGS})
+
+

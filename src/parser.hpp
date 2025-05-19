@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <iostream>
 #include <ostream>
 #include <vector>
@@ -169,8 +170,8 @@ private:
 
     // statements
     std::unique_ptr<Stmt> declaration() {
-        if (match({TokenType::VAR}))
-            return varDeclaration();
+        if (match({TokenType::FUN})) return function("function");
+        if (match({TokenType::VAR})) return varDeclaration();
         return statement();
     }
     std::unique_ptr<Stmt> varDeclaration() {
@@ -183,6 +184,26 @@ private:
         return VarStmt::create(name, std::move(initializer));
     }
 
+    std::unique_ptr<FunctionStmt> function(std::string kind) {
+        Token name = consume(TokenType::IDENTIFIER, std::format("expected {} name", kind));
+
+        // parse parameters
+        std::vector<Token> parameters;
+        consume(TokenType::LEFT_PAREN, "expected '('");
+        if (!check(TokenType::RIGHT_PAREN)) {
+            do {
+                parameters.push_back(consume(TokenType::IDENTIFIER, "expect parameter name"));
+            } while (match({TokenType::COMMA}));
+        }
+        consume(TokenType::RIGHT_PAREN, "expected ')'");
+
+        // parse body
+        consume(TokenType::LEFT_BRACE, "expected '{' before body");
+        std::vector<std::unique_ptr<Stmt>> body = block();
+
+        return FunctionStmt::create(name, parameters, std::move(body));
+    }
+
     std::unique_ptr<Stmt> statement() {
         if (match({TokenType::FOR})) return forStatement();
         if (match({TokenType::IF})) return ifStatement();
@@ -193,6 +214,7 @@ private:
         return expressionStatement();
     }
 
+    // parse sequence of Stmts up until }
     std::vector<std::unique_ptr<Stmt>> block() {
         std::vector<std::unique_ptr<Stmt>> statements;
         while (!check(TokenType::RIGHT_BRACE) && !isAtEnd()) {

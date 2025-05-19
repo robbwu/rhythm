@@ -1,0 +1,6 @@
+fun hello (a) {
+    print a;
+    print "from hello\n";
+}
+
+hello("world");

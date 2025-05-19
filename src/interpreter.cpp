@@ -3,6 +3,8 @@
 #include <iostream>
 #include <ostream>
 
+#include "lox_function.hpp"
+
 // ── Native “clock” ──────────────────────────────────────────────────────────────
 class ClockCallable final : public LoxCallable {
 public:
@@ -190,4 +192,10 @@ void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& stateme
         execute(*statement);
     }
     env = previous;
+}
+
+void Interpreter::visit(const FunctionStmt& stmt) {
+    // FIXME: who owns/deletes this function?
+    LoxCallable* function = new LoxFunction(&stmt);
+    env->define(stmt.name.lexeme, function);
 }

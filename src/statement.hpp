@@ -10,6 +10,7 @@ class BlockStmt;
 class IfStmt;
 class WhileStmt;
 // class ForStmt;
+class FunctionStmt;
 
 class StmtVisitor {
 public:
@@ -21,6 +22,7 @@ public:
     virtual void visit(const IfStmt&) = 0;
     virtual void visit(const WhileStmt&) = 0;
     // virtual void visit(const ForStmt&) = 0;
+    virtual void visit(const FunctionStmt&) = 0;
 };
 
 class Stmt {
@@ -99,9 +101,25 @@ class WhileStmt: public Stmt {
 public:
     std::unique_ptr<Expr> condition;
     std::unique_ptr<Stmt> body;
+
     WhileStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body): condition(std::move(condition)), body(std::move(body)) {}
     static std::unique_ptr<WhileStmt> create(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body) {
         return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
+    }
+    void accept(StmtVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+
+class FunctionStmt: public Stmt {
+public:
+    Token name;
+    std::vector<Token> params;
+    std::vector<std::unique_ptr<Stmt>> body;
+
+    FunctionStmt(Token name, std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body): name(name), params(std::move(params)), body(std::move(body)) {}
+    static std::unique_ptr<FunctionStmt> create(Token name, std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body) {
+        return std::make_unique<FunctionStmt>(std::move(name), params, std::move(body));
     }
     void accept(StmtVisitor& visitor) const override {
         visitor.visit(*this);

@@ -24,4 +24,5 @@ public:
     void visit(const BlockStmt&) override;
     void visit(const IfStmt&) override;
     void visit(const WhileStmt&) override;
+    void visit(const FunctionStmt&) override;
 };

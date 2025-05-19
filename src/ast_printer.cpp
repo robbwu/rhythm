@@ -116,3 +116,8 @@ void AstPrinter::visit(const WhileStmt& whileStmt) {
     whileStmt.body->accept(*this);
     std::cout << "\n";
 }
+
+void AstPrinter::visit(const FunctionStmt& funStmt) {
+    std::cout << "FUNCTION ";
+    // TODO
+}
