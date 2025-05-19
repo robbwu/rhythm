@@ -6,8 +6,12 @@
 #include <vector>
 #include <unordered_map>
 #include "magic_enum.hpp"
+// #include "interpreter.hpp"
 
-using Value = std::variant<double, std::string, std::nullptr_t, bool>;
+
+class LoxCallable;
+using Value = std::variant<double, std::string, std::nullptr_t, bool, LoxCallable*>;
+
 
 enum class TokenType {
     // Single-character tokens.

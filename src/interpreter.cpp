@@ -1,7 +1,29 @@
 #include "interpreter.hpp"
-
+#include "expr.hpp"
 #include <iostream>
 #include <ostream>
+
+// ── Native “clock” ──────────────────────────────────────────────────────────────
+class ClockCallable final : public LoxCallable {
+public:
+    // zero arguments
+    int arity() override { return 0; }
+
+    // return seconds since Unix epoch, as a double
+    Value call(Interpreter*, std::vector<Value>) override {
+        using namespace std::chrono;
+        auto now_ms = duration_cast<milliseconds>(
+                          system_clock::now().time_since_epoch()).count();
+        return static_cast<double>(now_ms) / 1000.0;
+    }
+
+    std::string toString() const { return "<native fn>"; }
+};
+
+Interpreter::Interpreter() {
+    globals.define("clock", new ClockCallable());
+}
+
 
 void Interpreter::visit(const Literal &lit) {
     _result = lit.value;
@@ -88,6 +110,19 @@ void Interpreter::visit(const Logical& logical) {
     _result = eval(*logical.right);
 };
 
+void Interpreter::visit(const Call &call) {
+    auto callee = eval(*call.callee);
+    std::vector<Value> arguments;
+    arguments.reserve(call.arguments.size());
+    for (auto &arg : call.arguments) {
+        arguments.push_back(eval(*arg));
+    }
+    if (!std::holds_alternative<LoxCallable*>(callee)) {
+        throw RuntimeError(call.paren, "Can only call functions and classes.");
+    }
+    auto f = std::get<LoxCallable*>(callee);
+    _result = f->call(this, arguments);
+}
 
 
 bool  Interpreter::isTruthy(Value value) {

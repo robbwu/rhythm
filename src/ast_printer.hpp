@@ -16,6 +16,7 @@ public:
     void visit(const Unary& unary) override ;
     void visit(const Variable&) override;
     void visit(const Assignment&) override;
+    void visit(const Call&) override;
 
     void visit(const ExpressionStmt&) override;
     void visit(const PrintStmt&) override;

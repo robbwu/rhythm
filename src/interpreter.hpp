@@ -14,6 +14,7 @@ private:
     std::unordered_map<std::string, Value> values;
 
 public:
+
     explicit Environment(Environment *enclosing) : enclosing(enclosing) {}
 
     void define(const std::string& name, const Value& value) {
@@ -47,14 +48,14 @@ public:
 class Interpreter: public ExprVisitor, public StmtVisitor {
 private:
     Value _result;
-    Environment *env = nullptr;
+    Environment globals{nullptr};
+    Environment *env =&globals;
 
     // void parenthesize(const std::string& name, const std::vector<const Expr*>& exprs);
     static bool isTruthy(Value value);
 
 public:
-    explicit Interpreter(Environment *env) : env(env) {}
-
+    Interpreter();
     Value eval(const Expr& expr) {
         expr.accept(*this);         // result_ is filled by child
         return std::exchange(_result, {});   // grab & clear
@@ -75,6 +76,7 @@ public:
     void visit(const Unary& unary) override;
     void visit(const Variable &variable) override;
     void visit(const Assignment &assignment) override;
+    void visit(const Call &call) override;
 
     void visit(const ExpressionStmt& exprStmt) override;
     void visit(const PrintStmt& printStmt) override;
@@ -87,4 +89,8 @@ public:
 
 };
 
-
+class LoxCallable {
+public:
+    virtual Value call(Interpreter *interpreter, std::vector<Value> arguments) = 0;
+    virtual int arity() = 0;
+};

@@ -57,7 +57,6 @@ void runPrompt(Interpreter &interpreter)
     std::string line;
     std::cout << "> ";
     for (std::string line; std::getline(std::cin, line);) {
-        // std::cout << "You entered: " << line << '\n';
         run(interpreter, line);
         std::cout << "> ";
     }
@@ -66,7 +65,7 @@ void runPrompt(Interpreter &interpreter)
 
 int main(int argc, char **argv) {
     Environment env(nullptr);
-    Interpreter interpreter(&env);
+    Interpreter interpreter;
     // std::cout << std::format("{} {}", "hello", "world");
     if (argc > 2) {
         std::cout << "Usage: cclox [script]" << std::endl;

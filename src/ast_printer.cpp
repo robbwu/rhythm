@@ -62,6 +62,20 @@ void AstPrinter::visit(const Assignment& assignment) {
     parenthesize(assignment.name.lexeme, {assignment.right.get()});
 }
 
+void AstPrinter::visit(const Call& call) {
+    std::cout << "CALL ";
+    call.callee->accept(*this);
+    std::cout << "_" << call.arguments.size();
+    std::cout << "(";
+    for (const auto& arg : call.arguments) {
+        arg->accept(*this);
+        std::cout << ",";
+    }
+    std::cout << ")";
+    // std::cout << std::endl;
+}
+
+// statements
 void AstPrinter::visit(const ExpressionStmt& stmt) {
     print(*stmt.expr);
 };
@@ -70,6 +84,7 @@ void AstPrinter::visit(const PrintStmt& stmt) {
 };
 void AstPrinter::visit(const VarStmt& varStmt) {
     parenthesize(varStmt.name.lexeme, {varStmt.initializer.get()});
+    std::cout << std::endl;
 };
 
 void AstPrinter::visit(const BlockStmt& blockStmt) {

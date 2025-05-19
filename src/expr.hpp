@@ -10,6 +10,7 @@ class Literal;
 class Unary;
 class Variable;
 class Assignment;
+class Call;
 
 class ExprVisitor {
 public:
@@ -22,6 +23,7 @@ public:
     virtual void visit(const Unary&) = 0;
     virtual void visit(const Variable&) = 0;
     virtual void visit(const Assignment&) = 0;
+    virtual void visit(const Call&) = 0;
 };
 
 class Expr {
@@ -148,6 +150,23 @@ public:
         return std::make_unique<Assignment>(_name, std::move(_right));
     }
 
+    void accept(ExprVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+
+class Call : public Expr {
+public:
+    std::unique_ptr<Expr> callee;
+    Token paren;
+    std::vector<std::unique_ptr<Expr>> arguments;
+
+    Call(std::unique_ptr<Expr> _callee, Token _paren, std::vector<std::unique_ptr<Expr>> _arguments)
+        : callee(std::move(_callee)), paren(_paren), arguments(std::move(_arguments)) {
+    }
+    static std::unique_ptr<Call> create(std::unique_ptr<Expr> _callee, Token _paren, std::vector<std::unique_ptr<Expr>> _arguments) {
+        return std::make_unique<Call>(std::move(_callee), std::move(_paren), std::move(_arguments));
+    }
     void accept(ExprVisitor& visitor) const override {
         visitor.visit(*this);
     }

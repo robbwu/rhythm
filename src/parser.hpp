@@ -110,15 +110,42 @@ private:
         return expr;
     }
 
-    // unary          → ( "!" | "-" ) unary | primary ;
+    // unary          → ( "!" | "-" ) unary | call ;
     std::unique_ptr<Expr> unary() {
         if (match({TokenType::BANG, TokenType::MINUS})) {
             Token op = previous();
             auto right = unary();
             return Unary::create(op, std::move(right));
         }
-        return primary();
+        return call();
     }
+
+    // call           → primary ( "(" arguments? ")" )* ;
+    // arguments      → expression ( "," expression )* ;
+    std::unique_ptr<Expr> call() {
+        auto expr = primary();
+        while (true) {
+            if (match({TokenType::LEFT_PAREN})) {
+                expr = finishCall(std::move(expr));
+            } else {
+                break;
+            }
+        }
+
+        return expr;
+    }
+    std::unique_ptr<Expr> finishCall(std::unique_ptr<Expr> callee) {
+        std::vector<std::unique_ptr<Expr>> args;
+        if (!check(TokenType::RIGHT_PAREN)) {
+            do {
+                args.push_back(expression());
+            } while (match({TokenType::COMMA}));
+        }
+
+        Token paren = consume(TokenType::RIGHT_PAREN, "Expect ')' after arguments.");
+        return Call::create(std::move(callee), paren, std::move(args));
+    }
+
     // primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER ;
     std::unique_ptr<Expr> primary() {
         if (match({TokenType::FALSE})) return Literal::create(false);
