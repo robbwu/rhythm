@@ -69,7 +69,7 @@ private:
     Value _result;
 
     // void parenthesize(const std::string& name, const std::vector<const Expr*>& exprs);
-    static bool isTruthy(Value value);
+    static bool isTruthy(const Value&);
 
 public:
     Environment *env =&globals;

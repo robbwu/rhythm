@@ -130,7 +130,7 @@ void Interpreter::visit(const Call &call) {
 }
 
 
-bool  Interpreter::isTruthy(Value value) {
+bool  Interpreter::isTruthy(const Value& value) {
     if (std::holds_alternative<bool>(value)) {
         return std::get<bool>(value);
     }
