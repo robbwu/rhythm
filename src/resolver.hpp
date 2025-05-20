@@ -13,6 +13,7 @@ class Resolver: ExprVisitor, StmtVisitor {
 private:
     Interpreter* interpreter;
     std::vector<std::unordered_map<std::string, bool>> scopes; // used as stack
+    FunctionType current_function = FunctionType::NONE;
 
     void resolve(Expr* expr);
     void resolve(Stmt* stmt);
@@ -22,7 +23,7 @@ private:
     void declare(Token name);
     void define(Token name);
     void resolveLocal(const Expr& expr, const Token& name);
-    void resolveFunction(const FunctionStmt& stmt);
+    void resolveFunction(const FunctionStmt&, FunctionType);
 public:
     explicit Resolver(Interpreter* interpreter) : interpreter(interpreter) {}
     void resolve(const std::vector<std::unique_ptr<Stmt>>&);

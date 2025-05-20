@@ -103,3 +103,7 @@ struct std::formatter<Token> {
         return format_to(ctx.out(), "{}", token.toString());  // Format using Token's data
     }
 };
+
+enum class FunctionType {
+    NONE, FUNCTION,
+};

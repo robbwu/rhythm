@@ -45,6 +45,9 @@ void Resolver::visit(const VarStmt& stmt) {
 void Resolver::declare(Token name) {
     if (scopes.empty()) return;
     auto& scope = scopes.back();
+    if (scope.contains(name.lexeme)) {
+        throw RuntimeError(name, "Already a variable with this name in this scope.");
+    }
     scope[name.lexeme] = false;
 }
 
@@ -56,8 +59,8 @@ void Resolver::define(Token name) {
 
 void Resolver::visit(const Variable& var) {
     if (!scopes.empty()) {
-        if (auto& scope = scopes.back();
-            scope.contains(var.name.lexeme) && scope[var.name.lexeme] == false) {
+        auto& scope = scopes.back();
+        if (scope.contains(var.name.lexeme) && scope[var.name.lexeme] == false) {
             throw RuntimeError(var.name, "Can't read local variable in its own initializer.");
         }
     }
@@ -81,10 +84,14 @@ void Resolver::visit(const Assignment& assignment) {
 void Resolver::visit(const FunctionStmt& stmt) {
     declare(stmt.name);
     define(stmt.name);
-    resolveFunction(stmt);
+
+    resolveFunction(stmt, FunctionType::FUNCTION);
+    // resolveFunction(stmt);
 }
 
-void Resolver::resolveFunction(const FunctionStmt& stmt) {
+void Resolver::resolveFunction(const FunctionStmt& stmt, FunctionType type) {
+    FunctionType enclosing_function = current_function;
+    current_function = type;
     beginScope();
     for (auto& param : stmt.params) {
         declare(param);
@@ -92,6 +99,7 @@ void Resolver::resolveFunction(const FunctionStmt& stmt) {
     }
     resolve(stmt.body);
     endScope();
+    current_function = enclosing_function;
 }
 
 void Resolver::visit(const ExpressionStmt& stmt) {
@@ -111,6 +119,9 @@ void Resolver::visit(const PrintStmt& stmt) {
 }
 
 void Resolver::visit(const ReturnStmt& stmt) {
+    if (current_function == FunctionType::NONE) {
+        throw RuntimeError(stmt.kw, "Can't return from top-level code.");
+    }
     if (stmt.value != nullptr) {
         resolve(stmt.value.get());
     }
