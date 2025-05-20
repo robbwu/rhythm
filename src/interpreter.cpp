@@ -16,7 +16,7 @@ public:
         using namespace std::chrono;
         auto now_ms = duration_cast<milliseconds>(
                           system_clock::now().time_since_epoch()).count();
-        return static_cast<double>(now_ms);
+        return static_cast<double>(now_ms)/1000.0;
     }
 
     std::string toString()  override { return "<native fn>"; }

@@ -6,8 +6,8 @@ for (var i=0; i<niter; i=i+1) {
 }
 print sum;
 //var t1 = clock();
-print "time (ms) elapsed";
+print "time (s) elapsed";
 var elapsed = clock() - t0;
 print elapsed;
 print "time (ns) per iteration";
-print elapsed / niter * 1000000;
+print elapsed / niter * 1000000000;

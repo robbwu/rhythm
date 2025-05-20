@@ -72,15 +72,17 @@ void AstPrinter::visit(const Call& call) {
         std::cout << ",";
     }
     std::cout << ")";
-    std::cout << std::endl;
+    // std::cout << std::endl;
 }
 
 // statements
 void AstPrinter::visit(const ExpressionStmt& stmt) {
     print(*stmt.expr);
+    std::cout << std::endl;
 };
 void AstPrinter::visit(const PrintStmt& stmt) {
     parenthesize("print", {stmt.expr.get()});
+    std::cout << std::endl;
 };
 void AstPrinter::visit(const VarStmt& varStmt) {
     parenthesize(varStmt.name.lexeme, {varStmt.initializer.get()});
@@ -92,7 +94,6 @@ void AstPrinter::visit(const BlockStmt& blockStmt) {
     for (const auto& stmt : blockStmt.statements) {
         std::cout << "  ";
         stmt->accept(*this);
-        std::cout << "\n";
     }
 }
 void AstPrinter::visit(const IfStmt& ifStmt) {
@@ -125,4 +126,5 @@ void AstPrinter::visit(const FunctionStmt& funStmt) {
 void AstPrinter::visit(const ReturnStmt& returnStmt) {
     std::cout << "RETURN ";
     returnStmt.value->accept(*this);
+    std::cout << std::endl;
 }
