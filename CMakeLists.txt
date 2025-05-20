@@ -20,6 +20,7 @@ add_executable(${PROJECT_NAME}
         src/parser.cpp
         src/statement.cpp
         src/ast_printer.cpp
+        src/resolver.cpp
 )
 
 set(DEBUG_FLAGS -g -O0 -fno-omit-frame-pointer)

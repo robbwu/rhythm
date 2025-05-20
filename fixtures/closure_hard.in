@@ -1,0 +1,10 @@
+var a = "global";
+{
+  fun showA() {
+    print a; // should capture the global a outside
+  }
+
+  showA(); // should print "global"
+  var a = "block";
+  showA(); // should still print "global"
+}

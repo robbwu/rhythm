@@ -11,10 +11,10 @@
 #include "interpreter.hpp"
 #include "expr.hpp"
 #include "parser.hpp"
+#include "resolver.hpp"
 
 
-
-void run(Interpreter &interpreter, std::string &source)
+void run(Interpreter &interpreter, Resolver &resolver, std::string &source)
 {
     auto scanner = new Scanner(source);
     std::vector<Token> tokens = scanner->scanTokens();
@@ -38,41 +38,41 @@ void run(Interpreter &interpreter, std::string &source)
     // } catch (const std::exception &e) {
     //     std::cout << e.what() << std::endl;
     // }
+    resolver.resolve(stmts);
     interpreter.interpret(stmts);
 
 }
 
-void runFile(Interpreter &interpreter, char *filepath)
+void runFile(Interpreter &interpreter,  Resolver &resolver, char *filepath)
 {
     std::ifstream file(filepath);
     if (!file.is_open()) {
         throw std::runtime_error("Could not open file: " + std::string(filepath));
     }
     auto str = std::string(std::istreambuf_iterator<char>(file),std::istreambuf_iterator<char>());
-    run(interpreter, str);
+    run(interpreter, resolver, str );
 }
 
-void runPrompt(Interpreter &interpreter)
+void runPrompt(Interpreter &interpreter, Resolver &resolver)
 {
     std::string line;
     std::cout << "> ";
     for (std::string line; std::getline(std::cin, line);) {
-        run(interpreter, line);
+        run(interpreter,resolver,  line);
         std::cout << "> ";
     }
 }
 
 
 int main(int argc, char **argv) {
-    Environment env(nullptr);
     Interpreter interpreter;
-    // std::cout << std::format("{} {}", "hello", "world");
+    Resolver resolver(&interpreter);
     if (argc > 2) {
         std::cout << "Usage: cclox [script]" << std::endl;
         exit(1);
     } else if (argc == 2) {
-        runFile(interpreter, argv[1]);
+        runFile(interpreter, resolver, argv[1]);
     } else if (argc == 1) {
-        runPrompt(interpreter);
+        runPrompt(interpreter, resolver);
     }
 }

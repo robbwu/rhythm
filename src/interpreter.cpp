@@ -159,17 +159,35 @@ void Interpreter::visit(const VarStmt& varStmt) {
 }
 
 void Interpreter::visit(const Variable& variable) {
-    _result = env->get(variable.name);
+    // _result = env->get(variable.name);
+    _result = lookUpVariable(variable.name,  &variable);
 }
+
+Value Interpreter::lookUpVariable(const Token & name, const Variable *variable) {
+    auto it = locals.find(variable);
+    if (it != locals.end()) {
+        return env->getAt(it->second, name.lexeme);
+    } else {
+        return globals.get(name);
+    }
+}
+
 
 void Interpreter::visit(const Assignment& assignment) {
     auto value = eval(*assignment.right);
-    env->assign(assignment.name, value);
-    _result = value; // Why? associated assignment?
+    // env->assign(assignment.name, value);
+    auto it = locals.find(&assignment);
+    if (it != locals.end()) {
+        env->assignAt(it->second, assignment.name, value);
+    } else {
+        globals.assign(assignment.name, value);
+    }
+    _result = value; // Why? chain of assignment?
 }
 
 void Interpreter::visit(const BlockStmt& block) {
-    executeBlock(block.statements, env);
+    auto new_env = new Environment(env); // FIXME: this leaks memory
+    executeBlock(block.statements, new_env);
 }
 
 void Interpreter::visit(const IfStmt& ifStmt) {
@@ -210,4 +228,9 @@ void Interpreter::visit(const ReturnStmt& returnStmt) {
         value = eval(*returnStmt.value);
     }
     throw Return(value);
+}
+
+// store the depth of the expr in the interpreter;
+void Interpreter::resolve(const Expr* expr, int depth) {
+    locals[expr] = depth;
 }

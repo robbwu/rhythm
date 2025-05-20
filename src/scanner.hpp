@@ -8,7 +8,7 @@
 
 #include "magic_enum.hpp"
 #include "token.hpp"
-#include "interpreter.hpp"
+// #include "interpreter.hpp"
 
 class LoxCallable;
 
