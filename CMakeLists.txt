@@ -26,7 +26,15 @@ add_executable(${PROJECT_NAME}
 set(DEBUG_FLAGS -g -O0 -fno-omit-frame-pointer)
 set(SAN_FLAGS   -fsanitize=address,undefined)
 
-target_compile_options(${PROJECT_NAME} PRIVATE ${DEBUG_FLAGS} ${SAN_FLAGS})
-target_link_options   (${PROJECT_NAME} PRIVATE ${SAN_FLAGS})
+target_compile_options(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
+        $<$<CONFIG:Debug>:${SAN_FLAGS}>
+)
+target_link_options   (${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:${SAN_FLAGS}>
+)
 
+target_compile_options(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Release>:-O2 -g>
+)
 
