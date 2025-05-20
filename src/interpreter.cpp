@@ -147,8 +147,7 @@ void Interpreter::visit(const ExpressionStmt& exprStmt) {
 
 void Interpreter::visit(const PrintStmt& printStmt) {
     auto val = eval(*printStmt.expr);
-    std::visit([&](const auto& x) { std::cout << x; }, val);
-    std::cout << std::endl;
+    std::cout << val << std::endl;
 }
 
 void Interpreter::visit(const VarStmt& varStmt) {
