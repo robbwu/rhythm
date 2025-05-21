@@ -11,8 +11,14 @@
 // env to find the declaration env?
 class Resolver: ExprVisitor, StmtVisitor {
 private:
+    struct VarInfo {
+        bool defined;
+        int index;
+    };
+
     Interpreter* interpreter;
-    std::vector<std::unordered_map<std::string, bool>> scopes; // used as stack
+    std::vector<std::unordered_map<std::string, VarInfo>> scopes; // used as stack
+    int currentScopeNextIndex = 0;
     FunctionType current_function = FunctionType::NONE;
 
     void resolve(Expr* expr);
@@ -24,6 +30,7 @@ private:
     void define(Token name);
     void resolveLocal(const Expr& expr, const Token& name);
     void resolveFunction(const FunctionStmt&, FunctionType);
+
 public:
     explicit Resolver(Interpreter* interpreter) : interpreter(interpreter) {}
     void resolve(const std::vector<std::unique_ptr<Stmt>>&);

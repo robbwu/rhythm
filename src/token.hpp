@@ -89,7 +89,7 @@ public:
     : type(other.type), lexeme(other.lexeme), literal(other.literal), line(other.line) {}
 
     [[nodiscard]] std::string toString() const {
-        return std::format("T:{:} V:{}", magic_enum::enum_name(type), lexeme);
+        return std::format("L:{} T:{:} V:{}", line, magic_enum::enum_name(type), lexeme);
     }
 };
 

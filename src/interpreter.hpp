@@ -12,46 +12,59 @@
 class Environment {
 private:
     Environment *enclosing = nullptr;
-    std::unordered_map<std::string, Value> values;
+    // std::unordered_map<std::string, Value> values;
+    std::vector<Value> values; // Flat array for direct indexing
+    std::unordered_map<std::string, int> nameToIndex; // Maps variable names to indices
+    // Keep map only for globals; only active when enclosing==NULL
+    std::unordered_map<std::string, Value> globals;
 
 public:
 
     explicit Environment(Environment *enclosing) : enclosing(enclosing) {}
 
-    void define(const std::string& name, const Value& value) {
-        values[name] = value;
+    int define(const std::string& name, const Value& value) {
+        if (!enclosing) { // Global scope
+            globals[name] = value;
+            return -1;
+        }
+        int index = values.size();
+        nameToIndex[name] = index;
+        values.push_back(value);
+        return index;
     }
+
+    [[nodiscard]] Value get_by_index(int index) const {
+        return values[index];
+    }
+
+    void assign_by_index(int index, const Value& value) {
+        values[index] = value;
+    }
+
+    Value getAt(int distance, int index) {
+        return ancestor(distance)->get_by_index(index);
+    }
+
+    void assignAt(int distance, int index, const Value& value) {
+        ancestor(distance)->assign_by_index(index, value);
+    }
+
 
     void assign(const Token& token, const Value& value) {
-        auto it = values.find(token.lexeme);
-        if (it != values.end()) {
-            it->second = value;
-            return;
+        if (enclosing != nullptr) {
+            throw RuntimeError(token, "not in global environment");
         }
-        if (enclosing) {
-            enclosing->assign(token, value);
-            return;
-        }
-        throw RuntimeError(token, "Assignment: Undefined variable '" + token.lexeme + "'.");
-    }
 
-    void assignAt(int distance, Token name, const Value& value) {
-        ancestor(distance)->values[name.lexeme] = value;
+        globals[token.lexeme] = value;
     }
 
     Value get(const Token& name) {
-        auto it = values.find(name.lexeme);
-        if (it != values.end()) {
+        auto it = globals.find(name.lexeme);
+        if (it != globals.end()) {
             return it->second;
         }
-        if (enclosing) {
-            return enclosing->get(name);
-        }
-        throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
-    }
 
-    Value getAt(int distance, const std::string& name) {
-        return ancestor(distance)->values[name];
+        throw RuntimeError(name, "Undefined global variable '" + name.lexeme + "'.");
     }
 
     Environment* ancestor(int distance) {
@@ -68,6 +81,11 @@ public:
 class Interpreter: public ExprVisitor, public StmtVisitor {
 private:
     Value _result;
+    // Store both distance and index for each variable
+    struct VarLocation {
+        int distance;
+        int index;
+    };
 
     // void parenthesize(const std::string& name, const std::vector<const Expr*>& exprs);
     static bool isTruthy(const Value&);
@@ -75,7 +93,8 @@ private:
 public:
     Environment *env =&globals;
     Environment globals{nullptr};
-    std::unordered_map<const Expr*, int> locals;
+    // std::unordered_map<const Expr*, int> locals;
+    std::map<const Expr*, VarLocation> varLocations;
 
 
     Interpreter();
@@ -115,7 +134,10 @@ public:
 
     void executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts,  Environment*);
 
-    void resolve(const Expr*, int);
+    // void resolve(const Expr*, int);
+    void resolveWithIndex(const Expr*, int distance, int index);
+
+
 };
 
 // Interpreter.hpp

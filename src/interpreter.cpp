@@ -160,25 +160,23 @@ void Interpreter::visit(const VarStmt& varStmt) {
 
 void Interpreter::visit(const Variable& variable) {
     // _result = env->get(variable.name);
-    _result = lookUpVariable(variable.name,  &variable);
-}
-
-Value Interpreter::lookUpVariable(const Token & name, const Variable *variable) {
-    auto it = locals.find(variable);
-    if (it != locals.end()) {
-        return env->getAt(it->second, name.lexeme);
-    } else {
-        return globals.get(name);
+    // _result = lookUpVariable(variable.name,  &variable);
+    auto it = varLocations.find(&variable);
+    if (it != varLocations.end()) {
+        // Fast path: direct index access
+        _result = env->getAt(it->second.distance, it->second.index);
+        return;
     }
+    // Fallback for globals or unresolved variables
+    _result = globals.get(variable.name);
 }
-
 
 void Interpreter::visit(const Assignment& assignment) {
     auto value = eval(*assignment.right);
     // env->assign(assignment.name, value);
-    auto it = locals.find(&assignment);
-    if (it != locals.end()) {
-        env->assignAt(it->second, assignment.name, value);
+    auto it = varLocations.find(&assignment);
+    if (it != varLocations.end()) {
+        env->assignAt(it->second.distance, it->second.index, value);
     } else {
         globals.assign(assignment.name, value);
     }
@@ -230,6 +228,10 @@ void Interpreter::visit(const ReturnStmt& returnStmt) {
 }
 
 // store the depth of the expr in the interpreter;
-void Interpreter::resolve(const Expr* expr, int depth) {
-    locals[expr] = depth;
+// void Interpreter::resolve(const Expr* expr, int depth) {
+//     locals[expr] = depth;
+// }
+
+void Interpreter::resolveWithIndex(const Expr* expr, int distance, int index) {
+    varLocations[expr] = {distance, index};
 }
