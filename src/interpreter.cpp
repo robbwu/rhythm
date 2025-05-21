@@ -186,8 +186,9 @@ void Interpreter::visit(const Assignment& assignment) {
 }
 
 void Interpreter::visit(const BlockStmt& block) {
-    auto new_env = new Environment(env); // FIXME: this leaks memory
-    executeBlock(block.statements, new_env);
+    // auto new_env = new Environment(env); // FIXME: this leaks memory
+    Environment new_env(env);
+    executeBlock(block.statements, &new_env);
 }
 
 void Interpreter::visit(const IfStmt& ifStmt) {
@@ -206,14 +207,12 @@ void Interpreter::visit(const WhileStmt& whileStmt) {
 
 // this function owns the new environment
 void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, Environment* new_env) {
-    // auto previous = env;
     EnvGuard guard(*this, new_env);
-    // env = new_env;
+
     // could throw--need to handle env restoration in such case
     for (auto &statement : statements) {
         execute(*statement);
     }
-    // env = previous;
 }
 
 void Interpreter::visit(const FunctionStmt& stmt) {

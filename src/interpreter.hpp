@@ -24,8 +24,9 @@ public:
     }
 
     void assign(const Token& token, const Value& value) {
-        if (values.contains(token.lexeme)) {
-            values[token.lexeme] = value;
+        auto it = values.find(token.lexeme);
+        if (it != values.end()) {
+            it->second = value;
             return;
         }
         if (enclosing) {
@@ -40,8 +41,9 @@ public:
     }
 
     Value get(const Token& name) {
-        if (values.contains(name.lexeme)) {
-            return values[name.lexeme];
+        auto it = values.find(name.lexeme);
+        if (it != values.end()) {
+            return it->second;
         }
         if (enclosing) {
             return enclosing->get(name);

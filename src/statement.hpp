@@ -25,7 +25,6 @@ public:
     virtual void visit(const BlockStmt&) = 0;
     virtual void visit(const IfStmt&) = 0;
     virtual void visit(const WhileStmt&) = 0;
-    // virtual void visit(const ForStmt&) = 0;
     virtual void visit(const FunctionStmt&) = 0;
     virtual void visit(const ReturnStmt&) = 0;
 };
