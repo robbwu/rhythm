@@ -1,0 +1,5 @@
+var a = "hello";
+
+var i = 3.14;
+
+printf("%s ++ %d\n", a, i);

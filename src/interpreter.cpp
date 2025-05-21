@@ -4,26 +4,11 @@
 #include <ostream>
 
 #include "lox_function.hpp"
-
-// ── Native “clock” ──────────────────────────────────────────────────────────────
-class ClockCallable final : public LoxCallable {
-public:
-    // zero arguments
-    int arity() override { return 0; }
-
-    // return milli-seconds since Unix epoch, as a double
-    Value call(Interpreter*, std::vector<Value>) override {
-        using namespace std::chrono;
-        auto now_ms = duration_cast<milliseconds>(
-                          system_clock::now().time_since_epoch()).count();
-        return static_cast<double>(now_ms)/1000.0;
-    }
-
-    std::string toString()  override { return "<native fn>"; }
-};
+#include "native_func.hpp"
 
 Interpreter::Interpreter() {
     globals.define("clock", new ClockCallable());
+    globals.define("printf", new PrintfCallable());
 }
 
 
@@ -123,7 +108,8 @@ void Interpreter::visit(const Call &call) {
         throw RuntimeError(call.paren, "Can only call functions and classes.");
     }
     auto f = std::get<LoxCallable*>(callee);
-    if (f->arity() != arguments.size()) {
+    // arity -1 means variable number of arguments
+    if (f->arity() != -1 && f->arity() != arguments.size()) {
         throw RuntimeError(call.paren,std::format("expected {} arguments but got {}",f->arity(),arguments.size()));
     }
     _result = f->call(this, arguments);

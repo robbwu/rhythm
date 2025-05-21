@@ -80,8 +80,9 @@ public:
     TokenType type;
     std::string lexeme;
     Value literal;
-    int line;
+    int line{};
 
+    Token() = default;
     Token(TokenType _type, std::string _lexeme, Value _literal, int _line)
     : type(_type), lexeme(_lexeme), literal(_literal), line(_line){}
 
