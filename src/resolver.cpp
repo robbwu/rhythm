@@ -148,6 +148,12 @@ void Resolver::visit(const Call& expr) {
         resolve(argument.get());
     }
 }
+
+void Resolver::visit(const ArrayLiteral& alit) {
+    for (auto& argument : alit.elements) {
+        resolve(argument.get());
+    }
+}
 void Resolver::visit(const Grouping& expr) {
     resolve(expr.expression.get());
 }

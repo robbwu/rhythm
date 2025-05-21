@@ -8,10 +8,19 @@
 class Interpreter;
 class LoxCallable;
 
-using Value = std::variant<double, std::string, std::nullptr_t, bool, LoxCallable*>;
+struct Array;
+
+using Value = std::variant<double, std::string, std::nullptr_t, bool, LoxCallable*, std::shared_ptr<Array>>;
+
+struct Array {
+    std::vector<Value> data;
+    explicit Array(const std::vector<Value>& data) : data(data) {}
+};
 
 class LoxCallable {
 public:
+    virtual ~LoxCallable() = default;
+
     virtual Value call(Interpreter *interpreter, std::vector<Value> arguments) = 0;
     virtual int arity() = 0;
     virtual std::string toString() = 0;
@@ -29,7 +38,14 @@ inline std::ostream& operator<<(std::ostream& os, Value const& v) {
         [&](bool     b) { os << (b ? "true" : "false"); },
         [&](std::nullptr_t) { os << "nil"; },
         [&](std::string const& s) { os << s; },
-        [&](LoxCallable* fn) { os << (fn ? fn->toString() : "<null fn>"); }
+        [&](LoxCallable* fn) { os << (fn ? fn->toString() : "<null fn>"); },
+            [&](std::shared_ptr<Array> a) {
+                os << '[';
+                for (auto &f : a->data) {
+                    os << f << ", ";
+                }
+                os << ']';
+            }
     }, v);
     return os;
 }
@@ -37,6 +53,7 @@ inline std::ostream& operator<<(std::ostream& os, Value const& v) {
 enum class TokenType {
     // Single-character tokens.
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
+    LEFT_BRACKET, RIGHT_BRACKET,
     COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
 
     // One or two character tokens.

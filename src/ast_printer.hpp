@@ -1,4 +1,5 @@
 #pragma once
+#include "exception.hpp"
 #include "expr.hpp"
 #include "statement.hpp"
 
@@ -27,6 +28,7 @@ public:
     void visit(const Variable&) override;
     void visit(const Assignment&) override;
     void visit(const Call&) override;
+    void visit(const ArrayLiteral&) override;
 
     void visit(const ExpressionStmt&) override;
     void visit(const PrintStmt&) override;

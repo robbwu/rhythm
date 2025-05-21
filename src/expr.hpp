@@ -11,6 +11,7 @@ class Unary;
 class Variable;
 class Assignment;
 class Call;
+class ArrayLiteral;
 
 class ExprVisitor {
 public:
@@ -24,6 +25,7 @@ public:
     virtual void visit(const Variable&) = 0;
     virtual void visit(const Assignment&) = 0;
     virtual void visit(const Call&) = 0;
+    virtual void visit(const ArrayLiteral&) = 0;
 };
 
 class Expr {
@@ -167,6 +169,23 @@ public:
     static std::unique_ptr<Call> create(std::unique_ptr<Expr> _callee, Token _paren, std::vector<std::unique_ptr<Expr>> _arguments) {
         return std::make_unique<Call>(std::move(_callee), std::move(_paren), std::move(_arguments));
     }
+    void accept(ExprVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+
+class ArrayLiteral : public Expr {
+public:
+    std::vector<std::unique_ptr<Expr>> elements;
+
+    explicit ArrayLiteral(std::vector<std::unique_ptr<Expr>> elements)
+        : elements(std::move(elements)) {}
+
+    static std::unique_ptr<ArrayLiteral> create(
+        std::vector<std::unique_ptr<Expr>> elements) {
+        return std::make_unique<ArrayLiteral>(std::move(elements));
+    }
+
     void accept(ExprVisitor& visitor) const override {
         visitor.visit(*this);
     }

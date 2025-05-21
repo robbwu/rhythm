@@ -49,9 +49,17 @@ void AstPrinter::visit(const Literal& lit) {
         std::cout <<  "unknown";
     }
 }
-
 void AstPrinter::visit(const Unary& unary) {
     parenthesize(unary.op.lexeme, {unary.right.get()});
+}
+
+void AstPrinter::visit(const ArrayLiteral& alit) {
+    std::cout << "[";
+    for (const auto& arg : alit.elements) {
+        arg->accept(*this);
+        std::cout << ", ";
+    }
+    std::cout << "]";
 }
 
 void AstPrinter::visit(const Variable& variable) {

@@ -115,6 +115,15 @@ void Interpreter::visit(const Call &call) {
     _result = f->call(this, arguments);
 }
 
+void Interpreter::visit(const ArrayLiteral &alit) {
+    std::vector<Value> values;
+    values.reserve(alit.elements.size());
+    for (auto &expr : alit.elements) {
+        values.push_back(eval(*expr));
+    }
+    _result =  std::make_shared<Array>(values);
+}
+
 
 bool  Interpreter::isTruthy(const Value& value) {
     if (std::holds_alternative<bool>(value)) {

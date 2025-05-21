@@ -122,6 +122,7 @@ public:
     void visit(const Variable &variable) override;
     void visit(const Assignment &assignment) override;
     void visit(const Call &call) override;
+    void visit(const ArrayLiteral&) override;
 
     void visit(const ExpressionStmt& exprStmt) override;
     void visit(const PrintStmt& printStmt) override;

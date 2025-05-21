@@ -165,8 +165,25 @@ private:
             return Grouping::create(std::move(expr));
         }
 
+        if (match({TokenType::LEFT_BRACKET})) { // array literal
+            return arrayLiteral();
+        }
+
         error(peek(), "expect expression");
         return nullptr;
+    }
+
+    std::unique_ptr<Expr> arrayLiteral() {
+        std::vector<std::unique_ptr<Expr>> elements;
+
+        if (!check(TokenType::RIGHT_BRACKET)) {
+            do {
+                elements.push_back(expression());
+            } while (match({TokenType::COMMA}));
+        }
+
+        consume(TokenType::RIGHT_BRACKET, "Expect ']' after array elements.");
+        return ArrayLiteral::create(std::move(elements));
     }
 
     // statements
@@ -322,6 +339,7 @@ private:
     Token consume(TokenType type, std::string msg) {
         if (check(type))  return  advance();
         error(peek(), msg);
+        return {};
     }
     bool match(const std::vector<TokenType>& types) {
         for (const auto type : types) {
