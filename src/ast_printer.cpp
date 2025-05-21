@@ -96,7 +96,6 @@ void AstPrinter::visit(const BlockStmt& blockStmt) {
     std::cout << get_indent() << "BLOCK:" << blockStmt.statements.size() << "\n";
     IndentGuard guard(*this);
     for (const auto& stmt : blockStmt.statements) {
-        std::cout << "  ";
         stmt->accept(*this);
     }
 }
