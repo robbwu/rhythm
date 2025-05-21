@@ -1,0 +1,9 @@
+
+fun hanoi(n, src, dst, tmp) {
+    if (n==0) return;
+    hanoi(n-1, src, tmp, dst);
+    printf("disk %d: peg %d -> %d\n", n, src, dst);
+    hanoi(n-1, tmp, dst, src);
+}
+
+hanoi(3, 0, 2, 1);
