@@ -5,10 +5,15 @@
 
 #include "lox_function.hpp"
 #include "native_func.hpp"
-
+#include "native_func_array.hpp"
 Interpreter::Interpreter() {
     globals.define("clock", new ClockCallable());
     globals.define("printf", new PrintfCallable());
+    globals.define("len", new LenCallable());
+    globals.define("at", new AtCallable());
+    globals.define("set", new SetCallable());
+    globals.define("push", new PushCallable());
+
 }
 
 
