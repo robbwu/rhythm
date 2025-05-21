@@ -77,43 +77,52 @@ void AstPrinter::visit(const Call& call) {
 
 // statements
 void AstPrinter::visit(const ExpressionStmt& stmt) {
+    std::cout << get_indent();
     print(*stmt.expr);
     std::cout << std::endl;
 };
 void AstPrinter::visit(const PrintStmt& stmt) {
+    std::cout << get_indent();
     parenthesize("print", {stmt.expr.get()});
     std::cout << std::endl;
 };
 void AstPrinter::visit(const VarStmt& varStmt) {
+    std::cout << get_indent();
     parenthesize(varStmt.name.lexeme, {varStmt.initializer.get()});
     std::cout << std::endl;
 };
 
 void AstPrinter::visit(const BlockStmt& blockStmt) {
-    std::cout << "BLOCK:" << blockStmt.statements.size() << "\n";
+    std::cout << get_indent() << "BLOCK:" << blockStmt.statements.size() << "\n";
+    IndentGuard guard(*this);
     for (const auto& stmt : blockStmt.statements) {
         std::cout << "  ";
         stmt->accept(*this);
     }
 }
 void AstPrinter::visit(const IfStmt& ifStmt) {
-    std::cout << "IF ";
+    std::cout << get_indent() << "IF ";
     ifStmt.condition->accept(*this);
     std::cout << "\n";
-    std::cout << "  THEN ";
-    ifStmt.thenBlock->accept(*this);
-    std::cout << "\n";
+    {
+        IndentGuard guard(*this);
+        std::cout << get_indent() << "THEN ";
+        ifStmt.thenBlock->accept(*this);
+        std::cout << "\n";
+    }
     if (ifStmt.elseBlock) {
-        std::cout << "  ELSE ";
+        IndentGuard guard(*this);
+        std::cout << get_indent() << "ELSE ";
         ifStmt.elseBlock->accept(*this);
         std::cout << "\n";
     }
 }
 
 void AstPrinter::visit(const WhileStmt& whileStmt) {
-    std::cout << "WHILE ";
+    std::cout << get_indent() << "WHILE ";
     whileStmt.condition->accept(*this);
     std::cout << "\n";
+    IndentGuard guard(*this);
     whileStmt.body->accept(*this);
     std::cout << "\n";
 }
@@ -124,6 +133,7 @@ void AstPrinter::visit(const FunctionStmt& funStmt) {
 }
 
 void AstPrinter::visit(const ReturnStmt& returnStmt) {
+    std::cout << get_indent();
     std::cout << "RETURN ";
     returnStmt.value->accept(*this);
     std::cout << std::endl;
