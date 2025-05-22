@@ -208,6 +208,35 @@ void Interpreter::visit(const Assignment& assignment) {
     _result = value; // Why? chain of assignment?
 }
 
+void Interpreter::visit(const SubscriptAssignment& assignment) {
+    Value object = eval(*assignment.object);
+    Value index = eval(*assignment.index);
+    Value value = eval(*assignment.value);
+
+    if (!std::holds_alternative<std::shared_ptr<Array>>(object)) {
+        throw RuntimeError(assignment.bracket, "Only arrays can be subscripted.");
+    }
+
+    if (!std::holds_alternative<double>(index)) {
+        throw RuntimeError(assignment.bracket, "Index must be a number.");
+    }
+
+    auto array = std::get<std::shared_ptr<Array>>(object);
+    int idx = static_cast<int>(std::get<double>(index));
+
+    if (idx < 0 || idx >= array->data.size()) {
+        throw RuntimeError(assignment.bracket,
+            "Index out of bounds: " + std::to_string(idx) +
+            " (size: " + std::to_string(array->data.size()) + ")");
+    }
+
+    // Assign the new value
+    array->data[idx] = value;
+
+    // Assignment expressions evaluate to the assigned value
+    _result = value;
+}
+
 void Interpreter::visit(const BlockStmt& block) {
     // auto new_env = new Environment(env); // FIXME: this leaks memory
     Environment new_env(env);

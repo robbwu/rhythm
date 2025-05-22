@@ -85,6 +85,13 @@ void Resolver::visit(const Assignment& assignment) {
     resolveLocal(assignment, assignment.name);
 }
 
+void Resolver::visit(const SubscriptAssignment& assignment) {
+    resolve(assignment.object.get());
+    resolve(assignment.index.get());
+    resolve(assignment.value.get());
+}
+
+
 void Resolver::visit(const FunctionStmt& stmt) {
     declare(stmt.name);
     define(stmt.name);

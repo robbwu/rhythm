@@ -117,7 +117,8 @@ public:
     void visit(const Literal& lit) override;
     void visit(const Unary& unary) override;
     void visit(const Variable &variable) override;
-    void visit(const Assignment &assignment) override;
+    void visit(const Assignment &) override;
+    void visit(const SubscriptAssignment &) override;
     void visit(const Call &call) override;
     void visit(const ArrayLiteral&) override;
     void visit(const Subscript&) override;

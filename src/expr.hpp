@@ -10,6 +10,7 @@ class Literal;
 class Unary;
 class Variable;
 class Assignment;
+class SubscriptAssignment;
 class Call;
 class ArrayLiteral;
 class Subscript;
@@ -28,6 +29,7 @@ public:
     virtual void visit(const Call&) = 0;
     virtual void visit(const ArrayLiteral&) = 0;
     virtual void visit(const Subscript&) = 0;
+    virtual void visit(const SubscriptAssignment&) = 0;
 };
 
 class Expr {
@@ -152,6 +154,30 @@ public:
     Assignment(const Token& _name, std::unique_ptr<Expr> _right): name(_name), right(std::move(_right)) {}
     static std::unique_ptr<Assignment> create(const Token& _name, std::unique_ptr<Expr> _right) {
         return std::make_unique<Assignment>(_name, std::move(_right));
+    }
+
+    void accept(ExprVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+
+class SubscriptAssignment : public Expr {
+public:
+    std::unique_ptr<Expr> object;
+    std::unique_ptr<Expr> index;
+    std::unique_ptr<Expr> value;
+    Token bracket;  // for error reporting
+
+    SubscriptAssignment(std::unique_ptr<Expr> object, std::unique_ptr<Expr> index,
+                        std::unique_ptr<Expr> value, Token bracket)
+        : object(std::move(object)), index(std::move(index)),
+          value(std::move(value)), bracket(bracket) {}
+
+    static std::unique_ptr<SubscriptAssignment> create(
+        std::unique_ptr<Expr> object, std::unique_ptr<Expr> index,
+        std::unique_ptr<Expr> value, Token bracket) {
+        return std::make_unique<SubscriptAssignment>(
+            std::move(object), std::move(index), std::move(value), bracket);
     }
 
     void accept(ExprVisitor& visitor) const override {

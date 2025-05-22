@@ -42,6 +42,7 @@ public:
     void visit(const VarStmt&) override;
     void visit(const Variable&) override;
     void visit(const Assignment&) override;
+    void visit(const SubscriptAssignment&) override;
     void visit(const Binary&) override;
     void visit(const Call&) override;
     void visit(const ArrayLiteral&) override;

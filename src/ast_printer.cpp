@@ -75,7 +75,17 @@ void AstPrinter::visit(const Variable& variable) {
 }
 
 void AstPrinter::visit(const Assignment& assignment) {
+    std::cout << assignment.name.lexeme << " = ";
+    assignment.right->accept(*this);
+}
 
+void AstPrinter::visit(const SubscriptAssignment& expr) {
+    expr.object->accept(*this);
+    std::cout << "[ ";
+    expr.index->accept(*this);
+    std::cout << "]";
+    std:: cout << " = ";
+    expr.value->accept(*this);
 }
 
 void AstPrinter::visit(const Call& call) {

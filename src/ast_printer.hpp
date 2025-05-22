@@ -30,6 +30,8 @@ public:
     void visit(const Call&) override;
     void visit(const ArrayLiteral&) override;
     void visit(const Subscript&) override;
+    void visit(const SubscriptAssignment&) override;
+
 
     void visit(const ExpressionStmt&) override;
     void visit(const PrintStmt&) override;

@@ -40,6 +40,13 @@ private:
                 Token name = var->name;
                 return Assignment::create(name, std::move(value));
             }
+            if (auto subscript = dynamic_cast<Subscript *>(expr.get())) {
+                return SubscriptAssignment::create(
+                    std::move(subscript->object),
+                    std::move(subscript->index),
+                    std::move(value),
+                    subscript->bracket);
+            }
             error(equals, "Invalid assignment target");
         }
         return expr;
