@@ -13,6 +13,8 @@ Interpreter::Interpreter() {
     globals.define("at", new AtCallable());
     globals.define("set", new SetCallable());
     globals.define("push", new PushCallable());
+    globals.define("readline", new ReadlineCallable());
+    globals.define("split", new SplitCallable());
 
 }
 

@@ -3,8 +3,44 @@
 #include <iostream>
 #include <iomanip>                 // for std::fixed
 #include <variant>
+#include <ranges>
+#include <string_view>
 
-// ── Native “clock” ──────────────────────────────────────────────────────────────
+class ReadlineCallable final : public LoxCallable {
+public:
+    // zero arguments
+    int arity() override { return 0; }
+
+    // return milli-seconds since Unix epoch, as a double
+    Value call(Interpreter*, std::vector<Value>) override {
+        std::string line;
+        std::getline(std::cin, line);
+        return line;
+    }
+
+    std::string toString()  override { return "<native fn>"; }
+};
+
+class SplitCallable final : public LoxCallable {
+public:
+    // zero arguments
+    int arity() override { return 2; }
+
+    // return milli-seconds since Unix epoch, as a double
+    Value call(Interpreter* interp, std::vector<Value> args) override {
+        std::vector<Value> results;
+        auto &str = std::get<std::string>(args[0]);
+        auto &delim = std::get<std::string>(args[1]);
+        for (const auto word : std::views::split(str, delim) ){
+            results.emplace_back(std::string(std::ranges::begin(word), std::ranges::end(word)));
+        }
+        return std::make_shared<Array>(results);
+    }
+
+    std::string toString()  override { return "<native fn>"; }
+};
+
+
 class ClockCallable final : public LoxCallable {
 public:
     // zero arguments

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(cclox VERSION 1.0.0 LANGUAGES CXX)
 
-# Set C++ standard to C++20
-set(CMAKE_CXX_STANDARD 20)
+# Set C++ standard to C++23
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

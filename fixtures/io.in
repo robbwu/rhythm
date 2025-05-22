@@ -1,0 +1,4 @@
+var line = readline();
+printf("you just read %s\n", line);
+var list = split(line, " ");
+print list;
