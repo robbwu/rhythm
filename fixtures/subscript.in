@@ -1,0 +1,5 @@
+var a = [1,2, 3];
+
+print a[1];
+// print a[1.5]; // this would throw exception "index must be an integer"
+// print a[3]; // this would throw exception "out of bound"

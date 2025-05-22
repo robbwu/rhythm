@@ -135,6 +135,25 @@ void Interpreter::visit(const ArrayLiteral &alit) {
     _result =  std::make_shared<Array>(values);
 }
 
+void Interpreter::visit(const Subscript& sub) {
+    auto obj = eval(*sub.object);
+    auto index = eval(*sub.index);
+    if (!std::holds_alternative<std::shared_ptr<Array>>(obj)) {
+        throw RuntimeError(sub.bracket, "subscript must be of an array");
+    }
+    if (!std::holds_alternative<double>(index)) {
+        throw RuntimeError(sub.bracket, "index must be a number");
+    }
+    auto ind = std::get<double>(index);
+    if (!is_integer(ind)) {
+        throw RuntimeError(sub.bracket, "index must be an integer");
+    }
+    auto& array = std::get<std::shared_ptr<Array>>(obj);
+
+    _result =  array->data.at((int)ind);
+}
+
+
 
 bool  Interpreter::isTruthy(const Value& value) {
     if (std::holds_alternative<bool>(value)) {

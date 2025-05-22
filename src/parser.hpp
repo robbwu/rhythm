@@ -129,6 +129,11 @@ private:
         while (true) {
             if (match({TokenType::LEFT_PAREN})) {
                 expr = finishCall(std::move(expr));
+            } else if (match({TokenType::LEFT_BRACKET})) {
+                Token bracket = previous();
+                auto index = expression();
+                consume(TokenType::RIGHT_BRACKET, "Expect ']' after index.");
+                expr = Subscript::create(std::move(expr), std::move(index), bracket);
             } else {
                 break;
             }

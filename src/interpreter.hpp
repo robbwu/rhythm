@@ -116,13 +116,11 @@ public:
     void visit(const Grouping& group) override;
     void visit(const Literal& lit) override;
     void visit(const Unary& unary) override;
-
-    Value lookUpVariable(const Token & name, const Variable * variable);
-
     void visit(const Variable &variable) override;
     void visit(const Assignment &assignment) override;
     void visit(const Call &call) override;
     void visit(const ArrayLiteral&) override;
+    void visit(const Subscript&) override;
 
     void visit(const ExpressionStmt& exprStmt) override;
     void visit(const PrintStmt& printStmt) override;
@@ -133,12 +131,11 @@ public:
     void visit(const FunctionStmt&) override;
     void visit(const ReturnStmt& returnStmt) override;
 
+    Value lookUpVariable(const Token & name, const Variable * variable);
     void executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts,  Environment*);
 
     // void resolve(const Expr*, int);
     void resolveWithIndex(const Expr*, int distance, int index);
-
-
 };
 
 // Interpreter.hpp

@@ -62,12 +62,20 @@ void AstPrinter::visit(const ArrayLiteral& alit) {
     std::cout << "]";
 }
 
+void AstPrinter::visit(const Subscript& sub) {
+    // std::cout << "TODO subscript" << std::endl;
+    sub.object->accept(*this);
+    std::cout << "[ ";
+    sub.index->accept(*this);
+    std::cout << "]";
+}
+
 void AstPrinter::visit(const Variable& variable) {
     std::cout << "VAR:" << variable.name.lexeme;
 }
 
 void AstPrinter::visit(const Assignment& assignment) {
-    parenthesize(assignment.name.lexeme, {assignment.right.get()});
+
 }
 
 void AstPrinter::visit(const Call& call) {

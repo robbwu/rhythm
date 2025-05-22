@@ -137,3 +137,12 @@ inline bool is_truthy(const Value& value) {
     }
     return true;
 }
+
+inline bool is_integer(double x) {
+    if (!std::isfinite(x))       // exclude NaN and ±∞
+        return false;
+    // truncate toward zero, then compare exactly
+    return x == std::trunc(x);
+    // —or—
+    // return std::fmod(x, 1.0) == 0.0;
+}

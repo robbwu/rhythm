@@ -45,6 +45,7 @@ public:
     void visit(const Binary&) override;
     void visit(const Call&) override;
     void visit(const ArrayLiteral&) override;
+    void visit(const Subscript&) override;
     void visit(const Grouping&) override;
     void visit(const Literal&) override;
     void visit(const Logical&) override;

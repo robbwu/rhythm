@@ -149,6 +149,12 @@ void Resolver::visit(const Call& expr) {
     }
 }
 
+void Resolver::visit(const Subscript& expr) {
+    resolve(expr.object.get());
+    resolve(expr.index.get());
+}
+
+
 void Resolver::visit(const ArrayLiteral& alit) {
     for (auto& argument : alit.elements) {
         resolve(argument.get());

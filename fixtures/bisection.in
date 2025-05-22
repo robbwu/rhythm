@@ -6,19 +6,19 @@ printf("size of a is %d\n", len(a));
 fun bisect(a, x, i0, i1) {
     if (i0 == i1) return -1; // -1 means not found
     if (i0 + 1 == i1) {
-       if (at(a, i0) == x) return i0;
+       if (a[i0] == x) return i0;
        return -1;
     }
     var m = floor((i0+i1) / 2);
-    //if (at(a, m) == x) return m;
-    if (at(a, m) <= x)
+    //if (a[m] == x) return m;
+    if (a[m] <= x)
         return bisect(a, x, m, i1);
     return bisect(a, x, i0, m);
 }
 var x = 10;
 var i = bisect(a, x, 0, len(a));
-printf("i=%d, a[i]=%d, x=%d\n", i, at(a, i), x);
-assert( at(a, i) == x);
+printf("i=%d, a[i]=%d, x=%d\n", i, a[i], x);
+assert( a[i] == x);
 
 var x = 9;
 var i = bisect(a, x, 0, len(a));
