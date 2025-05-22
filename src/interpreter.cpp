@@ -6,6 +6,8 @@
 #include "lox_function.hpp"
 #include "native_func.hpp"
 #include "native_func_array.hpp"
+#include "native_math.hpp"
+
 Interpreter::Interpreter() {
     globals.define("clock", new ClockCallable());
     globals.define("printf", new PrintfCallable());
@@ -15,7 +17,8 @@ Interpreter::Interpreter() {
     globals.define("push", new PushCallable());
     globals.define("readline", new ReadlineCallable());
     globals.define("split", new SplitCallable());
-
+    globals.define("floor", new FloorCallable());
+    globals.define("ceil", new CeilCallable());
 }
 
 
