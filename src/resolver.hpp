@@ -52,6 +52,8 @@ public:
     void visit(const Literal&) override;
     void visit(const Logical&) override;
     void visit(const Unary&) override;
+    void visit(const PropertyAccess&) override;
+
 
 
     void visit(const BlockStmt&) override;

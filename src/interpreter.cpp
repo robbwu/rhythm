@@ -20,7 +20,6 @@ Interpreter::Interpreter() {
     globals.define("floor", new FloorCallable());
     globals.define("ceil", new CeilCallable());
     globals.define("assert", new AssertCallable());
-
     globals.define("for_each", new ForEachCallable());
 }
 
@@ -230,6 +229,25 @@ void Interpreter::visit(const Assignment& assignment) {
         globals.assign(assignment.name, value);
     }
     _result = value; // Why? chain of assignment?
+}
+
+void Interpreter::visit(const PropertyAccess& prop) {
+    auto obj = eval(*prop.object);
+
+    // Convert property access to subscript access with string key
+    if (std::holds_alternative<std::shared_ptr<Map>>(obj)) {
+        auto map = std::get<std::shared_ptr<Map>>(obj);
+        Value key = prop.name.lexeme;  // Use the property name as string key
+        auto it = map->data.find(key);
+        if (it == map->data.end()) {
+            _result = nullptr;
+        } else {
+            _result = it->second;
+        }
+        return;
+    }
+
+    throw RuntimeError(prop.name, "Only maps can have properties accessed with dot notation");
 }
 
 void Interpreter::visit(const SubscriptAssignment& assignment) {

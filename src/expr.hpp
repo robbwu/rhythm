@@ -32,7 +32,7 @@ public:
     virtual void visit(const ArrayLiteral&) = 0;
     virtual void visit(const MapLiteral&) = 0;
     virtual void visit(const Subscript&) = 0;
-    // virtual void visit(const PropertyAccess&) = 0;
+    virtual void visit(const PropertyAccess&) = 0;
     virtual void visit(const SubscriptAssignment&) = 0;
 };
 
@@ -260,20 +260,21 @@ public:
     }
 };
 
-// class PropertyAccess : public Expr {
-// public:
-//     std::unique_ptr<Expr> object;
-//     Token name;
-//
-//     PropertyAccess(std::unique_ptr<Expr> object, Token name)
-//         : object(std::move(object)), name(name) {}
-//
-//     static std::unique_ptr<PropertyAccess> create(
-//         std::unique_ptr<Expr> object, Token name) {
-//         return std::make_unique<PropertyAccess>(std::move(object), name);
-//     }
-//
-//     void accept(ExprVisitor& visitor) const override {
-//         visitor.visit(*this);
-//     }
-// };
+class PropertyAccess : public Expr {
+public:
+    std::unique_ptr<Expr> object;
+    Token name;
+
+    PropertyAccess(std::unique_ptr<Expr> object, Token name)
+        : object(std::move(object)), name(name) {}
+
+    static std::unique_ptr<PropertyAccess> create(
+        std::unique_ptr<Expr> object, Token name) {
+        return std::make_unique<PropertyAccess>(std::move(object), name);
+    }
+
+    void accept(ExprVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+

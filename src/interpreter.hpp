@@ -124,6 +124,8 @@ public:
     void visit(const ArrayLiteral&) override;
     void visit(const MapLiteral&) override;
     void visit(const Subscript&) override;
+    void visit(const PropertyAccess&) override;
+
 
     void visit(const ExpressionStmt& exprStmt) override;
     void visit(const PrintStmt& printStmt) override;

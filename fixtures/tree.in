@@ -1,0 +1,40 @@
+// Binary Search Tree with in-order traversal
+// Node represented as {"value": val, "left": left_node, "right": right_node}
+fun insert(root, value) {
+    if (root == nil) return {"value": value, "left": nil, "right": nil};
+    if (value < root.value)
+        root.left = insert(root.left, value);
+    else
+        root.right = insert(root.right, value);
+    return root;
+}
+
+fun print_tree(node, depth) {
+    if (node == nil) return;
+
+    print_tree(node.right, depth + 1);  // right subtree (upper part)
+
+    // print current node with proper indentation
+    var indent = "";
+    for (var i = 0; i < depth; i = i + 1) {
+        indent = indent + "   ";  // 4 spaces per level
+    }
+    printf("%s%d\n", indent, node.value);
+
+    print_tree(node.left, depth + 1);   // left subtree (lower part)
+}
+
+var tree = nil;
+var values = [5, 3, 7, 1, 9, 4, 6, 2, 8];
+for (var i = 0; i < len(values); i = i + 1) {
+    tree = insert(tree, values[i]);
+}
+
+print "Binary Search Tree (rotated 90° clockwise):";
+print_tree(tree, 0);
+
+print "experimenting x.y syntax";
+
+print tree.left.left;
+tree.left.left = {"value":100};
+print_tree(tree, 0);

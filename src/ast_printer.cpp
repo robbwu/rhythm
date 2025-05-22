@@ -81,6 +81,11 @@ void AstPrinter::visit(const Subscript& sub) {
     std::cout << "]";
 }
 
+void AstPrinter::visit(const PropertyAccess& prop) {
+    prop.object->accept(*this);
+    std::cout << "." << prop.name.lexeme;
+}
+
 void AstPrinter::visit(const Variable& variable) {
     std::cout << "VAR:" << variable.name.lexeme;
 }

@@ -80,6 +80,11 @@ void Resolver::resolveLocal(const Expr& expr, const Token& name) {
     }
 }
 
+void Resolver::visit(const PropertyAccess& prop) {
+    resolve(prop.object.get());
+    // Property names are compile-time constants, no need to resolve them
+}
+
 void Resolver::visit(const Assignment& assignment) {
     resolve(assignment.right.get());
     resolveLocal(assignment, assignment.name);

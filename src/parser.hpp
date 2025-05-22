@@ -47,6 +47,15 @@ private:
                     std::move(value),
                     subscript->bracket);
             }
+            if (auto prop = dynamic_cast<PropertyAccess*>(expr.get())) {
+                // Convert property assignment to subscript assignment
+                auto stringKey = Literal::create(Value(prop->name.lexeme));
+                return SubscriptAssignment::create(
+                    std::move(prop->object),
+                    std::move(stringKey),
+                    std::move(value),
+                    prop->name);  // Use property name token for error reporting
+            }
             error(equals, "Invalid assignment target");
         }
         return expr;
@@ -141,7 +150,10 @@ private:
                 auto index = expression();
                 consume(TokenType::RIGHT_BRACKET, "Expect ']' after index.");
                 expr = Subscript::create(std::move(expr), std::move(index), bracket);
-            } else {
+            } else if (match({TokenType::DOT})) {
+                Token name = consume(TokenType::IDENTIFIER, "Expect property name after '.'.");
+                expr = PropertyAccess::create(std::move(expr), name);
+            }else {
                 break;
             }
         }
