@@ -8,15 +8,16 @@
 #include "scanner.hpp"
 #include "statement.hpp"
 #include "exception.hpp"
+#include "robin_hood.h"
 
 class Environment {
 private:
     Environment *enclosing = nullptr;
     // std::unordered_map<std::string, Value> values;
     std::vector<Value> values; // Flat array for direct indexing
-    std::unordered_map<std::string, int> nameToIndex; // Maps variable names to indices
+    robin_hood::unordered_flat_map<std::string, int> nameToIndex; // Maps variable names to indices
     // Keep map only for globals; only active when enclosing==NULL
-    std::unordered_map<std::string, Value> globals;
+    robin_hood::unordered_flat_map<std::string, Value> globals;
 
 public:
 
