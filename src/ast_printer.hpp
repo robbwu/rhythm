@@ -29,8 +29,10 @@ public:
     void visit(const Assignment&) override;
     void visit(const Call&) override;
     void visit(const ArrayLiteral&) override;
+    void visit(const MapLiteral&) override;
     void visit(const Subscript&) override;
     void visit(const SubscriptAssignment&) override;
+    // void visit(const PropertyAccess&) override;
 
 
     void visit(const ExpressionStmt&) override;

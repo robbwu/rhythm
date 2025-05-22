@@ -55,7 +55,7 @@ void Scanner::number() {
 }
 
 void Scanner::identifier() {
-    while (isalnum(peek())) advance();
+    while (isalnum(peek()) || peek() == '_') advance();
     auto text = source.substr(start, current-start);
     auto it = keywords.find(text);
     auto type = TokenType::IDENTIFIER;
@@ -76,6 +76,7 @@ void Scanner::scanToken() {
         case '[': addToken(TokenType::LEFT_BRACKET); break;
         case ']': addToken(TokenType::RIGHT_BRACKET); break;
         case ',': addToken(TokenType::COMMA); break;
+        case ':': addToken(TokenType::COLON); break;
         case '.': addToken(TokenType::DOT); break;
         case '-': addToken(TokenType::MINUS); break;
         case '+': addToken(TokenType::PLUS); break;
@@ -105,7 +106,7 @@ void Scanner::scanToken() {
         default:
             if (isdigit(c)) {
                 number();
-            } else if (isalpha(c)) {
+            } else if (isalpha(c) || c == '_') {
                 identifier();
             } else {
                 error(line, std::format("Unexpected character: {}", c));

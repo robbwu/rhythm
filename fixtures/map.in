@@ -1,0 +1,27 @@
+var s = "hello";
+
+var i = 42;
+
+var m = { i: s, "hey": "jude" };
+
+print m[42];
+print m["hey"];
+print m[m];
+
+m[i] = 7;
+var a = [1,2,3,4];
+m[false] = a;
+print m;
+
+// to remove a k-v pair, assign nil as value
+m[i] = nil;
+print m;
+printf("size of map m is %d\n", len(m));
+
+fun lamb(k, v) {
+    printf("key is %s, value is %s\n", k, v);
+}
+
+fun xx_yy(x) { print x; }
+
+for_each(m, lamb);

@@ -16,7 +16,13 @@ public:
             throw RuntimeError({}, "len() needs a single argument");
         }
         Value &x = arguments[0];
-        return (double) std::get<std::shared_ptr<Array>>(x)->data.size();
+        if (std::holds_alternative<std::shared_ptr<Array>>(x)) {
+            return (double) std::get<std::shared_ptr<Array>>(x)->data.size();
+        }
+        if (std::holds_alternative<std::shared_ptr<Map>>(x)) {
+            return (double) std::get<std::shared_ptr<Map>>(x)->data.size();
+        }
+        throw RuntimeError({}, "len() argument must be array or map");
     }
 
     std::string toString()  override { return "<native fn>"; }
@@ -79,5 +85,33 @@ class PushCallable final : public LoxCallable {
         return v;
     }
 
+    std::string toString()  override { return "<native fn>"; }
+};
+
+class ForEachCallable final : public LoxCallable {
+public:
+    int arity() override { return 2; }
+
+    Value call(Interpreter* interp, std::vector<Value> arguments) override {
+        if (arguments.size() != 2) {
+            throw RuntimeError({}, "for_each(m, f) needs two argument");
+        }
+        if (!std::holds_alternative<std::shared_ptr<Map>>(arguments[0])) {
+            throw RuntimeError({}, "for_each(m, f), m must be an map");
+        }
+        auto m = std::get<std::shared_ptr<Map>>(arguments[0]);
+        if (!std::holds_alternative<LoxCallable*>(arguments[1])) {
+            throw RuntimeError({}, "for_each(m, f), f must be a function");
+        }
+        auto f = std::get<LoxCallable*>(arguments[1]);
+        if (f->arity() != 2) {
+            throw RuntimeError({}, "for_each(m, f), f must take 2 arguments (k,v)");
+        }
+
+        for (auto &it : m->data) {
+            f->call(interp, {it.first, it.second});
+        }
+        return nullptr;
+    }
     std::string toString()  override { return "<native fn>"; }
 };

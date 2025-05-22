@@ -180,6 +180,9 @@ private:
         if (match({TokenType::LEFT_BRACKET})) { // array literal
             return arrayLiteral();
         }
+        if (match({TokenType::LEFT_BRACE})) { // map literal
+            return mapLiteral();
+        }
 
         error(peek(), "expect expression");
         return nullptr;
@@ -196,6 +199,23 @@ private:
 
         consume(TokenType::RIGHT_BRACKET, "Expect ']' after array elements.");
         return ArrayLiteral::create(std::move(elements));
+    }
+
+    std::unique_ptr<Expr> mapLiteral() {
+        std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> pairs;
+
+        if (!check(TokenType::RIGHT_BRACE)) {
+            do {
+                // Parse key: value pairs
+                auto key = expression();
+                consume(TokenType::COLON, "Expect ':' after map key.");
+                auto value = expression();
+                pairs.emplace_back(std::move(key), std::move(value));
+            } while (match({TokenType::COMMA}));
+        }
+
+        consume(TokenType::RIGHT_BRACE, "Expect '}' after map elements.");
+        return MapLiteral::create(std::move(pairs));
     }
 
     // statements

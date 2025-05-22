@@ -62,6 +62,17 @@ void AstPrinter::visit(const ArrayLiteral& alit) {
     std::cout << "]";
 }
 
+void AstPrinter::visit(const MapLiteral& mlit) {
+    std::cout << "{";
+    for (const auto& pair : mlit.pairs) {
+        pair.first->accept(*this);
+        std::cout << ": ";
+        pair.second->accept(*this);
+        std::cout << ", ";
+    }
+    std::cout << "}";
+}
+
 void AstPrinter::visit(const Subscript& sub) {
     // std::cout << "TODO subscript" << std::endl;
     sub.object->accept(*this);

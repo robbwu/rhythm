@@ -9,12 +9,18 @@ class Interpreter;
 class LoxCallable;
 
 struct Array;
+struct Map;
 
-using Value = std::variant<double, std::string, std::nullptr_t, bool, LoxCallable*, std::shared_ptr<Array>>;
+using Value = std::variant<double, std::string, std::nullptr_t, bool, LoxCallable*, std::shared_ptr<Array>, std::shared_ptr<Map>>;
 
 struct Array {
     std::vector<Value> data;
     explicit Array(const std::vector<Value>& data) : data(data) {}
+};
+
+struct Map {
+    std::unordered_map<Value, Value> data;
+    explicit Map(const std::unordered_map<Value, Value>& data) : data(data) {}
 };
 
 class LoxCallable {
@@ -39,13 +45,20 @@ inline std::ostream& operator<<(std::ostream& os, Value const& v) {
         [&](std::nullptr_t) { os << "nil"; },
         [&](std::string const& s) { os << s; },
         [&](LoxCallable* fn) { os << (fn ? fn->toString() : "<null fn>"); },
-            [&](std::shared_ptr<Array> a) {
-                os << '[';
-                for (auto &f : a->data) {
-                    os << f << ", ";
-                }
-                os << ']';
+        [&](std::shared_ptr<Array> a) {
+            os << '[';
+            for (auto &f : a->data) {
+                os << f << ", ";
             }
+            os << ']';
+        },
+        [&](std::shared_ptr<Map> map) {
+            os << '{';
+            for (auto &f : map->data) {
+                os << f.first << ": " << f.second << ", ";
+            }
+            os << '}';
+        }
     }, v);
     return os;
 }
@@ -54,7 +67,7 @@ enum class TokenType {
     // Single-character tokens.
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
     LEFT_BRACKET, RIGHT_BRACKET,
-    COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
+    COMMA, COLON, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
 
     // One or two character tokens.
     BANG, BANG_EQUAL,

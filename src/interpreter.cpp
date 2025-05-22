@@ -20,6 +20,8 @@ Interpreter::Interpreter() {
     globals.define("floor", new FloorCallable());
     globals.define("ceil", new CeilCallable());
     globals.define("assert", new AssertCallable());
+
+    globals.define("for_each", new ForEachCallable());
 }
 
 
@@ -135,22 +137,44 @@ void Interpreter::visit(const ArrayLiteral &alit) {
     _result =  std::make_shared<Array>(values);
 }
 
+void Interpreter::visit(const MapLiteral &mlit) {
+    std::unordered_map<Value, Value> values;
+    values.reserve(mlit.pairs.size());
+    for (auto &pairs : mlit.pairs) {
+        Value key = eval(*pairs.first);
+        Value val = eval(*pairs.second);
+        if (!std::holds_alternative<nullptr_t>(val)) // nil cannot be value in a map
+            values[key] = val;
+    }
+    _result =  std::make_shared<Map>(values);
+}
+
 void Interpreter::visit(const Subscript& sub) {
     auto obj = eval(*sub.object);
     auto index = eval(*sub.index);
-    if (!std::holds_alternative<std::shared_ptr<Array>>(obj)) {
-        throw RuntimeError(sub.bracket, "subscript must be of an array");
+    if (std::holds_alternative<std::shared_ptr<Array>>(obj)) {
+        if (!std::holds_alternative<double>(index)) {
+            throw RuntimeError(sub.bracket, "array index must be a number");
+        }
+        auto ind = std::get<double>(index);
+        if (!is_integer(ind)) {
+            throw RuntimeError(sub.bracket, "index must be an integer");
+        }
+        auto& array = std::get<std::shared_ptr<Array>>(obj);
+        _result =  array->data.at((int)ind);
+        return;
     }
-    if (!std::holds_alternative<double>(index)) {
-        throw RuntimeError(sub.bracket, "index must be a number");
+    if (std::holds_alternative<std::shared_ptr<Map>>(obj)) {
+        auto map = std::get<std::shared_ptr<Map>>(obj);
+        auto it = map->data.find(index);
+        if (it == map->data.end()) {
+            _result = nullptr;
+        } else {
+            _result = it->second;
+        }
+        return;
     }
-    auto ind = std::get<double>(index);
-    if (!is_integer(ind)) {
-        throw RuntimeError(sub.bracket, "index must be an integer");
-    }
-    auto& array = std::get<std::shared_ptr<Array>>(obj);
-
-    _result =  array->data.at((int)ind);
+    throw RuntimeError(sub.bracket, "subscript must be of an array or map");
 }
 
 
@@ -209,32 +233,47 @@ void Interpreter::visit(const Assignment& assignment) {
 }
 
 void Interpreter::visit(const SubscriptAssignment& assignment) {
-    Value object = eval(*assignment.object);
+    Value obj = eval(*assignment.object);
     Value index = eval(*assignment.index);
     Value value = eval(*assignment.value);
 
-    if (!std::holds_alternative<std::shared_ptr<Array>>(object)) {
-        throw RuntimeError(assignment.bracket, "Only arrays can be subscripted.");
+    if (std::holds_alternative<std::shared_ptr<Array>>(obj)) {
+        if (!std::holds_alternative<double>(index)) {
+            throw RuntimeError(assignment.bracket, "array index must be a number");
+        }
+        auto ind = std::get<double>(index);
+        if (!is_integer(ind)) {
+            throw RuntimeError(assignment.bracket, "index must be an integer");
+        }
+        auto idx = (int) ind;
+        auto& array = std::get<std::shared_ptr<Array>>(obj);
+        if (idx < 0 || idx >= array->data.size()) {
+            throw RuntimeError(assignment.bracket,
+                "Index out of bounds: " + std::to_string(idx) +
+                " (size: " + std::to_string(array->data.size()) + ")");
+        }
+        array->data[idx] = value;
+        _result =  value;
+        return;
     }
 
-    if (!std::holds_alternative<double>(index)) {
-        throw RuntimeError(assignment.bracket, "Index must be a number.");
+    if (std::holds_alternative<std::shared_ptr<Map>>(obj)) {
+        // value being nil means removing it from underlying Map
+
+        auto map = std::get<std::shared_ptr<Map>>(obj);
+        auto it = map->data.find(index);
+        if (std::holds_alternative<nullptr_t>(value)) {
+            if (it != map->data.end()) // remove key if val is nil
+                map->data.erase(it);
+            _result = nullptr;
+            return;
+        }
+        map->data[index] = value;
+        _result =  value;
+        return;
     }
 
-    auto array = std::get<std::shared_ptr<Array>>(object);
-    int idx = static_cast<int>(std::get<double>(index));
-
-    if (idx < 0 || idx >= array->data.size()) {
-        throw RuntimeError(assignment.bracket,
-            "Index out of bounds: " + std::to_string(idx) +
-            " (size: " + std::to_string(array->data.size()) + ")");
-    }
-
-    // Assign the new value
-    array->data[idx] = value;
-
-    // Assignment expressions evaluate to the assigned value
-    _result = value;
+    throw RuntimeError(assignment.bracket, "Only arrays and maps can be subscripted.");
 }
 
 void Interpreter::visit(const BlockStmt& block) {

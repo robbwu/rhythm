@@ -13,7 +13,9 @@ class Assignment;
 class SubscriptAssignment;
 class Call;
 class ArrayLiteral;
+class MapLiteral;
 class Subscript;
+class PropertyAccess;
 
 class ExprVisitor {
 public:
@@ -28,7 +30,9 @@ public:
     virtual void visit(const Assignment&) = 0;
     virtual void visit(const Call&) = 0;
     virtual void visit(const ArrayLiteral&) = 0;
+    virtual void visit(const MapLiteral&) = 0;
     virtual void visit(const Subscript&) = 0;
+    // virtual void visit(const PropertyAccess&) = 0;
     virtual void visit(const SubscriptAssignment&) = 0;
 };
 
@@ -219,6 +223,24 @@ public:
     }
 };
 
+class MapLiteral : public Expr {
+public:
+    std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> pairs;
+
+    explicit MapLiteral(std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> pairs)
+        : pairs(std::move(pairs)) {}
+
+    static std::unique_ptr<MapLiteral> create(
+        std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> pairs) {
+        return std::make_unique<MapLiteral>(std::move(pairs));
+    }
+
+    void accept(ExprVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+
+// for both array and map
 class Subscript : public Expr {
 public:
     std::unique_ptr<Expr> object;
@@ -237,3 +259,21 @@ public:
         visitor.visit(*this);
     }
 };
+
+// class PropertyAccess : public Expr {
+// public:
+//     std::unique_ptr<Expr> object;
+//     Token name;
+//
+//     PropertyAccess(std::unique_ptr<Expr> object, Token name)
+//         : object(std::move(object)), name(name) {}
+//
+//     static std::unique_ptr<PropertyAccess> create(
+//         std::unique_ptr<Expr> object, Token name) {
+//         return std::make_unique<PropertyAccess>(std::move(object), name);
+//     }
+//
+//     void accept(ExprVisitor& visitor) const override {
+//         visitor.visit(*this);
+//     }
+// };

@@ -167,6 +167,15 @@ void Resolver::visit(const ArrayLiteral& alit) {
         resolve(argument.get());
     }
 }
+
+void Resolver::visit(const MapLiteral& mlit) {
+    for (auto& pair : mlit.pairs) {
+        resolve(pair.first.get());
+        resolve(pair.second.get());
+    }
+}
+
+
 void Resolver::visit(const Grouping& expr) {
     resolve(expr.expression.get());
 }

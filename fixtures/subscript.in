@@ -9,3 +9,4 @@ a[1][2] = 0;
 print a;
 assert(b[1][2] == 0);
 print "OK";
+
