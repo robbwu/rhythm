@@ -28,7 +28,6 @@ void Resolver::resolve(Expr* expr) {
 
 void Resolver::beginScope() {
     scopes.emplace_back();
-    currentScopeNextIndex = 0;
 }
 
 void Resolver::endScope() {
@@ -46,22 +45,23 @@ void Resolver::visit(const VarStmt& stmt) {
 void Resolver::declare(Token name) {
     if (scopes.empty()) return;
     auto& scope = scopes.back();
-    if (scope.contains(name.lexeme)) {
+    if (scope.variables.contains(name.lexeme)) {
         throw RuntimeError(name, "Already a variable with this name in this scope.");
     }
-    scope[name.lexeme] = {false, currentScopeNextIndex++};
+    // std::cout << "Resolver::declare: name='" << name.lexeme << "', currentScopeNextIndex=" << scope.nextIndex << std::endl;
+    scope.variables[name.lexeme] = {false, scope.nextIndex++};
 }
 
 void Resolver::define(Token name) {
     if (scopes.empty()) return;
     auto& scope = scopes.back();
-    scope[name.lexeme].defined = true;
+    scope.variables[name.lexeme].defined = true;
 }
 
 void Resolver::visit(const Variable& var) {
     if (!scopes.empty()) {
         auto& scope = scopes.back();
-        if (scope.contains(var.name.lexeme) && scope[var.name.lexeme].defined == false) {
+        if (scope.variables.contains(var.name.lexeme) && scope.variables[var.name.lexeme].defined == false) {
             throw RuntimeError(var.name, "Can't read local variable in its own initializer.");
         }
     }
@@ -70,8 +70,8 @@ void Resolver::visit(const Variable& var) {
 
 void Resolver::resolveLocal(const Expr& expr, const Token& name) {
     for (int i = scopes.size() -1; i >= 0; i--) {
-        auto it = scopes[i].find(name.lexeme);
-        if (it != scopes[i].end()) {
+        auto it = scopes[i].variables.find(name.lexeme);
+        if (it != scopes[i].variables.end()) {
             int distance = scopes.size() - i - 1;
             int index = it->second.index;
             interpreter->resolveWithIndex(&expr, distance, index);

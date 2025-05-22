@@ -125,3 +125,15 @@ struct std::formatter<Token> {
 enum class FunctionType {
     NONE, FUNCTION,
 };
+
+
+
+inline bool is_truthy(const Value& value) {
+    if (std::holds_alternative<bool>(value)) {
+        return std::get<bool>(value);
+    }
+    if (std::holds_alternative<std::nullptr_t>(value)) {
+        return false;
+    }
+    return true;
+}

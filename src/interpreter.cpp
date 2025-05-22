@@ -19,6 +19,7 @@ Interpreter::Interpreter() {
     globals.define("split", new SplitCallable());
     globals.define("floor", new FloorCallable());
     globals.define("ceil", new CeilCallable());
+    globals.define("assert", new AssertCallable());
 }
 
 

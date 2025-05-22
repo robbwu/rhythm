@@ -6,6 +6,28 @@
 #include <ranges>
 #include <string_view>
 
+#include "token.hpp"
+
+class AssertCallable final : public LoxCallable {
+public:
+    // zero arguments
+    int arity() override { return 1; }
+
+    // return milli-seconds since Unix epoch, as a double
+    Value call(Interpreter*, std::vector<Value> args) override {
+        if (args.size() != 1) {
+            throw RuntimeError({}, "assert() takes 1 argument");
+        }
+        if (is_truthy(args[0])) {
+            return nullptr;
+        }
+        throw std::runtime_error("assert failed; exit program");
+
+    }
+
+    std::string toString()  override { return "<native fn>"; }
+};
+
 class ReadlineCallable final : public LoxCallable {
 public:
     // zero arguments
@@ -122,8 +144,11 @@ struct PrintfCallable final : public LoxCallable
             {
             case 'd': case 'i': {                   // integer
                 if (!std::holds_alternative<double>(v) &&
-                    !std::holds_alternative<bool>(v))
-                    throw RuntimeError({}, "%d expects number/bool");
+                    !std::holds_alternative<bool>(v)) {
+                    std::ostringstream oss;
+                    oss << "wrong argument" << v;
+                    throw RuntimeError({}, std::format("%d expects number/bool; got {}", oss.str()));
+                }
                 long long n = std::holds_alternative<double>(v)
                                ? static_cast<long long>(std::get<double>(v))
                                : (std::get<bool>(v) ? 1 : 0);

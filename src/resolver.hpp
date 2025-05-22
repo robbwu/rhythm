@@ -15,10 +15,13 @@ private:
         bool defined;
         int index;
     };
+    struct Scope {
+        std::unordered_map<std::string, VarInfo> variables;
+        int nextIndex = 0; // Each scope tracks its own next available index
+    };
 
     Interpreter* interpreter;
-    std::vector<std::unordered_map<std::string, VarInfo>> scopes; // used as stack
-    int currentScopeNextIndex = 0;
+    std::vector<Scope> scopes; // used as stack
     FunctionType current_function = FunctionType::NONE;
 
     void resolve(Expr* expr);
