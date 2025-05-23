@@ -12,7 +12,22 @@
 #include "expr.hpp"
 #include "parser.hpp"
 #include "resolver.hpp"
+#include "version.hpp"
 
+
+void printVersion() {
+    std::cout << "cclox version " << CCLOX_VERSION << std::endl;
+    std::cout << "Commit: " << GIT_COMMIT_HASH << " (" << GIT_COMMIT_DATE << ") "  << GIT_COMMIT_MESSAGE  <<  std::endl;
+    std::cout << "Build commit " << GIT_DIRTY_FLAG << std::endl;
+    std::cout << "Built: " << BUILD_DATE << std::endl;
+}
+
+void printUsage() {
+    std::cout << "Usage: cclox [options] [script]" << std::endl;
+    std::cout << "Options:" << std::endl;
+    std::cout << "  -v, --version    Show version information" << std::endl;
+    std::cout << "  -h, --help       Show this help message" << std::endl;
+}
 
 void run(Interpreter &interpreter, Resolver &resolver, std::string &source)
 {
@@ -67,12 +82,42 @@ void runPrompt(Interpreter &interpreter, Resolver &resolver)
 int main(int argc, char **argv) {
     Interpreter interpreter;
     Resolver resolver(&interpreter);
-    if (argc > 2) {
-        std::cout << "Usage: cclox [script]" << std::endl;
-        exit(1);
-    } else if (argc == 2) {
-        runFile(interpreter, resolver, argv[1]);
-    } else if (argc == 1) {
+    // Parse command line arguments
+    for (int i = 1; i < argc; i++) {
+        if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--version") == 0) {
+            printVersion();
+            return 0;
+        } else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
+            printUsage();
+            return 0;
+        } else if (argv[i][0] == '-') {
+            std::cout << "Unknown option: " << argv[i] << std::endl;
+            printUsage();
+            return 1;
+        }
+    }
+
+    // Count non-option arguments
+    int script_args = 0;
+    char* script_file = nullptr;
+    for (int i = 1; i < argc; i++) {
+        if (argv[i][0] != '-') {
+            script_args++;
+            if (script_args == 1) {
+                script_file = argv[i];
+            }
+        }
+    }
+
+
+    if (script_args > 1) {
+        std::cout << "Usage: cclox [options] [script]" << std::endl;
+        return 1;
+    } else if (script_args == 1) {
+        runFile(interpreter, resolver, script_file);
+    } else {
         runPrompt(interpreter, resolver);
     }
+
+    return 0;
 }
