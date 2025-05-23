@@ -161,6 +161,12 @@ struct PrintfCallable final : public LoxCallable
                 out << std::fixed << std::get<double>(v);
                 break;
             }
+            case 'e': {
+                if (!std::holds_alternative<double>(v))
+                    throw RuntimeError({}, "%e expects number");
+                out << std::scientific << std::get<double>(v);
+                break;
+            }
             case 's': {                             // string
                 if (std::holds_alternative<std::string>(v))
                     out << std::get<std::string>(v);

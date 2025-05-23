@@ -177,8 +177,17 @@ void AstPrinter::visit(const WhileStmt& whileStmt) {
 }
 
 void AstPrinter::visit(const FunctionStmt& funStmt) {
-    std::cout << "FUNCTION ";
+    std::cout << get_indent() << "FUNCTION " << funStmt.name.lexeme << "(";
+    for (size_t i = 0; i < funStmt.params.size(); ++i) {
+        if (i > 0) std::cout << ", ";
+        std::cout << funStmt.params[i].lexeme;
+    }
+    std::cout << ")\n";
 
+    IndentGuard guard(*this);
+    for (const auto& stmt : funStmt.body) {
+        stmt->accept(*this);
+    }
 }
 
 void AstPrinter::visit(const ReturnStmt& returnStmt) {

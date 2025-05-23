@@ -1,0 +1,20 @@
+
+// use newton's method to solve sqrt(x), x a positive real number.
+// x' = x - f(x) / f'(x)
+// f(x) = x*x - t
+fun sqrt_newton(t) {
+    var x = 1; // initial guess, does not really matter that much
+    var iter = 0;
+    while (true) {
+        iter = iter + 1;
+        if ( fabs(x*x - t) < 1.0e-10 ) {
+            break;
+        }
+        x = x - (x*x-t) / (2*x);
+        printf("iter=%d, x=%f\n", iter, x);
+    }
+
+    return x;
+}
+
+print sqrt_newton(2);

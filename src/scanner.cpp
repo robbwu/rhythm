@@ -57,6 +57,11 @@ void Scanner::number() {
         if (peek() == '+' || peek() == '-') {
             advance(); // consume optional sign
         }
+        if (!isdigit(peek())) {
+            // If no digits follow the exponent, it's an error
+            error(line, "Invalid number format");
+            return;
+        }
         while (isdigit(peek())) advance();
     }
 
