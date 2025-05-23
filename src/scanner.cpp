@@ -51,7 +51,16 @@ void Scanner::number() {
         while(isdigit(peek())) advance();
     }
 
-    addToken(TokenType::NUMBER, std::stof(source.substr(start, current-start)));
+    // Handle scientific notation (e.g., 1.34e-8, 2E+10)
+    if (peek() == 'e' || peek() == 'E') {
+        advance(); // consume 'e' or 'E'
+        if (peek() == '+' || peek() == '-') {
+            advance(); // consume optional sign
+        }
+        while (isdigit(peek())) advance();
+    }
+
+    addToken(TokenType::NUMBER, std::stod(source.substr(start, current-start)));
 }
 
 void Scanner::identifier() {

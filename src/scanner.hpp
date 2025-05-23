@@ -36,6 +36,7 @@ private:
     void addToken(TokenType type);
     void addToken(TokenType type, Value literal);
 
+
 public:
     explicit Scanner(std::string _source): source(std::move(_source)) {}
     std::vector<Token> scanTokens();
