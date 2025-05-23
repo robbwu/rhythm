@@ -22,6 +22,9 @@ public:
         if (std::holds_alternative<std::shared_ptr<Map>>(x)) {
             return (double) std::get<std::shared_ptr<Map>>(x)->data.size();
         }
+        if (std::holds_alternative<std::string>(x)) {
+            return (double) std::get<std::string>(x).size();
+        }
         throw RuntimeError({}, "len() argument must be array or map");
     }
 
