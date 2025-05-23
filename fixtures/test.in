@@ -1,8 +1,7 @@
-var a = [1,2,3];
-print a;
-push(a, "str");
-print a;
-var s = pop(a);
-print a;
-//s = "lis";
-//print s;
+var complex = fun(a, b) {
+    var temp = a + b;
+    temp = temp * 2;
+    print "Intermediate result: " + temp;
+    return temp + 1;
+};
+print complex(2, 3); // should print "Intermediate result: 10" then 11

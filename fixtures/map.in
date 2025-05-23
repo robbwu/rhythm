@@ -22,6 +22,8 @@ fun lamb(k, v) {
     printf("key is %s, value is %s\n", k, v);
 }
 
-fun xx_yy(x) { print x; }
-
 for_each(m, lamb);
+
+for_each(m, fun (k, v ) {
+    printf("%s -> %s\n", k, v);
+});

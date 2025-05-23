@@ -96,6 +96,23 @@ void Resolver::visit(const SubscriptAssignment& assignment) {
     resolve(assignment.value.get());
 }
 
+void Resolver::visit(const FunctionExpr& expr) {
+    resolveFunction(expr, FunctionType::FUNCTION);
+}
+
+void Resolver::resolveFunction(const FunctionExpr& expr, FunctionType type) {
+    FunctionType enclosing_function = current_function;
+    current_function = type;
+    beginScope();
+    for (auto& param : expr.params) {
+        declare(param);
+        define(param);
+    }
+    resolve(expr.body);
+    endScope();
+    current_function = enclosing_function;
+}
+
 
 void Resolver::visit(const FunctionStmt& stmt) {
     declare(stmt.name);
@@ -104,6 +121,7 @@ void Resolver::visit(const FunctionStmt& stmt) {
     resolveFunction(stmt, FunctionType::FUNCTION);
     // resolveFunction(stmt);
 }
+
 
 void Resolver::resolveFunction(const FunctionStmt& stmt, FunctionType type) {
     FunctionType enclosing_function = current_function;

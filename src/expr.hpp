@@ -16,6 +16,7 @@ class ArrayLiteral;
 class MapLiteral;
 class Subscript;
 class PropertyAccess;
+class FunctionExpr;
 
 class ExprVisitor {
 public:
@@ -34,6 +35,7 @@ public:
     virtual void visit(const Subscript&) = 0;
     virtual void visit(const PropertyAccess&) = 0;
     virtual void visit(const SubscriptAssignment&) = 0;
+    virtual void visit(const FunctionExpr&) = 0;
 };
 
 class Expr {
@@ -277,4 +279,6 @@ public:
         visitor.visit(*this);
     }
 };
+
+
 

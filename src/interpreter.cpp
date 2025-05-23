@@ -66,6 +66,8 @@ void Interpreter::visit(const Binary &expr) {
                 _result = std::get<double>(left) + std::get<double>(right);
             else if (std::holds_alternative<std::string>(left) && std::holds_alternative<std::string>(right))
                 _result = std::get<std::string>(left) + std::get<std::string>(right);
+            else
+                throw RuntimeError(expr.op, "+ can only be between two numbers or two strings");
             break;
         case TokenType::GREATER:
             _result = std::get<double>(left) > std::get<double>(right);
@@ -293,6 +295,13 @@ void Interpreter::visit(const SubscriptAssignment& assignment) {
     }
 
     throw RuntimeError(assignment.bracket, "Only arrays and maps can be subscripted.");
+}
+
+
+void Interpreter::visit(const FunctionExpr& expr) {
+    // Create an anonymous LoxFunction - we'll need to modify LoxFunction to accept FunctionExpr
+    LoxCallable* function = new LoxFunctionExpr(&expr, env);
+    _result = function;
 }
 
 void Interpreter::visit(const BlockStmt& block) {

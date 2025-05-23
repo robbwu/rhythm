@@ -33,6 +33,8 @@ private:
     void define(Token name);
     void resolveLocal(const Expr& expr, const Token& name);
     void resolveFunction(const FunctionStmt&, FunctionType);
+    void resolveFunction(const FunctionExpr&, FunctionType);
+
 
 public:
     explicit Resolver(Interpreter* interpreter) : interpreter(interpreter) {}
@@ -53,7 +55,7 @@ public:
     void visit(const Logical&) override;
     void visit(const Unary&) override;
     void visit(const PropertyAccess&) override;
-
+    void visit(const FunctionExpr&) override;
 
 
     void visit(const BlockStmt&) override;

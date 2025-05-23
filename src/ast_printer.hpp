@@ -33,6 +33,7 @@ public:
     void visit(const Subscript&) override;
     void visit(const SubscriptAssignment&) override;
     void visit(const PropertyAccess&) override;
+    void visit(const FunctionExpr&) override;
 
 
     void visit(const ExpressionStmt&) override;

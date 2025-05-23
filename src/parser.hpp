@@ -189,6 +189,10 @@ private:
             return Grouping::create(std::move(expr));
         }
 
+        if (match({TokenType::FUN})) {
+            return functionExpression();
+        }
+
         if (match({TokenType::LEFT_BRACKET})) { // array literal
             return arrayLiteral();
         }
@@ -198,6 +202,24 @@ private:
 
         error(peek(), "expect expression");
         return nullptr;
+    }
+
+    std::unique_ptr<FunctionExpr> functionExpression() {
+        // parse parameters
+        std::vector<Token> parameters;
+        consume(TokenType::LEFT_PAREN, "expected '('");
+        if (!check(TokenType::RIGHT_PAREN)) {
+            do {
+                parameters.push_back(consume(TokenType::IDENTIFIER, "expect parameter name"));
+            } while (match({TokenType::COMMA}));
+        }
+        consume(TokenType::RIGHT_PAREN, "expected ')'");
+
+        // parse body
+        consume(TokenType::LEFT_BRACE, "expected '{' before body");
+        std::vector<std::unique_ptr<Stmt>> body = block();
+
+        return FunctionExpr::create(std::move(parameters), std::move(body));
     }
 
     std::unique_ptr<Expr> arrayLiteral() {

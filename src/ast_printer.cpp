@@ -90,6 +90,14 @@ void AstPrinter::visit(const Variable& variable) {
     std::cout << "VAR:" << variable.name.lexeme;
 }
 
+void AstPrinter::visit(const FunctionExpr& expr) {
+    std::cout << "ANON_FUN_" << expr.params.size() << "(";
+    for (const auto& param : expr.params) {
+        std::cout << param.lexeme << ",";
+    }
+    std::cout << ")";
+}
+
 void AstPrinter::visit(const Assignment& assignment) {
     std::cout << assignment.name.lexeme << " = ";
     assignment.right->accept(*this);

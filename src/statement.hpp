@@ -144,3 +144,22 @@ public:
         visitor.visit(*this);
     }
 };
+
+// Add at the end of the file, after Subscript class
+class FunctionExpr : public Expr {
+public:
+    std::vector<Token> params;
+    std::vector<std::unique_ptr<Stmt>> body;
+
+    FunctionExpr(std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body)
+        : params(std::move(params)), body(std::move(body)) {}
+
+    static std::unique_ptr<FunctionExpr> create(
+        std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body) {
+        return std::make_unique<FunctionExpr>(std::move(params), std::move(body));
+    }
+
+    void accept(ExprVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};

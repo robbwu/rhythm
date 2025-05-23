@@ -1,0 +1,156 @@
+// Basic anonymous function assignment and call
+var add = fun(a, b) { return a + b; };
+print add(3, 4); // should print 7
+
+// Anonymous function with no parameters
+var sayHello = fun() { print "Hello from anonymous function!"; };
+sayHello();
+
+// Anonymous function with single parameter
+var square = fun(x) { return x * x; };
+print square(5); // should print 25
+
+// Immediately invoked anonymous function
+print fun(x) { return x * 2; }(10); // should print 20
+
+// Anonymous function with closure
+var makeCounter = fun() {
+    var count = 0;
+    return fun() {
+        count = count + 1;
+        return count;
+    };
+};
+var counter = makeCounter();
+print counter(); // should print 1
+print counter(); // should print 2
+print counter(); // should print 3
+
+// Anonymous function capturing outer variable
+var multiplier = 3;
+var multiply = fun(x) { return x * multiplier; };
+print multiply(4); // should print 12
+
+// Anonymous function with multiple statements
+var complex = fun(a, b) {
+    var temp = a + b;
+    temp = temp * 2;
+    printf("Intermediate result: %d\n", temp);
+    return temp + 1;
+};
+print complex(2, 3); // should print "Intermediate result: 10" then 11
+
+// Nested anonymous functions
+var outer = fun(x) {
+    return fun(y) {
+        return x + y;
+    };
+};
+var inner = outer(5);
+print inner(3); // should print 8
+
+// Anonymous function with conditional logic
+var abs = fun(x) {
+    if (x < 0) {
+        return -x;
+    } else {
+        return x;
+    }
+};
+print abs(-5); // should print 5
+print abs(3);  // should print 3
+
+// Anonymous function with loop
+var factorial = fun(n) {
+    var result = 1;
+    var i = 1;
+    while (i <= n) {
+        result = result * i;
+        i = i + 1;
+    }
+    return result;
+};
+print factorial(5); // should print 120
+
+// Anonymous function returning another anonymous function
+var adder = fun(x) {
+    return fun(y) { return x + y; };
+};
+var add5 = adder(5);
+print add5(10); // should print 15
+
+// Edge case: Anonymous function with no return (should return nil)
+var noReturn = fun(x) {
+    print "Processing: " + x;
+};
+var result = noReturn("test");
+print result; // should print nil
+
+// Edge case: Empty anonymous function
+var empty = fun() {};
+empty(); // should execute without error
+
+// Edge case: Anonymous function with only return statement
+var justReturn = fun() { return 42; };
+print justReturn(); // should print 42
+
+// Multiple anonymous functions in same scope
+var func1 = fun() { return "first"; };
+var func2 = fun() { return "second"; };
+print func1(); // should print "first"
+print func2(); // should print "second"
+
+// Anonymous function modifying array
+var arr = [1, 2, 3];
+var doubleArray = fun(array) {
+    var i = 0;
+    while (i < len(array)) {
+        array[i] = array[i]*2;
+        i = i + 1;
+    }
+    return array;
+};
+doubleArray(arr);
+print arr; // should print [2, 4, 6]
+
+// Anonymous function with early return
+var findSign = fun(x) {
+    if (x > 0) return "positive";
+    if (x < 0) return "negative";
+    return "zero";
+};
+print findSign(5);   // should print "positive"
+print findSign(-3);  // should print "negative"
+print findSign(0);   // should print "zero"
+
+// Recursive anonymous function (tricky - needs self-reference)
+var fibonacci = fun(n) {
+    if (n <= 1) return n;
+    // This won't work directly as recursive anonymous functions
+    // need special handling for self-reference
+    return fibonacci(n-1) + fibonacci(n-2);
+};
+print fibonacci(6); // should print 8
+
+// Anonymous function with variable capture across multiple scopes
+var x = 10;
+{
+    var y = 20;
+    var captureTest = fun() {
+        return x + y; // captures both x and y
+    };
+    print captureTest(); // should print 30
+}
+
+// Anonymous function parameter shadowing
+var x = 100;
+var shadow = fun(x) {
+    return x * 2; // parameter x shadows outer x
+};
+print shadow(5); // should print 10, not 200
+
+// Stress test: Many parameters
+var manyParams = fun(a, b, c, d, e) {
+    return a + b + c + d + e;
+};
+print manyParams(1, 2, 3, 4, 5); // should print 15

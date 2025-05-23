@@ -1,5 +1,6 @@
 // Binary Search Tree with in-order traversal
 // Node represented as {"value": val, "left": left_node, "right": right_node}
+
 fun insert(root, value) {
     if (root == nil) return {"value": value, "left": nil, "right": nil};
     if (value < root.value)
