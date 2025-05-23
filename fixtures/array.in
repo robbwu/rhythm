@@ -1,0 +1,18 @@
+var a = [];  // declaration of dynamic array a
+
+append(a, 1);
+append(a, "hello") // this is like python list
+
+print len(a); // #a expression is the length of a, should be 2
+
+print a[1] // would print "hello"
+
+// pass an array to a function is by reference
+fun sum(a) {
+    var n = len(a);
+    var s = 0;
+    for (var i=0; i<n; i=i+1) {
+        s = s + a[i];
+    }
+    return s;
+}
