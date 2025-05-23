@@ -12,9 +12,10 @@ Interpreter::Interpreter() {
     globals.define("clock", new ClockCallable());
     globals.define("printf", new PrintfCallable());
     globals.define("len", new LenCallable());
-    globals.define("at", new AtCallable());
-    globals.define("set", new SetCallable());
+    // globals.define("at", new AtCallable());
+    // globals.define("set", new SetCallable());
     globals.define("push", new PushCallable());
+    globals.define("pop", new PopCallable());
     globals.define("readline", new ReadlineCallable());
     globals.define("split", new SplitCallable());
     globals.define("floor", new FloorCallable());
