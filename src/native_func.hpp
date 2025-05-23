@@ -194,3 +194,21 @@ struct PrintfCallable final : public LoxCallable
         return nullptr;                            // Lox nil
     }
 };
+
+class ToNumberCallable final : public LoxCallable {
+public:
+    // zero arguments
+    int arity() override { return 1; }
+
+    // return milli-seconds since Unix epoch, as a double
+    Value call(Interpreter*, std::vector<Value> values) override {
+        if (values.size() != 1 )
+            throw RuntimeError({}, "tonumber() requires 1 argument");
+        auto &v = values[0];
+        if (std::holds_alternative<double>(v)) return v;
+        if (std::holds_alternative<bool>(v)) return (double)(std::get<bool>(v) ? 1 : 0);
+        if (std::holds_alternative<std::string>(v)) return std::stod(std::get<std::string>(v));
+    }
+
+    std::string toString()  override { return "<native fn>"; }
+};
