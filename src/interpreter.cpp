@@ -7,6 +7,7 @@
 #include "native_func.hpp"
 #include "native_func_array.hpp"
 #include "native_math.hpp"
+#include "native_func_math.hpp"
 
 Interpreter::Interpreter() {
     globals.define("clock", new ClockCallable());
@@ -22,6 +23,28 @@ Interpreter::Interpreter() {
     globals.define("ceil", new CeilCallable());
     globals.define("assert", new AssertCallable());
     globals.define("for_each", new ForEachCallable());
+
+    using namespace native::NativeMathFunctionNames;
+    using namespace native;
+    // math 1arg
+    globals.define(floor_name, new NativeMath1ArgCallable<std::floor, floor_name>());
+    globals.define(ceil_name,  new NativeMath1ArgCallable<std::ceil, ceil_name>());
+    globals.define(sin_name,   new NativeMath1ArgCallable<std::sin, sin_name>());
+    globals.define(cos_name,   new NativeMath1ArgCallable<std::cos, cos_name>());
+    globals.define(tan_name,   new NativeMath1ArgCallable<std::tan, tan_name>());
+    globals.define(asin_name,  new NativeMath1ArgCallable<std::asin, asin_name>());
+    globals.define(acos_name,  new NativeMath1ArgCallable<std::acos, acos_name>());
+    globals.define(atan_name,  new NativeMath1ArgCallable<std::atan, atan_name>());
+    globals.define(log_name,   new NativeMath1ArgCallable<std::log, log_name>());
+    globals.define(log10_name, new NativeMath1ArgCallable<std::log10, log10_name>());
+    globals.define(sqrt_name,  new NativeMath1ArgCallable<std::sqrt, sqrt_name>());
+    globals.define(exp_name,   new NativeMath1ArgCallable<std::exp, exp_name>());
+    globals.define(fabs_name,  new NativeMath1ArgCallable<std::fabs, fabs_name>());
+
+    // math 2 arg
+    globals.define(pow_name,   new NativeMath2ArgsCallable<std::pow, pow_name>());
+    globals.define(atan2_name, new NativeMath2ArgsCallable<std::atan2, atan2_name>());
+    globals.define(fmod_name,  new NativeMath2ArgsCallable<std::fmod, fmod_name>());
 }
 
 

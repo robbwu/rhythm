@@ -1,5 +1,4 @@
-// should syntax error
 fun bad() {
   var a = "first";
-  var a = "second";
+  var a = "second"; // should syntax error
 }

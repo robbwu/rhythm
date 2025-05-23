@@ -1,0 +1,83 @@
+// math_tests.lox
+
+// Helper for comparing floating-point numbers
+fun close_enough(x, target) {
+    if (x == target) return true; // Handle exact matches, including 0.0
+    if (target == 0) return fabs(x) < 0.0000001;
+    return fabs((x - target) / target) < 0.000001; // Relative error for non-zero targets
+}
+
+// --- Trigonometric Functions ---
+assert(close_enough(sin(0), 0.0));
+assert(close_enough(sin(3.1415926535 / 2.0), 1.0)); // sin(pi/2)
+assert(close_enough(sin(3.1415926535), 0.0));       // sin(pi)
+assert(close_enough(sin(3.0), 0.1411200081));
+
+assert(close_enough(cos(0), 1.0));
+assert(close_enough(cos(3.1415926535 / 2.0), 0.0)); // cos(pi/2)
+assert(close_enough(cos(3.1415926535), -1.0));      // cos(pi)
+assert(close_enough(cos(3.0), -0.9899924966));
+
+assert(close_enough(tan(0), 0.0));
+assert(close_enough(tan(3.1415926535 / 4.0), 1.0)); // tan(pi/4)
+assert(close_enough(tan(1.0), 1.55740772465));
+
+assert(close_enough(asin(0.0), 0.0));
+assert(close_enough(asin(1.0), 1.57079632679)); // asin(1) = pi/2
+assert(close_enough(asin(0.5), 0.5235987756));
+
+assert(close_enough(acos(1.0), 0.0));
+assert(close_enough(acos(0.0), 1.57079632679)); // acos(0) = pi/2
+assert(close_enough(acos(0.5), 1.0471975512));
+
+assert(close_enough(atan(0.0), 0.0));
+assert(close_enough(atan(1.0), 0.7853981634)); // atan(1) = pi/4
+
+assert(close_enough(atan2(0.0, 1.0), 0.0));
+assert(close_enough(atan2(1.0, 1.0), 0.7853981634)); // atan2(1,1) = pi/4
+assert(close_enough(atan2(1.0, 0.0), 1.57079632679)); // atan2(1,0) = pi/2
+
+// --- Exponential and Logarithmic Functions ---
+assert(close_enough(sqrt(16.0), 4.0));
+assert(close_enough(sqrt(2.0), 1.41421356237));
+assert(close_enough(sqrt(0.0), 0.0));
+
+assert(close_enough(exp(0.0), 1.0));
+assert(close_enough(exp(1.0), 2.71828182845)); // e^1
+assert(close_enough(exp(2.0), 7.38905609893)); // e^2
+
+assert(close_enough(log(1.0), 0.0));           // Natural log (ln)
+assert(close_enough(log(2.71828182845), 1.0)); // ln(e)
+assert(close_enough(log(7.38905609893), 2.0)); // ln(e^2)
+
+assert(close_enough(log10(1.0), 0.0));
+assert(close_enough(log10(10.0), 1.0));
+assert(close_enough(log10(100.0), 2.0));
+
+// --- Power and Absolute Value ---
+assert(close_enough(pow(2.0, 3.0), 8.0));
+assert(close_enough(pow(10.0, 0.5), 3.16227766016)); // 10^0.5 = sqrt(10)
+assert(close_enough(pow(5.0, 0.0), 1.0));
+assert(close_enough(pow(4.0, -1.0), 0.25));
+
+assert(close_enough(fabs(-5.5), 5.5));
+assert(close_enough(fabs(5.5), 5.5));
+assert(close_enough(fabs(0.0), 0.0));
+
+// --- Rounding Functions ---
+assert(close_enough(floor(3.7), 3.0));
+assert(close_enough(floor(3.0), 3.0));
+assert(close_enough(floor(-3.7), -4.0));
+
+assert(close_enough(ceil(3.7), 4.0));
+assert(close_enough(ceil(3.0), 3.0));
+assert(close_enough(ceil(-3.7), -3.0));
+
+// --- Modulo ---
+assert(close_enough(fmod(7.5, 2.0), 1.5));
+assert(close_enough(fmod(7.0, 2.0), 1.0));
+assert(close_enough(fmod(7.0, -2.0), 1.0)); // Result sign is usually that of dividend
+assert(close_enough(fmod(-7.0, 2.0), -1.0));
+assert(close_enough(fmod(0.0, 1.0), 0.0));
+
+print "All math tests OK";

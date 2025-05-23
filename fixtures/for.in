@@ -6,4 +6,6 @@ for (var b = 1; a < 100000; b = temp + b) {
   a = b;
 }
 
-print a;
+print a; // should print 121393
+assert( a == 121393);
+print "OK";
