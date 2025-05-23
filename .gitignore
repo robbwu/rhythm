@@ -1,0 +1,6 @@
+build/
+build-release/
+cmake-build-debug/
+.zed/
+.idea/
+.cache/
