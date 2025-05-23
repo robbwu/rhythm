@@ -67,7 +67,7 @@ enum class TokenType {
     // Single-character tokens.
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
     LEFT_BRACKET, RIGHT_BRACKET,
-    COMMA, COLON, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
+    COMMA, COLON, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR, PERCENT,
 
     // One or two character tokens.
     BANG, BANG_EQUAL,
@@ -81,6 +81,7 @@ enum class TokenType {
     // Keywords.
     AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
     PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+    BREAK, CONTINUE,
 
     END_TOKEN
 };
@@ -88,7 +89,9 @@ enum class TokenType {
 // A global (or namespace-scope) constant map of keyword strings to TokenType
 static const std::unordered_map<std::string, TokenType> keywords = {
     {"and",    TokenType::AND},
+    {"break",    TokenType::BREAK},
     {"class",  TokenType::CLASS},
+    {"continue", TokenType::CONTINUE},
     {"else",   TokenType::ELSE},
     {"false",  TokenType::FALSE},
     {"for",    TokenType::FOR},

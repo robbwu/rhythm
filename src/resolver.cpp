@@ -164,6 +164,9 @@ void Resolver::visit(const ReturnStmt& stmt) {
 void Resolver::visit(const WhileStmt& stmt) {
     resolve(stmt.condition.get());
     resolve(stmt.body.get());
+    if (stmt.increment) {
+        resolve(stmt.increment.get());
+    }
 }
 
 
@@ -210,4 +213,12 @@ void Resolver::visit(const Logical& expr) {
 }
 void Resolver::visit(const Unary& expr) {
     resolve(expr.right.get());
+}
+
+void Resolver::visit(const BreakStmt& stmt) {
+    // Break statements don't need variable resolution
+}
+
+void Resolver::visit(const ContinueStmt& stmt) {
+    // Continue statements don't need variable resolution
 }

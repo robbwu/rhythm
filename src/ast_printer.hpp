@@ -44,4 +44,6 @@ public:
     void visit(const WhileStmt&) override;
     void visit(const FunctionStmt&) override;
     void visit(const ReturnStmt&) override;
+    void visit(const BreakStmt&) override;
+    void visit(const ContinueStmt&) override;
 };

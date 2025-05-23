@@ -136,6 +136,8 @@ public:
     void visit(const WhileStmt& whileStmt) override;
     void visit(const FunctionStmt&) override;
     void visit(const ReturnStmt& returnStmt) override;
+    void visit(const ContinueStmt& continueStmt) override;
+    void visit(const BreakStmt& breakStmt) override;
 
     Value lookUpVariable(const Token & name, const Variable * variable);
     void executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts,  Environment*);

@@ -65,4 +65,6 @@ public:
     void visit(const PrintStmt&) override;
     void visit(const ReturnStmt&) override;
     void visit(const WhileStmt&) override;
+    void visit(const BreakStmt&) override;
+    void visit(const ContinueStmt&) override;
 };

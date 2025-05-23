@@ -24,3 +24,13 @@ public:
     Value value;
     explicit Return(Value value): value(std::move(value)), std::runtime_error("return") {}
 };
+
+class Break: public std::runtime_error {
+public:
+    explicit Break(): std::runtime_error("break") {}
+};
+
+class Continue: public std::runtime_error {
+public:
+    explicit Continue(): std::runtime_error("continue") {}
+};

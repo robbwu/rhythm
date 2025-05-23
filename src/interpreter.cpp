@@ -69,6 +69,19 @@ void Interpreter::visit(const Binary &expr) {
             else
                 throw RuntimeError(expr.op, "+ can only be between two numbers or two strings");
             break;
+        case TokenType::PERCENT:
+            if (std::holds_alternative<double>(left) && std::holds_alternative<double>(right)) {
+                double l = std::get<double>(left);
+                double r = std::get<double>(right);
+                if (!is_integer(l) || !is_integer(r)) {
+                    throw RuntimeError(expr.op, "% operation is between integers");
+                }
+                _result = (double)((int)l % (int)r);
+                break;
+            }else {
+                throw RuntimeError(expr.op, "% operation is between numbers");
+            }
+            break;
         case TokenType::GREATER:
             _result = std::get<double>(left) > std::get<double>(right);
             break;
@@ -320,7 +333,20 @@ void Interpreter::visit(const IfStmt& ifStmt) {
 
 void Interpreter::visit(const WhileStmt& whileStmt) {
     while (isTruthy(eval(*whileStmt.condition))) {
-        execute(*whileStmt.body);
+        try {
+            execute(*whileStmt.body);
+        } catch (const Break&) {
+            break; // Exit the loop
+        } catch (const Continue&) {
+            if (whileStmt.increment) { // If there's an increment expression (from a for loop)
+                eval(*whileStmt.increment); // Execute it before continuing
+            }
+            continue; // Continue to the next iteration of the C++ while loop
+        }
+        // If the loop body completed without break or continue
+        if (whileStmt.increment) { // If there's an increment expression
+            eval(*whileStmt.increment); // Execute it
+        }
     }
 }
 
@@ -348,10 +374,14 @@ void Interpreter::visit(const ReturnStmt& returnStmt) {
     throw Return(value);
 }
 
-// store the depth of the expr in the interpreter;
-// void Interpreter::resolve(const Expr* expr, int depth) {
-//     locals[expr] = depth;
-// }
+void Interpreter::visit(const BreakStmt& breakStmt) {
+    throw Break();
+}
+
+void Interpreter::visit(const ContinueStmt& continueStmt) {
+    throw Continue();
+}
+
 
 void Interpreter::resolveWithIndex(const Expr* expr, int distance, int index) {
     varLocations[expr] = {distance, index};

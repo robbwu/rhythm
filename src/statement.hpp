@@ -15,6 +15,8 @@ class WhileStmt;
 // class ForStmt;
 class FunctionStmt;
 class ReturnStmt;
+class BreakStmt;
+class ContinueStmt;
 
 class StmtVisitor {
 public:
@@ -27,6 +29,8 @@ public:
     virtual void visit(const WhileStmt&) = 0;
     virtual void visit(const FunctionStmt&) = 0;
     virtual void visit(const ReturnStmt&) = 0;
+    virtual void visit(const BreakStmt&) = 0;
+    virtual void visit(const ContinueStmt&) = 0;
 };
 
 class Stmt {
@@ -105,10 +109,11 @@ class WhileStmt: public Stmt {
 public:
     std::unique_ptr<Expr> condition;
     std::unique_ptr<Stmt> body;
+    std::unique_ptr<Expr> increment;
 
-    WhileStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body): condition(std::move(condition)), body(std::move(body)) {}
-    static std::unique_ptr<WhileStmt> create(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body) {
-        return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
+    WhileStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body, std::unique_ptr<Expr> increment = nullptr): condition(std::move(condition)), body(std::move(body)), increment(std::move(increment)) {}
+    static std::unique_ptr<WhileStmt> create(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body, std::unique_ptr<Expr> increment = nullptr) {
+        return std::make_unique<WhileStmt>(std::move(condition), std::move(body), std::move(increment));
     }
     void accept(StmtVisitor& visitor) const override {
         visitor.visit(*this);
@@ -160,6 +165,34 @@ public:
     }
 
     void accept(ExprVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+
+class BreakStmt: public Stmt {
+public:
+    Token kw;
+
+    explicit BreakStmt(Token kw): kw(std::move(kw)) {}
+    static std::unique_ptr<BreakStmt> create(Token kw) {
+        return std::make_unique<BreakStmt>(std::move(kw));
+    }
+
+    void accept(StmtVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+};
+
+class ContinueStmt: public Stmt {
+public:
+    Token kw;
+
+    explicit ContinueStmt(Token kw): kw(std::move(kw)) {}
+    static std::unique_ptr<ContinueStmt> create(Token kw) {
+        return std::make_unique<ContinueStmt>(std::move(kw));
+    }
+
+    void accept(StmtVisitor& visitor) const override {
         visitor.visit(*this);
     }
 };

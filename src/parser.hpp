@@ -120,7 +120,7 @@ private:
     std::unique_ptr<Expr> factor() {
         auto expr = unary();
 
-        while (match({TokenType::SLASH,TokenType::STAR})) {
+        while (match({TokenType::SLASH,TokenType::STAR, TokenType::PERCENT})) {
             auto op = previous();
             auto right = unary();
             expr = Binary::create(std::move(expr), op, std::move(right));
@@ -289,6 +289,8 @@ private:
     }
 
     std::unique_ptr<Stmt> statement() {
+        if (match({TokenType::BREAK})) return breakStatement();
+        if (match({TokenType::CONTINUE})) return continueStatement();
         if (match({TokenType::FOR})) return forStatement();
         if (match({TokenType::IF})) return ifStatement();
         if (match({TokenType::PRINT})) return printStatement();
@@ -297,6 +299,18 @@ private:
         if (match({TokenType::LEFT_BRACE})) return BlockStmt::create(block());
 
         return expressionStatement();
+    }
+
+    std::unique_ptr<BreakStmt> breakStatement() {
+        Token kw = previous();
+        consume(TokenType::SEMICOLON, "Expect ';' after 'break'.");
+        return BreakStmt::create(kw);
+    }
+
+    std::unique_ptr<ContinueStmt> continueStatement() {
+        Token kw = previous();
+        consume(TokenType::SEMICOLON, "Expect ';' after 'continue'.");
+        return ContinueStmt::create(kw);
     }
 
     // parse sequence of Stmts up until }
@@ -337,25 +351,27 @@ private:
 
         std::unique_ptr<Stmt> body = statement();
         // de-sugar for into while
-        if (increment) {
-            std::unique_ptr<Stmt> incrStmt = ExpressionStmt::create(std::move(increment));
-            std::vector<std::unique_ptr<Stmt>> block;
-            block.push_back(std::move(body));
-            block.push_back(std::move(incrStmt));
-            body = BlockStmt::create(std::move(block));
-
-        }
+        // if (increment) {
+        //     std::unique_ptr<Stmt> incrStmt = ExpressionStmt::create(std::move(increment));
+        //     std::vector<std::unique_ptr<Stmt>> block;
+        //     block.push_back(std::move(body));
+        //     block.push_back(std::move(incrStmt));
+        //     body = BlockStmt::create(std::move(block));
+        //
+        // }
 
         if (condition == nullptr) condition = Literal::create(true);
-        body = WhileStmt::create(std::move(condition), std::move(body));
+        // body = WhileStmt::create(std::move(condition), std::move(body));
+        auto while_loop_stmt = WhileStmt::create(std::move(condition), std::move(body), std::move(increment));
+
 
         if (initializer) {
-            std::vector<std::unique_ptr<Stmt>> block;
-            block.push_back(std::move(initializer));
-            block.push_back(std::move(body));
-            body = BlockStmt::create(std::move(block));
+            std::vector<std::unique_ptr<Stmt>> block_stmts;
+            block_stmts.push_back(std::move(initializer));
+            block_stmts.push_back(std::move(while_loop_stmt));
+            return BlockStmt::create(std::move(block_stmts));
         }
-        return body;
+        return while_loop_stmt;
     }
 
     std::unique_ptr<Stmt> ifStatement() {

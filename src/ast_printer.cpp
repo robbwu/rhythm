@@ -178,7 +178,7 @@ void AstPrinter::visit(const WhileStmt& whileStmt) {
 
 void AstPrinter::visit(const FunctionStmt& funStmt) {
     std::cout << "FUNCTION ";
-    // TODO
+
 }
 
 void AstPrinter::visit(const ReturnStmt& returnStmt) {
@@ -186,4 +186,12 @@ void AstPrinter::visit(const ReturnStmt& returnStmt) {
     std::cout << "RETURN ";
     returnStmt.value->accept(*this);
     std::cout << std::endl;
+}
+
+void AstPrinter::visit(const BreakStmt& breakStmt) {
+    std::cout << get_indent() << "BREAK" << std::endl;
+}
+
+void AstPrinter::visit(const ContinueStmt& continueStmt) {
+    std::cout << get_indent() << "CONTINUE" << std::endl;
 }

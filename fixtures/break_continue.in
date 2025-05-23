@@ -1,0 +1,150 @@
+var i = 0;
+while (i < 10) {
+    if (i == 5) {
+        break;
+    }
+    print i;
+    i = i + 1;
+}
+print "done";
+// Expected output: 0 1 2 3 4 done
+
+var i = 0;
+while (i < 5) {
+    i = i + 1;
+    if (i == 3) {
+        continue;
+    }
+    print i;
+}
+print "done";
+// Expected output: 1 2 4 5 done
+
+for (var i = 0; i < 10; i = i + 1) {
+    if (i == 3) {
+        break;
+    }
+    print i;
+}
+print "done";
+// Expected output: 0 1 2 done
+
+for (var i = 0; i < 5; i = i + 1) {
+    if (i == 2) {
+        continue;
+    }
+    print i;
+}
+print "done";
+// Expected output: 0 1 3 4 done
+
+for (var i = 0; i < 3; i = i + 1) {
+    printf("outer: %d\n" , i);
+    for (var j = 0; j < 5; j = j + 1) {
+        if (j == 2) {
+            break;
+        }
+        printf("  inner: %d\n" , j);
+    }
+}
+// Expected: outer loops 3 times, inner breaks at j=2 each time
+
+for (var i = 0; i < 3; i = i + 1) {
+    printf("outer: %d\n" , i);
+    for (var j = 0; j < 4; j = j + 1) {
+        if (j == 1) {
+            continue;
+        }
+        printf("  inner: %d\n" , j);
+    }
+}
+// Expected: outer loops 3 times, inner skips j=1 each time
+
+var i = 0;
+var sum = 0;
+while (i < 20) {
+    i = i + 1;
+    if (i % 2 == 0) {
+        continue;  // skip even numbers
+    }
+    if (i > 10) {
+        break;     // stop after 10
+    }
+    sum = sum + i;
+}
+print sum;
+// Expected: 1+3+5+7+9 = 25
+
+var i = 0;
+while (i < 100) {
+    i = i + 1;
+    if (i == 3) {
+        print "skip 3";
+        continue;
+    }
+    if (i == 7) {
+        print "break at 7";
+        break;
+    }
+    print i;
+}
+// Expected: 1 2 skip 3 4 5 6 break at 7
+
+fun shouldSkip(n) {
+    return n % 3 == 0;
+}
+
+fun shouldStop(n) {
+    return n > 8;
+}
+
+for (var i = 1; i <= 15; i = i + 1) {
+    if (shouldSkip(i)) {
+        continue;
+    }
+    if (shouldStop(i)) {
+        break;
+    }
+    print i;
+}
+// Expected: 1 2 4 5 7 8
+
+{
+    var i = 0;
+    while (i < 5) {
+        i = i + 1;
+        {
+            if (i == 3) {
+                continue;  // should work from nested block
+            }
+            print i;
+        }
+    }
+}
+// Expected: 1 2 4 5
+
+for (var i = 0; i < 3; i = i + 1) {
+    for (var j = 0; j < 3; j = j + 1) {
+        for (var k = 0; k < 3; k = k + 1) {
+            if (k == 1) {
+                break;  // only breaks innermost loop
+            }
+
+            printf("i=%d, j=%d, k=%d\n", i, j, k);
+        }
+    }
+}
+// Expected: prints i,j,k combinations but k never equals 1
+
+var arr = [1, 2, 3, 4, 5];
+for (var i = 0; i < len(arr); i = i + 1) {
+    if (arr[i] == 3) {
+        continue;
+    }
+    if (arr[i] == 5) {
+        break;
+    }
+    print arr[i];
+}
+// Expected: 1 2 4
+
