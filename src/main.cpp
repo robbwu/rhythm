@@ -97,15 +97,13 @@ int main(int argc, char **argv) {
         if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--version") == 0) {
             printVersion();
             return 0;
-        } else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
+        }
+        if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
             printUsage();
             return 0;
-        } else if (std::strcmp(argv[i], "-a") == 0 || std::strcmp(argv[i], "--ast") == 0) {
+        }
+        if (std::strcmp(argv[i], "-a") == 0 || std::strcmp(argv[i], "--ast") == 0) {
             printAst = true;
-        }else if (argv[i][0] == '-') {
-            std::cout << "Unknown option: " << argv[i] << std::endl;
-            printUsage();
-            return 1;
         }
     }
 
