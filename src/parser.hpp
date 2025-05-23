@@ -7,6 +7,10 @@
 #include "expr.hpp"
 #include "scanner.hpp"
 #include "statement.hpp"
+
+extern bool noLoop;
+
+
 /*
 
 expression     → equality ;
@@ -326,6 +330,9 @@ private:
 
     // desugar for into while statement
     std::unique_ptr<Stmt> forStatement() {
+        if (noLoop) {  // Add this check
+            error(previous(), "Loop constructs are disabled. Use recursion instead.");
+        }
         consume(TokenType::LEFT_PAREN, "Expect '(' after 'for'.");
 
         std::unique_ptr<Stmt> initializer;
@@ -388,6 +395,9 @@ private:
     }
 
     std::unique_ptr<Stmt> whileStatement() {
+        if (noLoop) {  // Add this check
+            error(previous(), "Loop constructs are disabled. Use recursion instead.");
+        }
         consume(TokenType::LEFT_PAREN, "expected '(' after if");
         auto condition = expression();
         consume(TokenType::RIGHT_PAREN, "expected ')' after if condition");

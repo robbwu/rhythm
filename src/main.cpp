@@ -14,6 +14,7 @@
 #include "resolver.hpp"
 #include "version.hpp"
 bool printAst = false;
+bool noLoop = false;
 
 void printVersion() {
     std::cout << "cclox version " << CCLOX_VERSION << std::endl;
@@ -28,6 +29,7 @@ void printUsage() {
     std::cout << "  -v, --version    Show version information" << std::endl;
     std::cout << "  -h, --help       Show this help message" << std::endl;
     std::cout << "  -a, --ast        Print AST before execution" << std::endl;
+    std::cout << "  -n, --no-loop    Disable loop constructs (forces recursion)" << std::endl;
 }
 
 void run(Interpreter &interpreter, Resolver &resolver, std::string &source)
@@ -104,6 +106,9 @@ int main(int argc, char **argv) {
         }
         if (std::strcmp(argv[i], "-a") == 0 || std::strcmp(argv[i], "--ast") == 0) {
             printAst = true;
+        }
+        if (std::strcmp(argv[i], "-n") == 0 || std::strcmp(argv[i], "--no-loop") == 0) {  // Add this block
+            noLoop = true;
         }
     }
 
