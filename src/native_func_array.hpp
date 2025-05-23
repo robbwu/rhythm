@@ -58,7 +58,6 @@ public:
     int arity() override { return 1; }
     // pop(array): pop v from the back of the array and return it;
     Value call(Interpreter* interp, std::vector<Value> arguments) override {
-        std::cout << "CALLING Pop with " << arguments[0] << std::endl;
         if (arguments.size() != 1) {
             throw RuntimeError({}, "push(array, v) needs two argument");
         }

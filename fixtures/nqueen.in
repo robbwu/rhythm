@@ -1,0 +1,32 @@
+var n = 8;
+var part = [];
+
+// takes partial solution part, explore all legal next moves
+// and return number of solutions with prefix part.
+fun nqueen(n, part) {
+    var k = len(part);
+    if (k == n) {
+        //print part;
+        return 1;
+    }
+    var cnt = 0;
+    for (var c=0; c<n; c=c+1) {
+        var legal = true; // legal until proved not
+        for (var i=0; i<k; i=i+1) {
+            if (part[i] == c or fabs(c - part[i]) == k - i ) {
+                legal = false;
+                break;
+            }
+        }
+        if (legal) {
+            push(part, c);
+            cnt = cnt + nqueen(n, part);
+            pop(part);
+        }
+    }
+    return cnt;
+}
+
+var num_sols = nqueen(n, []);
+assert( num_sols == 92 );
+print "OK";
