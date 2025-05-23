@@ -154,16 +154,16 @@ void AstPrinter::visit(const IfStmt& ifStmt) {
     ifStmt.condition->accept(*this);
     std::cout << "\n";
     {
+        std::cout << get_indent() << "THEN\n";
         IndentGuard guard(*this);
-        std::cout << get_indent() << "THEN ";
         ifStmt.thenBlock->accept(*this);
-        std::cout << "\n";
+        // std::cout << "\n";
     }
     if (ifStmt.elseBlock) {
+        std::cout << get_indent() << "ELSE\n";
         IndentGuard guard(*this);
-        std::cout << get_indent() << "ELSE ";
         ifStmt.elseBlock->accept(*this);
-        std::cout << "\n";
+        // std::cout << "\n";
     }
 }
 
@@ -173,7 +173,6 @@ void AstPrinter::visit(const WhileStmt& whileStmt) {
     std::cout << "\n";
     IndentGuard guard(*this);
     whileStmt.body->accept(*this);
-    std::cout << "\n";
 }
 
 void AstPrinter::visit(const FunctionStmt& funStmt) {
