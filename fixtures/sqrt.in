@@ -16,5 +16,7 @@ fun sqrt_newton(t) {
 
     return x;
 }
-
-print sqrt_newton(2);
+var t = 2;
+x = sqrt_newton(t);
+assert( fabs( x*x - t ) < 1e-7 );
+print "OK";

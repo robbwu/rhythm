@@ -13,7 +13,7 @@
 #include "parser.hpp"
 #include "resolver.hpp"
 #include "version.hpp"
-
+bool printAst = false;
 
 void printVersion() {
     std::cout << "cclox version " << CCLOX_VERSION << std::endl;
@@ -27,6 +27,7 @@ void printUsage() {
     std::cout << "Options:" << std::endl;
     std::cout << "  -v, --version    Show version information" << std::endl;
     std::cout << "  -h, --help       Show this help message" << std::endl;
+    std::cout << "  -a, --ast        Print AST before execution" << std::endl;
 }
 
 void run(Interpreter &interpreter, Resolver &resolver, std::string &source)
@@ -41,11 +42,13 @@ void run(Interpreter &interpreter, Resolver &resolver, std::string &source)
 
     auto parser = Parser(tokens);
     // auto expr = parser.parseExpr();
-    AstPrinter printer;
+    // AstPrinter printer;
+
+
 
     auto stmts = parser.parse();
-    printer.print(stmts);
-    std::cout << std::endl;
+    // printer.print(stmts);
+    // std::cout << std::endl;
     // try {
     //     auto val = interpreter.eval(*expr);
     //     std::visit([&](const auto& x) { std::cout << x; }, val);
@@ -53,6 +56,13 @@ void run(Interpreter &interpreter, Resolver &resolver, std::string &source)
     // } catch (const std::exception &e) {
     //     std::cout << e.what() << std::endl;
     // }
+
+    if (printAst) {
+        AstPrinter printer;
+        printer.print(stmts);
+        std::cout << std::endl;
+    }
+
     resolver.resolve(stmts);
     interpreter.interpret(stmts);
 
@@ -90,7 +100,9 @@ int main(int argc, char **argv) {
         } else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
             printUsage();
             return 0;
-        } else if (argv[i][0] == '-') {
+        } else if (std::strcmp(argv[i], "-a") == 0 || std::strcmp(argv[i], "--ast") == 0) {
+            printAst = true;
+        }else if (argv[i][0] == '-') {
             std::cout << "Unknown option: " << argv[i] << std::endl;
             printUsage();
             return 1;
