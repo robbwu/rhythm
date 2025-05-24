@@ -17,14 +17,14 @@ bool printAst = false;
 bool noLoop = false;
 
 void printVersion() {
-    std::cout << "cclox version " << CCLOX_VERSION << std::endl;
+    std::cout << "rhythm version " << CCLOX_VERSION << std::endl;
     std::cout << "Commit: " << GIT_COMMIT_HASH << " (" << GIT_COMMIT_DATE << ") "  << GIT_COMMIT_MESSAGE  <<  std::endl;
     std::cout << "Build commit " << GIT_DIRTY_FLAG << std::endl;
     std::cout << "Built: " << BUILD_DATE << std::endl;
 }
 
 void printUsage() {
-    std::cout << "Usage: cclox [options] [script]" << std::endl;
+    std::cout << "Usage: rhythm [options] [script]" << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "  -v, --version    Show version information" << std::endl;
     std::cout << "  -h, --help       Show this help message" << std::endl;
@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
 
 
     if (script_args > 1) {
-        std::cout << "Usage: cclox [options] [script]" << std::endl;
+        std::cout << "Usage: rhythm [options] [script]" << std::endl;
         return 1;
     } else if (script_args == 1) {
         runFile(interpreter, resolver, script_file);

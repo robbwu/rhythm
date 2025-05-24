@@ -74,7 +74,6 @@ void AstPrinter::visit(const MapLiteral& mlit) {
 }
 
 void AstPrinter::visit(const Subscript& sub) {
-    // std::cout << "TODO subscript" << std::endl;
     sub.object->accept(*this);
     std::cout << "[ ";
     sub.index->accept(*this);
