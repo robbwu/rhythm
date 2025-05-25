@@ -6,7 +6,6 @@ var part = [];
 fun nqueen(n, part) {
     var k = len(part);
     if (k == n) {
-        //print part;
         return 1;
     }
     var cnt = 0;

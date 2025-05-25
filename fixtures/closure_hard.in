@@ -8,3 +8,24 @@ var a = "global";
   var a = "block";
   showA(); // should still print "global"
 }
+
+fun f() {
+  while (true) {
+    var i = "i";
+    fun g() { print i; }
+    return g;
+  }
+}
+
+var h = f();
+h(); // expect: i
+
+fun f() {
+    var i = "i";
+    return fun () {
+        print i;
+    };
+}
+
+h = f();
+h();

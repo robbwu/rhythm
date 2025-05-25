@@ -12,7 +12,7 @@
 
 class Environment {
 private:
-    Environment *enclosing = nullptr;
+    std::shared_ptr<Environment> enclosing = nullptr;
     // std::unordered_map<std::string, Value> values;
     std::vector<Value> values; // Flat array for direct indexing
     robin_hood::unordered_flat_map<std::string, int> nameToIndex; // Maps variable names to indices
@@ -21,7 +21,7 @@ private:
 
 public:
 
-    explicit Environment(Environment *enclosing) : enclosing(enclosing) {}
+    explicit Environment(std::shared_ptr<Environment> enclosing) : enclosing(std::move(enclosing)) {}
 
     int define(const std::string& name, const Value& value) {
         if (!enclosing) { // Global scope
@@ -71,7 +71,7 @@ public:
     Environment* ancestor(int distance) {
         Environment *env = this;
         for (int i=0; i<distance; i++) {
-            env = env->enclosing;
+            env = env->enclosing.get();
         }
         if (env == nullptr) {
             throw std::runtime_error("Environment nullptr!");
@@ -92,8 +92,8 @@ private:
     static bool isTruthy(const Value&);
 
 public:
-    Environment *env =&globals;
-    Environment globals{nullptr};
+    std::shared_ptr<Environment> globals;
+    std::shared_ptr<Environment> env;
     // std::unordered_map<const Expr*, int> locals;
     std::map<const Expr*, VarLocation> varLocations;
 
@@ -140,7 +140,7 @@ public:
     void visit(const BreakStmt& breakStmt) override;
 
     Value lookUpVariable(const Token & name, const Variable * variable);
-    void executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts,  Environment*);
+    void executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts,  std::shared_ptr<Environment> env);
 
     // void resolve(const Expr*, int);
     void resolveWithIndex(const Expr*, int distance, int index);
@@ -149,10 +149,10 @@ public:
 // Interpreter.hpp
 class EnvGuard {
 public:
-    EnvGuard(Interpreter& I, Environment* newEnv)
+    EnvGuard(Interpreter& I, std::shared_ptr<Environment> newEnv)
         : interp(I), previous(I.env)        // remember current env
     {
-        interp.env = newEnv;               // switch to function-local env
+        interp.env = std::move(newEnv);               // switch to function-local env
     }
 
     // non-copyable
@@ -162,6 +162,6 @@ public:
     ~EnvGuard() { interp.env = previous; } // always restore
 private:
     Interpreter&  interp;
-    Environment*  previous;
+    std::shared_ptr<Environment>  previous;
 };
 

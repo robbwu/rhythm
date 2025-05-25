@@ -1,16 +1,17 @@
 #include <complex>
+#include <utility>
 
 #include "interpreter.hpp"
 
 class LoxFunction: public LoxCallable {
 private:
     const FunctionStmt* declaration;
-    Environment* closure;
+    std::shared_ptr<Environment> closure;
 public:
-    explicit LoxFunction(const FunctionStmt* declaration, Environment* closure): declaration(declaration), closure(closure) {}
+    explicit LoxFunction(const FunctionStmt* declaration, std::shared_ptr<Environment> closure): declaration(declaration), closure(std::move(closure)) {}
 
     Value call(Interpreter *interpreter, std::vector<Value> arguments) override {
-        auto env = new Environment(closure); // FIXME: this is probably leaking!
+        auto env = std::make_shared<Environment>(closure);
         for (int i=0; i<declaration->params.size(); i++) {
             env->define(declaration->params[i].lexeme, arguments[i]);
         }
@@ -35,12 +36,12 @@ public:
 class LoxFunctionExpr: public LoxCallable {
 private:
     const FunctionExpr* declaration;
-    Environment* closure;
+    std::shared_ptr<Environment> closure;
 public:
-    explicit LoxFunctionExpr(const FunctionExpr* declaration, Environment* closure): declaration(declaration), closure(closure) {}
+    explicit LoxFunctionExpr(const FunctionExpr* declaration, std::shared_ptr<Environment> closure): declaration(declaration), closure(std::move(closure)) {}
 
     Value call(Interpreter *interpreter, std::vector<Value> arguments) override {
-        auto env = new Environment(closure); // FIXME: this is probably leaking!
+        auto env = std::make_shared<Environment>(closure);
         for (int i=0; i<declaration->params.size(); i++) {
             env->define(declaration->params[i].lexeme, arguments[i]);
         }

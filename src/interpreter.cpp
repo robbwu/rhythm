@@ -2,6 +2,7 @@
 #include "expr.hpp"
 #include <iostream>
 #include <ostream>
+#include <utility>
 
 #include "lox_function.hpp"
 #include "native_func.hpp"
@@ -10,38 +11,41 @@
 #include "native_func_math.hpp"
 
 Interpreter::Interpreter() {
-    globals.define("clock", new ClockCallable());
-    globals.define("printf", new PrintfCallable());
-    globals.define("len", new LenCallable());
-    globals.define("push", new PushCallable());
-    globals.define("pop", new PopCallable());
-    globals.define("readline", new ReadlineCallable());
-    globals.define("split", new SplitCallable());
-    globals.define("assert", new AssertCallable());
-    globals.define("for_each", new ForEachCallable());
-    globals.define("tonumber", new ToNumberCallable());
+    globals = std::make_shared<Environment>(nullptr);
+    env = globals;
+
+    globals->define("clock", new ClockCallable());
+    globals->define("printf", new PrintfCallable());
+    globals->define("len", new LenCallable());
+    globals->define("push", new PushCallable());
+    globals->define("pop", new PopCallable());
+    globals->define("readline", new ReadlineCallable());
+    globals->define("split", new SplitCallable());
+    globals->define("assert", new AssertCallable());
+    globals->define("for_each", new ForEachCallable());
+    globals->define("tonumber", new ToNumberCallable());
 
     using namespace native::NativeMathFunctionNames;
     using namespace native;
     // math 1arg
-    globals.define(floor_name, new NativeMath1ArgCallable<std::floor, floor_name>());
-    globals.define(ceil_name,  new NativeMath1ArgCallable<std::ceil, ceil_name>());
-    globals.define(sin_name,   new NativeMath1ArgCallable<std::sin, sin_name>());
-    globals.define(cos_name,   new NativeMath1ArgCallable<std::cos, cos_name>());
-    globals.define(tan_name,   new NativeMath1ArgCallable<std::tan, tan_name>());
-    globals.define(asin_name,  new NativeMath1ArgCallable<std::asin, asin_name>());
-    globals.define(acos_name,  new NativeMath1ArgCallable<std::acos, acos_name>());
-    globals.define(atan_name,  new NativeMath1ArgCallable<std::atan, atan_name>());
-    globals.define(log_name,   new NativeMath1ArgCallable<std::log, log_name>());
-    globals.define(log10_name, new NativeMath1ArgCallable<std::log10, log10_name>());
-    globals.define(sqrt_name,  new NativeMath1ArgCallable<std::sqrt, sqrt_name>());
-    globals.define(exp_name,   new NativeMath1ArgCallable<std::exp, exp_name>());
-    globals.define(fabs_name,  new NativeMath1ArgCallable<std::fabs, fabs_name>());
+    globals->define(floor_name, new NativeMath1ArgCallable<std::floor, floor_name>());
+    globals->define(ceil_name,  new NativeMath1ArgCallable<std::ceil, ceil_name>());
+    globals->define(sin_name,   new NativeMath1ArgCallable<std::sin, sin_name>());
+    globals->define(cos_name,   new NativeMath1ArgCallable<std::cos, cos_name>());
+    globals->define(tan_name,   new NativeMath1ArgCallable<std::tan, tan_name>());
+    globals->define(asin_name,  new NativeMath1ArgCallable<std::asin, asin_name>());
+    globals->define(acos_name,  new NativeMath1ArgCallable<std::acos, acos_name>());
+    globals->define(atan_name,  new NativeMath1ArgCallable<std::atan, atan_name>());
+    globals->define(log_name,   new NativeMath1ArgCallable<std::log, log_name>());
+    globals->define(log10_name, new NativeMath1ArgCallable<std::log10, log10_name>());
+    globals->define(sqrt_name,  new NativeMath1ArgCallable<std::sqrt, sqrt_name>());
+    globals->define(exp_name,   new NativeMath1ArgCallable<std::exp, exp_name>());
+    globals->define(fabs_name,  new NativeMath1ArgCallable<std::fabs, fabs_name>());
 
     // math 2 arg
-    globals.define(pow_name,   new NativeMath2ArgsCallable<std::pow, pow_name>());
-    globals.define(atan2_name, new NativeMath2ArgsCallable<std::atan2, atan2_name>());
-    globals.define(fmod_name,  new NativeMath2ArgsCallable<std::fmod, fmod_name>());
+    globals->define(pow_name,   new NativeMath2ArgsCallable<std::pow, pow_name>());
+    globals->define(atan2_name, new NativeMath2ArgsCallable<std::atan2, atan2_name>());
+    globals->define(fmod_name,  new NativeMath2ArgsCallable<std::fmod, fmod_name>());
 }
 
 
@@ -252,7 +256,7 @@ void Interpreter::visit(const Variable& variable) {
         return;
     }
     // Fallback for globals or unresolved variables
-    _result = globals.get(variable.name);
+    _result = globals->get(variable.name);
 }
 
 void Interpreter::visit(const Assignment& assignment) {
@@ -262,7 +266,7 @@ void Interpreter::visit(const Assignment& assignment) {
     if (it != varLocations.end()) {
         env->assignAt(it->second.distance, it->second.index, value);
     } else {
-        globals.assign(assignment.name, value);
+        globals->assign(assignment.name, value);
     }
     _result = value; // Why? chain of assignment?
 }
@@ -333,14 +337,13 @@ void Interpreter::visit(const SubscriptAssignment& assignment) {
 
 void Interpreter::visit(const FunctionExpr& expr) {
     // Create an anonymous LoxFunction - we'll need to modify LoxFunction to accept FunctionExpr
-    LoxCallable* function = new LoxFunctionExpr(&expr, env);
+    LoxCallable* function = new LoxFunctionExpr(&expr, env); // FIXME: make it ref counted! other wise it leaks
     _result = function;
 }
 
 void Interpreter::visit(const BlockStmt& block) {
-    // auto new_env = new Environment(env); // FIXME: this leaks memory
-    Environment new_env(env);
-    executeBlock(block.statements, &new_env);
+    auto new_env = std::make_shared<Environment>(env);
+    executeBlock(block.statements, new_env);
 }
 
 void Interpreter::visit(const IfStmt& ifStmt) {
@@ -371,8 +374,8 @@ void Interpreter::visit(const WhileStmt& whileStmt) {
 }
 
 // this function owns the new environment
-void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, Environment* new_env) {
-    EnvGuard guard(*this, new_env);
+void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, std::shared_ptr<Environment> new_env) {
+    EnvGuard guard(*this, std::move(new_env));
 
     // could throw--need to handle env restoration in such case
     for (auto &statement : statements) {
