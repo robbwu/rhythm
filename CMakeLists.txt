@@ -89,6 +89,18 @@ add_executable(${PROJECT_NAME}
         src/resolver.cpp
 )
 
+add_executable( beat
+        src/vm/main.cpp
+        src/vm/chunk.cpp
+        src/vm/vm.cpp
+        src/vm/compiler.cpp
+        src/scanner.cpp
+        src/expr.cpp
+        src/parser.cpp
+        src/statement.cpp
+        src/ast_printer.cpp
+)
+
 set(DEBUG_FLAGS -g -O0 -fno-omit-frame-pointer)
 set(SAN_FLAGS   -fsanitize=address,undefined)
 
@@ -96,14 +108,23 @@ target_compile_options(${PROJECT_NAME} PRIVATE
         $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
         $<$<CONFIG:Debug>:${SAN_FLAGS}>
 )
+target_compile_options(beat PRIVATE
+        $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
+        $<$<CONFIG:Debug>:${SAN_FLAGS}>
+)
 target_link_options   (${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:${SAN_FLAGS}>
+)
+target_link_options   (beat PRIVATE
         $<$<CONFIG:Debug>:${SAN_FLAGS}>
 )
 
 target_compile_options(${PROJECT_NAME} PRIVATE
         $<$<CONFIG:Release>:-O2 -g>
 )
-
+target_compile_options(beat PRIVATE
+        $<$<CONFIG:Release>:-O2 -g>
+)
 
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin

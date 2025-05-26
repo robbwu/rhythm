@@ -1,0 +1,104 @@
+#include "ast_printer.hpp"
+#include "chunk.hpp"
+#include "parser.hpp"
+#include "resolver.hpp"
+#include "vm.hpp"
+#include "version.hpp"
+#include "compiler.hpp"
+
+bool printAst = false;
+bool noLoop = false;
+
+void printVersion() {
+    std::cout << "beat version " << CCLOX_VERSION << std::endl;
+    std::cout << "Commit: " << GIT_COMMIT_HASH << " (" << GIT_COMMIT_DATE << ") "  << GIT_COMMIT_MESSAGE  <<  std::endl;
+    std::cout << "Build commit " << GIT_DIRTY_FLAG << std::endl;
+    std::cout << "Built: " << BUILD_DATE << std::endl;
+}
+
+void printUsage() {
+    std::cout << "Usage: beat [options] [script]" << std::endl;
+    std::cout << "Options:" << std::endl;
+    std::cout << "  -v, --version    Show version information" << std::endl;
+    std::cout << "  -h, --help       Show this help message" << std::endl;
+    std::cout << "  -a, --ast        Print AST before execution" << std::endl;
+    std::cout << "  -n, --no-loop    Disable loop constructs (forces recursion)" << std::endl;
+}
+
+void runFile(const VM & vm, const Compiler & compiler, char * script_file) {};
+
+void run( VM &vm, Compiler &compiler, std::string &source) {
+    auto scanner = new Scanner(source);
+    std::vector<Token> tokens = scanner->scanTokens();
+    for (auto &token: tokens) {
+        std::cout << token.toString() << ", ";
+    }
+    std::cout << std::endl;
+
+    auto parser = Parser(tokens);
+    auto stmts = parser.parse();
+    AstPrinter printer;
+    printer.print(stmts);
+    std::cout << std::endl;
+
+    compiler.clear();
+    auto chunk = compiler.compile(std::move(stmts));
+    chunk.write(OP_RETURN, 0); // TODO: remove me
+    chunk.disassembleChunk("test chunk");
+    vm.run(chunk);
+}
+
+void runPrompt(VM &vm, Compiler &compiler)
+{
+    std::cout << "> ";
+    for (std::string line; std::getline(std::cin, line);) {
+        run(vm, compiler,  line);
+        std::cout << "> ";
+    }
+}
+
+int main(int argc, char **argv) {
+
+
+    // Parse command line arguments
+    for (int i = 1; i < argc; i++) {
+        if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--version") == 0) {
+            printVersion();
+            return 0;
+        }
+        if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
+            printUsage();
+            return 0;
+        }
+        if (std::strcmp(argv[i], "-a") == 0 || std::strcmp(argv[i], "--ast") == 0) {
+            printAst = true;
+        }
+
+    }
+
+    Compiler compiler;
+    VM vm{};
+
+    // Count non-option arguments
+    int script_args = 0;
+    char* script_file = nullptr;
+    for (int i = 1; i < argc; i++) {
+        if (argv[i][0] != '-') {
+            script_args++;
+            if (script_args == 1) {
+                script_file = argv[i];
+            }
+        }
+    }
+
+    if (script_args > 1) {
+        std::cout << "Usage: beat [options] [script]" << std::endl;
+        return 1;
+    } else if (script_args == 1) {
+        runFile(vm, compiler, script_file);
+    } else {
+        runPrompt(vm, compiler);
+    }
+
+    return 0;
+}
