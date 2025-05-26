@@ -10,6 +10,7 @@
 
 bool printAst = false;
 bool noLoop = false;
+bool disassembleOnly = false;
 
 void run( VM &vm, Compiler &compiler, std::string &source);
 
@@ -57,7 +58,8 @@ void run( VM &vm, Compiler &compiler, std::string &source) {
     auto chunk = compiler.compile(std::move(stmts));
     chunk.write(OP_RETURN, 0); // TODO: remove me
     chunk.disassembleChunk("test chunk");
-    vm.run(chunk);
+    if (!disassembleOnly)
+        vm.run(chunk);
 }
 
 void runPrompt(VM &vm, Compiler &compiler)
@@ -85,7 +87,9 @@ int main(int argc, char **argv) {
         if (std::strcmp(argv[i], "-a") == 0 || std::strcmp(argv[i], "--ast") == 0) {
             printAst = true;
         }
-
+        if (std::strcmp(argv[i], "-d") == 0 || std::strcmp(argv[i], "--disasm") == 0) {
+            disassembleOnly = true;
+        }
     }
 
     Compiler compiler;

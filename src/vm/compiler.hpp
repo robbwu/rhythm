@@ -70,6 +70,8 @@ public:
 
     int emitJump(uint8_t instruction, int line);
     void patchJump(int offset);
+    void emitLoop(int loopStart);
+
 
     void visit(const Binary&) override;
     void visit(const Literal&) override;

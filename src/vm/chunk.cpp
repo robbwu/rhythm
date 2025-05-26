@@ -60,6 +60,8 @@ int Chunk::disassembleInstruction(int offset) {
             return jumpInstruction("OP_JUMP_IF_FALSE", 1, offset);
         case OP_JUMP:
             return jumpInstruction("OP_JUMP", 1, offset);
+        case OP_LOOP:
+            return jumpInstruction("OP_LOOP", -1, offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;

@@ -1,7 +1,6 @@
 #include <iostream>
 #include "vm.hpp"
 
-
 #define DEBUG_TRACE_EXECUTION
 
 InterpretResult VM::run(Chunk chunk) {
@@ -129,6 +128,11 @@ InterpretResult VM::run(Chunk chunk) {
             case OP_JUMP: {
                 uint16_t offset = READ_SHORT();
                 ip += offset;
+                break;
+            }
+            case OP_LOOP: {
+                uint16_t offset = READ_SHORT();
+                ip -= offset;
                 break;
             }
             default:

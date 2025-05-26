@@ -1,6 +1,7 @@
+#include <filesystem>
+
 #include "compiler.hpp"
 
-#include <filesystem>
 
 void Compiler::visit(const Binary &expr) {
     expr.left->accept(*this);
@@ -32,7 +33,6 @@ void Compiler::visit(const Binary &expr) {
             throw CompileException("binary op type not in +,-,*,/");
             break;
     }
-    // chunk.write(opcode, expr.op.line);
 }
 
 
@@ -226,7 +226,29 @@ void Compiler::visit(const IfStmt &stmt) {
     }
 };
 
-void Compiler::visit(const WhileStmt &) {};
+void Compiler::emitLoop(int loopStart) {
+    chunk.write(OP_LOOP, 0);
+
+    int offset = chunk.bytecodes.size() - loopStart + 2;
+    if (offset > UINT16_MAX)
+        throw CompileException("Loop body too large.");
+
+    chunk.write((offset >> 8) & 0xff, 0);
+    chunk.write(offset & 0xff, 0);
+}
+
+void Compiler::visit(const WhileStmt &stmt) {
+    int loopStart = chunk.bytecodes.size();
+    stmt.condition->accept(*this);
+    int exitJump = emitJump(OP_JUMP_IF_FALSE, 0);
+    chunk.write(OP_POP, 0);
+    stmt.body->accept(*this);
+    if (stmt.increment)
+        stmt.increment->accept(*this);
+    emitLoop(loopStart);
+    patchJump(exitJump);
+    chunk.write(OP_POP, 0);
+};
 
 void Compiler::visit(const FunctionStmt &) {};
 
