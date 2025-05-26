@@ -37,7 +37,24 @@ void Compiler::visit(const Literal &expr) {
 }
 
 
-void Compiler::visit(const Logical &) {
+void Compiler::visit(const Logical &expr) {
+    if (expr.op.type ==  TokenType::AND){
+        expr.left->accept(*this);
+        int endJump = emitJump(OP_JUMP_IF_FALSE, expr.op.line);
+        chunk.write(OP_POP, expr.op.line);
+        expr.right->accept(*this);
+        patchJump(endJump);
+    } else if (expr.op.type ==  TokenType::OR) {
+        expr.left->accept(*this);
+        int elseJump = emitJump(OP_JUMP_IF_FALSE, expr.op.line);
+        int endJump = emitJump(OP_JUMP, expr.op.line);
+        patchJump(elseJump);
+        chunk.write(OP_POP, expr.op.line);
+        expr.right->accept(*this);
+        patchJump(endJump);
+    } else {
+        throw CompileException("logical expr op type must be OR or AND");
+    }
 };
 
 void Compiler::visit(const Grouping &expr) {
