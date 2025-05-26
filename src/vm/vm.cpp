@@ -46,6 +46,10 @@ InterpretResult VM::run(Chunk chunk) {
                 push(nullptr);
                 break;
             }
+            case OP_POP: {
+                pop();
+                break;
+            }
             case OP_NEGATE: {
                 auto v = pop();
                 if (!std::holds_alternative<double>(v)) {
@@ -80,12 +84,26 @@ InterpretResult VM::run(Chunk chunk) {
             }
             case OP_GET_GLOBAL: {
                 auto name = READ_STRING();
+                auto it = globals.find(name);
+                if (it == globals.end()) {
+                    throw VMRuntimeError(0, std::format("global variable {} not found", name));
+                }
                 push(globals[name]);
                 break;
             }
             case OP_SET_GLOBAL: {
                 auto name = READ_STRING();
                 globals[name] = pop();
+                break;
+            }
+            case OP_SET_LOCAL: {
+                auto slot = READ_BYTE();
+                stack[slot] = pop();
+                break;
+            }
+            case OP_GET_LOCAL: {
+                auto slot = READ_BYTE();
+                push(stack[slot]);
                 break;
             }
             default:

@@ -28,8 +28,14 @@ int Chunk::disassembleInstruction(int offset) {
             return constantInstruction("OP_GET_GLOBAL", offset);
         case OP_SET_GLOBAL:
             return constantInstruction("OP_SET_GLOBAL", offset);
+        case OP_GET_LOCAL:
+            return byteInstruction("OP_GET_LOCAL", offset);
+        case OP_SET_LOCAL:
+            return byteInstruction("OP_SET_LOCAL", offset);
         case OP_NIL:
             return simpleInstruction("OP_NIL", offset);
+        case OP_POP:
+            return simpleInstruction("OP_POP", offset);
         case OP_PRINT:
             return simpleInstruction("OP_PRINT", offset);
         case OP_NEGATE:
@@ -65,5 +71,11 @@ int Chunk::addConstant(const Value& value) {
     printf("%-16s %4d '", name, constant);
     std::cout << constants[constant];
     printf("'\n");
+    return offset + 2;
+}
+
+int Chunk::byteInstruction(const char* name,int offset) {
+    uint8_t slot = bytecodes[offset + 1];
+    printf("%-16s %4d\n", name, slot);
     return offset + 2;
 }

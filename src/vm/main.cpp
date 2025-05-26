@@ -1,13 +1,18 @@
+#include <fstream>
+#include <iostream>
+
 #include "ast_printer.hpp"
 #include "chunk.hpp"
 #include "parser.hpp"
-#include "resolver.hpp"
 #include "vm.hpp"
 #include "version.hpp"
 #include "compiler.hpp"
 
 bool printAst = false;
 bool noLoop = false;
+
+void run( VM &vm, Compiler &compiler, std::string &source);
+
 
 void printVersion() {
     std::cout << "beat version " << CCLOX_VERSION << std::endl;
@@ -25,7 +30,14 @@ void printUsage() {
     std::cout << "  -n, --no-loop    Disable loop constructs (forces recursion)" << std::endl;
 }
 
-void runFile(const VM & vm, const Compiler & compiler, char * script_file) {};
+void runFile(VM &vm,  Compiler &compiler, char *script_file) {
+    std::ifstream file(script_file);
+    if (!file.is_open()) {
+        throw std::runtime_error("Could not open file: " + std::string(script_file));
+    }
+    auto str = std::string(std::istreambuf_iterator<char>(file),std::istreambuf_iterator<char>());
+    run( vm, compiler, str );
+};
 
 void run( VM &vm, Compiler &compiler, std::string &source) {
     auto scanner = new Scanner(source);

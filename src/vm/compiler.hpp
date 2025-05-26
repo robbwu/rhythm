@@ -3,6 +3,8 @@
 #include "expr.hpp"
 #include "statement.hpp"
 
+
+
 class CompileException: public std::runtime_error {
     public:
     CompileException(const std::string& msg): std::runtime_error(msg) {}
@@ -14,6 +16,20 @@ class Compiler: ExprVisitor, StmtVisitor {
 private:
     Chunk chunk;
 public:
+    typedef struct {
+        Token name;
+        int depth;
+        bool isCaptured;
+    } Local;
+    int scopeDepth = 0;
+
+
+    // use as a stack for local variables
+    // this compile-time stack will exactly mirror runtime VM stack std::vector<Value> locals
+    // except that locals store meta-info about the local variable, the VM stack storing the values only
+    // because statements have net-zero effect on stack
+    std::vector<Local> locals;
+
     Compiler() = default;
 
     Chunk compile(const Expr& expr) {
@@ -37,6 +53,20 @@ public:
         chunk.bytecodes.clear();
         chunk.lines.clear();
     }
+
+    inline void beginScope() {
+        scopeDepth++;
+    }
+
+    inline void endScope() {
+        scopeDepth--;
+        while (!locals.empty()  && locals.back().depth > scopeDepth) {
+            auto local = locals.back();
+            locals.pop_back();
+            chunk.write(OP_POP, local.name.line);
+        }
+    }
+    int resolveLocal(Token token);
 
     void visit(const Binary&) override;
     void visit(const Literal&) override;
