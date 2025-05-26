@@ -167,7 +167,38 @@ void Compiler::visit(const BlockStmt &stmt) {
     endScope();
 };
 
-void Compiler::visit(const IfStmt &) {};
+int Compiler::emitJump(uint8_t instruction, int line) {
+    chunk.write(instruction, line);
+    chunk.write(0xff, line);
+    chunk.write(0xff, line);
+    return chunk.bytecodes.size() - 2;
+}
+
+void Compiler::patchJump(int offset) {
+    // -2 to adjust for the bytecode for the jump offset itself.
+    int jump = chunk.bytecodes.size() - offset - 2;
+
+    if (jump > UINT16_MAX) {
+        throw CompileException("Too much code to jump over.");
+    }
+
+    chunk.bytecodes[offset] = (jump >> 8) & 0xff;
+    chunk.bytecodes[offset + 1] = jump & 0xff;
+}
+
+void Compiler::visit(const IfStmt &stmt) {
+    stmt.condition->accept(*this);
+    int thenJump = emitJump(OP_JUMP_IF_FALSE, 0);
+    chunk.write(OP_POP, 0);
+    stmt.thenBlock->accept(*this);
+    int elseJump = emitJump(OP_JUMP, 0);
+    patchJump(thenJump);
+    chunk.write(OP_POP, 0);
+    if (stmt.elseBlock) {
+        stmt.elseBlock->accept(*this);
+        patchJump(elseJump);
+    }
+};
 
 void Compiler::visit(const WhileStmt &) {};
 

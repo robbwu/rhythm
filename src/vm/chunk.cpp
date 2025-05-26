@@ -48,6 +48,10 @@ int Chunk::disassembleInstruction(int offset) {
             return simpleInstruction("OP_MULTIPLY", offset);
         case OP_DIVIDE:
             return simpleInstruction("OP_DIVIDE", offset);
+        case OP_JUMP_IF_FALSE:
+            return jumpInstruction("OP_JUMP_IF_FALSE", 1, offset);
+        case OP_JUMP:
+            return jumpInstruction("OP_JUMP", 1, offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;
@@ -78,4 +82,11 @@ int Chunk::byteInstruction(const char* name,int offset) {
     uint8_t slot = bytecodes[offset + 1];
     printf("%-16s %4d\n", name, slot);
     return offset + 2;
+}
+int Chunk::jumpInstruction(const char* name, int sign, int offset) {
+    uint16_t jump = (uint16_t)(bytecodes[offset + 1] << 8);
+    jump |= bytecodes[offset + 2];
+    printf("%-16s %4d -> %d\n", name, offset,
+           offset + 3 + sign * jump);
+    return offset + 3;
 }

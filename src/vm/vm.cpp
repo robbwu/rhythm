@@ -7,6 +7,7 @@
 InterpretResult VM::run(Chunk chunk) {
     ip = &chunk.bytecodes[0];
 #define READ_BYTE() (*ip++)
+#define READ_SHORT() (ip += 2, (uint16_t)((ip[-2] << 8) | ip[-1]))
 #define READ_CONSTANT() (chunk.constants[READ_BYTE()])
 #define READ_STRING() std::get<std::string>(READ_CONSTANT())
 #define BINARY_OP(op) \
@@ -104,6 +105,18 @@ InterpretResult VM::run(Chunk chunk) {
             case OP_GET_LOCAL: {
                 auto slot = READ_BYTE();
                 push(stack[slot]);
+                break;
+            }
+            case OP_JUMP_IF_FALSE: {
+                uint16_t offset = READ_SHORT();
+                if (!is_truthy(peek())) {
+                    ip += offset;
+                }
+                break;
+            }
+            case OP_JUMP: {
+                uint16_t offset = READ_SHORT();
+                ip += offset;
                 break;
             }
             default:

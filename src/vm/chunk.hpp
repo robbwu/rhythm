@@ -11,6 +11,7 @@ typedef enum  {
     OP_DEFINE_GLOBAL, OP_GET_GLOBAL, OP_SET_GLOBAL,
     OP_SET_LOCAL, OP_GET_LOCAL,
     OP_POP,
+    OP_JUMP_IF_FALSE, OP_JUMP,
 } OpCode;
 
 // using Chunk = std::vector<uint8_t>;
@@ -30,7 +31,8 @@ public:
 
     int constantInstruction(const char* name, int offset);
     int byteInstruction(const char* name,int offset);
-    static int simpleInstruction(const char* name, int offset);
+    int simpleInstruction(const char* name, int offset);
+    int jumpInstruction(const char* name, int sign, int offset);
 };
 
 

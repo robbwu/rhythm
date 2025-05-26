@@ -68,6 +68,9 @@ public:
     }
     int resolveLocal(Token token);
 
+    int emitJump(uint8_t instruction, int line);
+    void patchJump(int offset);
+
     void visit(const Binary&) override;
     void visit(const Literal&) override;
     void visit(const Logical&) override;
