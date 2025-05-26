@@ -51,6 +51,10 @@ InterpretResult VM::run(Chunk chunk) {
                 pop();
                 break;
             }
+            case OP_NOT: {
+                push(! std::get<bool>(pop()));
+                break;
+            }
             case OP_NEGATE: {
                 auto v = pop();
                 if (!std::holds_alternative<double>(v)) {
@@ -78,6 +82,14 @@ InterpretResult VM::run(Chunk chunk) {
             case OP_MULTIPLY: BINARY_OP(*); break;
             case OP_DIVIDE:   BINARY_OP(/); break;
 
+            case OP_EQUAL: {
+                Value b = pop();
+                Value a = pop();
+                push(a == b);
+                break;
+            }
+            case OP_GREATER:  BINARY_OP(>); break;
+            case OP_LESS:     BINARY_OP(<); break;
             case OP_DEFINE_GLOBAL: {
                 auto name = READ_STRING();
                 globals[name] = pop();

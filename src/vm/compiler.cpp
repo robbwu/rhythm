@@ -6,24 +6,33 @@ void Compiler::visit(const Binary &expr) {
     expr.left->accept(*this);
     expr.right->accept(*this);
     OpCode opcode;
+    auto line = expr.op.line;
     switch (expr.op.type) {
-        case TokenType::PLUS:
-            opcode = OP_ADD;
+        case TokenType::PLUS: chunk.write(OP_ADD, line); break;
+        case TokenType::MINUS: chunk.write(OP_SUBTRACT, line); break;
+        case TokenType::STAR: chunk.write(OP_MULTIPLY, line); break;
+        case TokenType::SLASH: chunk.write(OP_DIVIDE, line); break;
+
+        case TokenType::EQUAL_EQUAL: chunk.write(OP_EQUAL, line); break;
+        case TokenType::BANG_EQUAL:
+            chunk.write(OP_EQUAL, line);
+            chunk.write(OP_NOT, line);
             break;
-        case TokenType::MINUS:
-            opcode = OP_SUBTRACT;
+        case TokenType::GREATER: chunk.write(OP_GREATER, line); break;
+        case TokenType::LESS: chunk.write(OP_LESS, line); break;
+        case TokenType::GREATER_EQUAL:
+            chunk.write(OP_LESS, line);
+            chunk.write(OP_NOT, line);
             break;
-        case TokenType::STAR:
-            opcode = OP_MULTIPLY;
-            break;
-        case TokenType::SLASH:
-            opcode = OP_DIVIDE;
+        case TokenType::LESS_EQUAL:
+            chunk.write(OP_GREATER, line);
+            chunk.write(OP_NOT, line);
             break;
         default:
             throw CompileException("binary op type not in +,-,*,/");
             break;
     }
-    chunk.write(opcode, expr.op.line);
+    // chunk.write(opcode, expr.op.line);
 }
 
 
