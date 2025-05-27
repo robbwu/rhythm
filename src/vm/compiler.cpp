@@ -243,8 +243,10 @@ void Compiler::visit(const WhileStmt &stmt) {
     int exitJump = emitJump(OP_JUMP_IF_FALSE, 0);
     chunk.write(OP_POP, 0);
     stmt.body->accept(*this);
-    if (stmt.increment)
+    if (stmt.increment) {
         stmt.increment->accept(*this);
+        chunk.write(OP_POP, 0);
+    }
     emitLoop(loopStart);
     patchJump(exitJump);
     chunk.write(OP_POP, 0);
