@@ -10,7 +10,7 @@
 
 bool printAst = false;
 bool noLoop = false;
-bool disassembleOnly = false;
+bool disassemble = false;
 
 void run( VM &vm, Compiler &compiler, std::string &source);
 
@@ -29,6 +29,7 @@ void printUsage() {
     std::cout << "  -h, --help       Show this help message" << std::endl;
     std::cout << "  -a, --ast        Print AST before execution" << std::endl;
     std::cout << "  -n, --no-loop    Disable loop constructs (forces recursion)" << std::endl;
+    std::cout << "  -d, --disasm     Print disassembled bytecode chunk"    << std::endl;
 }
 
 void runFile(VM &vm,  Compiler &compiler, char *script_file) {
@@ -43,23 +44,26 @@ void runFile(VM &vm,  Compiler &compiler, char *script_file) {
 void run( VM &vm, Compiler &compiler, std::string &source) {
     auto scanner = new Scanner(source);
     std::vector<Token> tokens = scanner->scanTokens();
-    for (auto &token: tokens) {
-        std::cout << token.toString() << ", ";
-    }
-    std::cout << std::endl;
+    // for (auto &token: tokens) {
+    //     std::cout << token.toString() << ", ";
+    // }
+    // std::cout << std::endl;
 
     auto parser = Parser(tokens);
     auto stmts = parser.parse();
-    AstPrinter printer;
-    printer.print(stmts);
-    std::cout << std::endl;
+    if (printAst) {
+        AstPrinter printer;
+        printer.print(stmts);
+        std::cout << std::endl;
+    }
 
     compiler.clear();
     auto chunk = compiler.compile(std::move(stmts));
     chunk.write(OP_RETURN, 0); // TODO: remove me
-    chunk.disassembleChunk("test chunk");
-    if (!disassembleOnly)
-        vm.run(chunk);
+    if (disassemble)
+        chunk.disassembleChunk("test chunk");
+
+    vm.run(chunk);
 }
 
 void runPrompt(VM &vm, Compiler &compiler)
@@ -88,7 +92,7 @@ int main(int argc, char **argv) {
             printAst = true;
         }
         if (std::strcmp(argv[i], "-d") == 0 || std::strcmp(argv[i], "--disasm") == 0) {
-            disassembleOnly = true;
+            disassemble = true;
         }
     }
 

@@ -1,7 +1,7 @@
 #include <iostream>
 #include "vm.hpp"
 
-#define DEBUG_TRACE_EXECUTION
+// #define DEBUG_TRACE_EXECUTION
 
 InterpretResult VM::run(Chunk chunk) {
     ip = &chunk.bytecodes[0];
