@@ -58,12 +58,13 @@ void run( VM &vm, Compiler &compiler, std::string &source) {
     }
 
     compiler.clear();
-    auto chunk = compiler.compile(std::move(stmts));
-    chunk.write(OP_RETURN, 0); // TODO: remove me
+    // auto chunk = compiler.compile(std::move(stmts));
+    auto script = compiler.compileBeatFunction(std::move(stmts), "", 0, BeatFunctionType::SCRIPT);
+    // chunk.write(OP_RETURN, 0); // TODO: remove me
     if (disassemble)
-        chunk.disassembleChunk("test chunk");
+        script->chunk.disassembleChunk("test chunk");
 
-    vm.run(chunk);
+    vm.run(script);
 }
 
 void runPrompt(VM &vm, Compiler &compiler)

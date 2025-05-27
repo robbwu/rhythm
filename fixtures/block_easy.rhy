@@ -3,8 +3,7 @@
     var b = 4;
     {
         var b = a;
-        print b;
+        print b; // expect 3
     }
-    print b;
+    print b; //expect 4
 }
-

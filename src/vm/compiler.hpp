@@ -2,8 +2,7 @@
 #include "chunk.hpp"
 #include "expr.hpp"
 #include "statement.hpp"
-
-
+#include "token.hpp"
 
 class CompileException: public std::runtime_error {
     public:
@@ -11,9 +10,9 @@ class CompileException: public std::runtime_error {
 
 };
 
-
 class Compiler: ExprVisitor, StmtVisitor {
 private:
+    Compiler *enclosing = nullptr;
     Chunk chunk;
 public:
     typedef struct {
@@ -42,11 +41,19 @@ public:
         return chunk;
     }
 
-    inline Chunk compile(std::vector<std::unique_ptr<Stmt>> stmts) {
+    inline Chunk compile(const std::vector<std::unique_ptr<Stmt>>& stmts) {
         for (auto& stmt : stmts) {
             stmt->accept(*this);
         }
         return chunk;
+    }
+
+    BeatFunction* compileBeatFunction(const std::vector<std::unique_ptr<Stmt>> &stmts, std::string name, int arity, BeatFunctionType type) {
+        chunk = Chunk(); // reset the chunk
+        compile(std::move(stmts));
+        chunk.write(OP_NIL, 0);
+        chunk.write(OP_RETURN, 0); // add return at the end of the function
+        return new BeatFunction(arity, name, chunk, type);
     }
 
     inline void clear() {
@@ -99,5 +106,3 @@ public:
     void visit(const BreakStmt&) override;
     void visit(const ContinueStmt&) override;
 };
-
-

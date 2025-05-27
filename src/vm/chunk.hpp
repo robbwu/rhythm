@@ -11,7 +11,7 @@ typedef enum  {
     OP_DEFINE_GLOBAL, OP_GET_GLOBAL, OP_SET_GLOBAL,
     OP_SET_LOCAL, OP_GET_LOCAL,
     OP_POP,
-    OP_JUMP_IF_FALSE, OP_JUMP, OP_LOOP,
+    OP_JUMP_IF_FALSE, OP_JUMP, OP_LOOP, OP_CALL,
 } OpCode;
 
 // using Chunk = std::vector<uint8_t>;
@@ -35,4 +35,29 @@ public:
     int jumpInstruction(const char* name, int sign, int offset);
 };
 
+enum class BeatFunctionType {
+    FUNCTION, SCRIPT,
+};
 
+
+// Function defined in Rhythm code
+class BeatFunction: public LoxCallable {
+private:
+public:
+    std::string name;
+    int arity_;
+    Chunk chunk;
+    BeatFunctionType type;
+
+    BeatFunction(int _arity, const std::string &name, Chunk &chunk, BeatFunctionType type): arity_(_arity), name(name), chunk(std::move(chunk)), type(type) {}
+
+    int arity() override { return arity_;}
+
+    Value call(Interpreter *interpreter, std::vector<Value> arguments) override {
+        return {};
+    }
+
+    std::string toString() override {
+        return "<BeatFn " + name + ">";
+    }
+};

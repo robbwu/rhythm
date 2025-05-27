@@ -1,13 +1,29 @@
 #include <iostream>
+#include <variant>
+#include "token.hpp"
 #include "vm.hpp"
 
 // #define DEBUG_TRACE_EXECUTION
 
-InterpretResult VM::run(Chunk chunk) {
-    ip = &chunk.bytecodes[0];
-#define READ_BYTE() (*ip++)
-#define READ_SHORT() (ip += 2, (uint16_t)((ip[-2] << 8) | ip[-1]))
-#define READ_CONSTANT() (chunk.constants[READ_BYTE()])
+InterpretResult VM::run(BeatFunction *func){
+    if(func->type == BeatFunctionType::SCRIPT) {
+        // reset the stack and frames
+        stack.clear();
+        frames.clear();
+        // initialize the frame;
+        frames.push_back(std::make_shared<CallFrame>(func, &func->chunk.bytecodes[0], 0));
+    } else {
+        throw VMRuntimeError(0, "NOT IMPLEMENTED YET");
+    }
+    return run();
+}
+
+
+InterpretResult VM::run() {
+
+#define READ_BYTE() (*frame->ip++)
+#define READ_SHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
+#define READ_CONSTANT() (frame->function->chunk.constants[READ_BYTE()])
 #define READ_STRING() std::get<std::string>(READ_CONSTANT())
 #define BINARY_OP(op) \
     do { \
@@ -20,6 +36,7 @@ InterpretResult VM::run(Chunk chunk) {
 
 
     for (;;) {
+        auto &frame = frames.back();
 #ifdef DEBUG_TRACE_EXECUTION
         printf("          ");
         for (auto & slot : stack) {
@@ -28,7 +45,7 @@ InterpretResult VM::run(Chunk chunk) {
             printf(" ]");
         }
         printf("\n");
-        chunk.disassembleInstruction((int)(ip - &chunk.bytecodes[0]));
+        frame->function->chunk.disassembleInstruction((int)(frame->ip - &frame->function->chunk.bytecodes[0]));
 #endif
         uint8_t instruction = READ_BYTE();
         switch (instruction) {
@@ -63,8 +80,14 @@ InterpretResult VM::run(Chunk chunk) {
                 break;
             }
             case OP_RETURN: {
-                // std::cout << pop() << std::endl;
-                return INTERPRET_OK;
+                auto result = pop();
+                if (frames.size()==1) { // if this is the last frame, we are done
+                    return INTERPRET_OK;
+                }
+                stack.resize(stack.size() - 1 - frame->function->arity()); // restore stack to the frame pointer
+                frames.pop_back(); // pop the current frame
+                push(result);
+                break;
             }
             case OP_ADD: {
                 Value b = pop();
@@ -105,34 +128,62 @@ InterpretResult VM::run(Chunk chunk) {
             }
             case OP_SET_GLOBAL: {
                 auto name = READ_STRING();
-                globals[name] = pop();
+                globals[name] = peek();
                 break;
             }
             case OP_SET_LOCAL: {
                 auto slot = READ_BYTE();
-                stack[slot] = pop();
+                stack[frame->frame_pointer+slot] = peek();
                 break;
             }
             case OP_GET_LOCAL: {
                 auto slot = READ_BYTE();
-                push(stack[slot]);
+                push(stack[frame->frame_pointer+slot]);
                 break;
             }
             case OP_JUMP_IF_FALSE: {
                 uint16_t offset = READ_SHORT();
                 if (!is_truthy(peek())) {
-                    ip += offset;
+                    frame->ip += offset;
                 }
                 break;
             }
             case OP_JUMP: {
                 uint16_t offset = READ_SHORT();
-                ip += offset;
+                frame->ip += offset;
                 break;
             }
             case OP_LOOP: {
                 uint16_t offset = READ_SHORT();
-                ip -= offset;
+                frame->ip -= offset;
+                break;
+            }
+            case OP_CALL: {
+                int argCount = READ_BYTE();
+                if (argCount > 255) {
+                    throw VMRuntimeError(0, "cannot call function with more than 255 arguments");
+                }
+                if (argCount < 0) {
+                    throw VMRuntimeError(0, "cannot call function with negative arguments");
+                }
+                if (argCount > stack.size() - frame->frame_pointer - 1) {
+                    throw VMRuntimeError(0, "not enough arguments for function call");
+                }
+                auto fun = peek(argCount);
+                if (!std::holds_alternative<LoxCallable*>(fun)) {
+                    throw VMRuntimeError(0, "OP_CALL cannot find LoxCallable* on stack");
+                }
+                LoxCallable* func = std::get<LoxCallable*>(fun);
+                BeatFunction* beat_func = dynamic_cast<BeatFunction*>(func);
+                if ( beat_func == nullptr) {
+                    throw VMRuntimeError(0, std::format("OP_CALL expected a BeatFunction but got {}", func->toString()));
+                }
+                if (beat_func->arity() != argCount) {
+                    throw VMRuntimeError(0, std::format("function {} expected {} arguments but got {}", beat_func->toString(), beat_func->arity(), argCount));
+                }
+                // create a new call frame
+                frames.push_back(std::make_shared<CallFrame>(beat_func, &beat_func->chunk.bytecodes[0], stack.size() - argCount));
+
                 break;
             }
             default:

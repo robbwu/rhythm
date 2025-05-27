@@ -13,17 +13,28 @@ typedef enum {
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
+class CallFrame {
+public:
+    BeatFunction* function;
+    uint8_t* ip; // instruction pointer
+    int frame_pointer; // where the function's stack starts in the VM stack
+
+    CallFrame(BeatFunction* func, uint8_t* instruction_pointer, int fp)
+        : function(func), ip(instruction_pointer), frame_pointer(fp) {}
+};
+
 class VM {
-    // Chunk chunk;
-    uint8_t* ip;
     std::vector<Value> stack; // stack VM
+    std::vector<std::shared_ptr<CallFrame>> frames; // call frame stack
 
     std::unordered_map<std::string, Value> globals;
 public:
 
-    explicit VM(): ip(0) {};
+    explicit VM(): stack(), frames(), globals()  {};
 
-    InterpretResult run(Chunk chunk);
+    InterpretResult run();
+    InterpretResult run(BeatFunction *func);
+
     inline InterpretResult interpret(const std::string& source, Compiler compiler) {
         // compiler.compile(source);
         return INTERPRET_OK;
@@ -38,6 +49,9 @@ public:
     }
     Value peek() {
         return stack.back();
+    }
+    Value peek(int i) {
+        return stack[stack.size() - 1 - i];
     }
 
 

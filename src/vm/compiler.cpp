@@ -1,7 +1,9 @@
 #include <filesystem>
 
 #include "compiler.hpp"
+#include "token.hpp"
 
+extern bool disassemble;
 
 void Compiler::visit(const Binary &expr) {
     expr.left->accept(*this);
@@ -111,6 +113,7 @@ void Compiler::visit(const Assignment &expr) {
         chunk.write(OP_SET_LOCAL, expr.name.line);
         chunk.write(arg, expr.name.line);
     }
+
 };
 
 // returns the slot index in the locals stack in both Compiler/VM (as they mirror)
@@ -129,7 +132,17 @@ int Compiler::resolveLocal(Token token) {
     return -1;
 }
 
-void Compiler::visit(const Call &) {
+void Compiler::visit(const Call &expr) {
+    expr.callee->accept(*this);
+    for (const auto &arg : expr.arguments) {
+        arg->accept(*this);
+    }
+    int argCount = expr.arguments.size();
+    if (argCount >= 256) {
+        throw CompileException("cannot compile >= 256 arguments");
+    }
+    chunk.write(OP_CALL, expr.paren.line);
+    chunk.write(argCount, expr.paren.line);
 };
 
 void Compiler::visit(const ArrayLiteral &) {
@@ -154,6 +167,7 @@ void Compiler::visit(const FunctionExpr &) {
 // statements
 void Compiler::visit(const ExpressionStmt &stmt) {
     stmt.expr->accept(*this);
+    chunk.write(OP_POP, 0); // pop the result of the expression
 };
 
 void Compiler::visit(const PrintStmt &stmt) {
@@ -223,6 +237,7 @@ void Compiler::visit(const IfStmt &stmt) {
     if (stmt.elseBlock) {
         stmt.elseBlock->accept(*this);
         patchJump(elseJump);
+        // chunk.write(OP_POP, 0);
     }
 };
 
@@ -252,9 +267,41 @@ void Compiler::visit(const WhileStmt &stmt) {
     chunk.write(OP_POP, 0);
 };
 
-void Compiler::visit(const FunctionStmt &) {};
+void Compiler::visit(const FunctionStmt &stmt) {
+    if (scopeDepth > 0) {
+        locals.push_back({stmt.name, -1, false});
+    }
 
-void Compiler::visit(const ReturnStmt &) {};
+    Compiler functionCompiler;
+    functionCompiler.beginScope();
+    for (const auto &param : stmt.params) {
+        functionCompiler.locals.push_back({param, functionCompiler.scopeDepth, false});
+    }
+    auto func = functionCompiler.compileBeatFunction(stmt.body, stmt.name.lexeme, stmt.params.size(), BeatFunctionType::FUNCTION);
+    if (disassemble)
+        func->chunk.disassembleChunk(std::format("BeatFunc: {}", func->name));
+    int constant = chunk.addConstant((LoxCallable*)func);
+    chunk.write(OP_CONSTANT, stmt.name.line);
+    chunk.write(constant, stmt.name.line);
+
+    if (scopeDepth == 0) { // global variable declaration
+        int constant = chunk.addConstant(stmt.name.lexeme);
+        if (constant >= 256) {
+            throw CompileException("cannot compile >= 256 constants");
+        }
+        chunk.write(OP_DEFINE_GLOBAL, stmt.name.line);
+        chunk.write(constant, stmt.name.line);
+    } else { // local variable declaration
+        locals.back().depth = scopeDepth;
+        // no need to emit any opcodes; just bookkeep the position of the local variables on
+        // compile stack (and therefore the runtime VM stack because they mirror each other).
+    }
+};
+
+void Compiler::visit(const ReturnStmt &stmt) {
+    stmt.value->accept(*this);
+    chunk.write(OP_RETURN, stmt.kw.line);
+};
 
 void Compiler::visit(const BreakStmt &) {};
 
