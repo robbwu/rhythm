@@ -126,7 +126,7 @@ target_compile_options(beat PRIVATE
         $<$<CONFIG:Release>:-O3 -march=native -flto -DNDEBUG>
 )
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} beat
         RUNTIME DESTINATION bin
         COMPONENT runtime
 )

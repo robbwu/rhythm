@@ -298,7 +298,10 @@ void Compiler::visit(const FunctionStmt &stmt) {
 };
 
 void Compiler::visit(const ReturnStmt &stmt) {
-    stmt.value->accept(*this);
+    if (stmt.value)
+        stmt.value->accept(*this);
+    else
+        chunk.write(OP_NIL, stmt.kw.line); // return nil if no value is provided
     chunk.write(OP_RETURN, stmt.kw.line);
 };
 
