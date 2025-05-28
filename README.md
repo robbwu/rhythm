@@ -25,7 +25,8 @@ and battery included. This reduces distractions.
 
 JavaScript is also not a bad choice for algorithm description, but it is much
 more complicated than what we need; the core syntax and data structures (Buffer,
-Typed Arrays ) cannot fit in a single page.
+Typed Arrays, objects as maps ) cannot fit in a single page. Also the language
+is messy with a lot of quirks and gotchas, which hinders the communication.
 
 ## MMIX (The Art of Computer Programming)
 Let's just say MMIX is a bit too low level for algorithm description for the
