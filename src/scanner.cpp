@@ -1,5 +1,5 @@
 #include "scanner.hpp"
-#include <_ctype.h>
+#include <cctype>
 #include <iostream>
 
 bool Scanner::isAtEnd() {

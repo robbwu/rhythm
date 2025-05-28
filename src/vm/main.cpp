@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <cstring>
 
 #include "ast_printer.hpp"
 #include "chunk.hpp"

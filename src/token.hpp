@@ -2,8 +2,13 @@
 #include <variant>
 #include <iostream>
 #include <unordered_map>
-#include "magic_enum.hpp"
 #include <format>
+#include <memory>
+#include <cfloat>
+#include <cmath>
+
+#include "magic_enum.hpp"
+
 
 class Interpreter;
 class LoxCallable;

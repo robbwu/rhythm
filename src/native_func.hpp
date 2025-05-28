@@ -5,6 +5,8 @@
 #include <variant>
 #include <ranges>
 #include <string_view>
+#include <chrono>
+
 
 #include "exception.hpp"
 #include "token.hpp"
