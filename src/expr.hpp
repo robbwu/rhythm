@@ -42,6 +42,7 @@ class Expr {
 public:
     virtual ~Expr() = default;
     virtual void accept(ExprVisitor& visitor) const = 0;
+    virtual int get_line() const = 0;
 };
 
 
@@ -64,6 +65,9 @@ public:
     void accept(ExprVisitor& visitor) const override {
         return visitor.visit(*this);
     }
+    int get_line() const override {
+        return op.line;
+    }
 };
 
 class Logical : public Expr {
@@ -84,6 +88,9 @@ public:
     void accept(ExprVisitor& visitor) const override {
         return visitor.visit(*this);
     }
+    int get_line() const override {
+        return op.line;
+    }
 };
 
 class Grouping : public Expr {
@@ -99,6 +106,9 @@ public:
 
     void accept(ExprVisitor& visitor) const override {
         return visitor.visit(*this);
+    }
+    int get_line() const override {
+        return expression->get_line();
     }
 };
 
@@ -116,6 +126,9 @@ public:
 
     void accept(ExprVisitor& visitor) const override {
         return visitor.visit(*this);
+    }
+    int get_line() const override {
+        return line;
     }
 };
 
@@ -136,6 +149,9 @@ public:
     void accept(ExprVisitor& visitor) const override {
         return visitor.visit(*this);
     }
+    int get_line() const override {
+        return op.line;
+    }
 };
 
 
@@ -151,6 +167,9 @@ public:
     void accept(ExprVisitor& visitor) const override {
         visitor.visit(*this);
     }
+    int get_line() const override {
+        return name.line;
+    }
 };
 
 class Assignment : public Expr {
@@ -165,6 +184,9 @@ public:
 
     void accept(ExprVisitor& visitor) const override {
         visitor.visit(*this);
+    }
+    int get_line() const override {
+        return name.line;
     }
 };
 
@@ -190,6 +212,9 @@ public:
     void accept(ExprVisitor& visitor) const override {
         visitor.visit(*this);
     }
+    int get_line() const override {
+        return bracket.line;  // Use the bracket token for error reporting
+    }
 };
 
 class Call : public Expr {
@@ -207,39 +232,52 @@ public:
     void accept(ExprVisitor& visitor) const override {
         visitor.visit(*this);
     }
+    int get_line() const override {
+        return paren.line;  // Use the paren token for error reporting
+    }
 };
 
 class ArrayLiteral : public Expr {
 public:
     std::vector<std::unique_ptr<Expr>> elements;
+    int line;
 
-    explicit ArrayLiteral(std::vector<std::unique_ptr<Expr>> elements)
-        : elements(std::move(elements)) {}
+    explicit ArrayLiteral(std::vector<std::unique_ptr<Expr>> elements, int line)
+        : elements(std::move(elements)), line(line) {}
 
     static std::unique_ptr<ArrayLiteral> create(
-        std::vector<std::unique_ptr<Expr>> elements) {
-        return std::make_unique<ArrayLiteral>(std::move(elements));
+        std::vector<std::unique_ptr<Expr>> elements, int line) {
+        return std::make_unique<ArrayLiteral>(std::move(elements), line);
     }
 
     void accept(ExprVisitor& visitor) const override {
         visitor.visit(*this);
     }
+    int get_line() const override {
+        return line;
+    }
+
 };
 
 class MapLiteral : public Expr {
 public:
+    int line;
     std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> pairs;
 
-    explicit MapLiteral(std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> pairs)
-        : pairs(std::move(pairs)) {}
+    explicit MapLiteral(std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> pairs, int line)
+        : pairs(std::move(pairs)), line(line) {}
 
     static std::unique_ptr<MapLiteral> create(
-        std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> pairs) {
-        return std::make_unique<MapLiteral>(std::move(pairs));
+        std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> pairs,
+        int line) {
+        return std::make_unique<MapLiteral>(std::move(pairs), line);
     }
 
     void accept(ExprVisitor& visitor) const override {
         visitor.visit(*this);
+    }
+    int get_line() const override {
+        return line;
     }
 };
 
@@ -261,6 +299,9 @@ public:
     void accept(ExprVisitor& visitor) const override {
         visitor.visit(*this);
     }
+    int get_line() const override {
+        return bracket.line;  // Use the bracket token for error reporting
+    }
 };
 
 class PropertyAccess : public Expr {
@@ -278,5 +319,8 @@ public:
 
     void accept(ExprVisitor& visitor) const override {
         visitor.visit(*this);
+    }
+    int get_line() const override {
+        return name.line;  // Use the property name token for error reporting
     }
 };

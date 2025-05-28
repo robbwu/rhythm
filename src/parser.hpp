@@ -212,6 +212,7 @@ private:
         // parse parameters
         std::vector<Token> parameters;
         consume(TokenType::LEFT_PAREN, "expected '('");
+        int line = previous().line;
         if (!check(TokenType::RIGHT_PAREN)) {
             do {
                 parameters.push_back(consume(TokenType::IDENTIFIER, "expect parameter name"));
@@ -221,9 +222,9 @@ private:
 
         // parse body
         consume(TokenType::LEFT_BRACE, "expected '{' before body");
-        std::vector<std::unique_ptr<Stmt>> body = block();
+        auto body = block();
 
-        return FunctionExpr::create(std::move(parameters), std::move(body));
+        return FunctionExpr::create(std::move(parameters), std::move(body), line);
     }
 
     std::unique_ptr<Expr> arrayLiteral() {
@@ -236,7 +237,7 @@ private:
         }
 
         consume(TokenType::RIGHT_BRACKET, "Expect ']' after array elements.");
-        return ArrayLiteral::create(std::move(elements));
+        return ArrayLiteral::create(std::move(elements), previous().line);
     }
 
     std::unique_ptr<Expr> mapLiteral() {
@@ -253,7 +254,7 @@ private:
         }
 
         consume(TokenType::RIGHT_BRACE, "Expect '}' after map elements.");
-        return MapLiteral::create(std::move(pairs));
+        return MapLiteral::create(std::move(pairs), previous().line);
     }
 
     // statements
@@ -287,7 +288,7 @@ private:
 
         // parse body
         consume(TokenType::LEFT_BRACE, "expected '{' before body");
-        std::vector<std::unique_ptr<Stmt>> body = block();
+        auto body = block();
 
         return FunctionStmt::create(name, parameters, std::move(body));
     }
@@ -300,7 +301,7 @@ private:
         if (match({TokenType::PRINT})) return printStatement();
         if (match({TokenType::RETURN})) return returnStatement();
         if (match({TokenType::WHILE})) return whileStatement();
-        if (match({TokenType::LEFT_BRACE})) return BlockStmt::create(block());
+        if (match({TokenType::LEFT_BRACE})) return BlockStmt::create(block(), previous().line);
 
         return expressionStatement();
     }
@@ -334,7 +335,7 @@ private:
             error(previous(), "Loop constructs are disabled. Use recursion instead.");
         }
         consume(TokenType::LEFT_PAREN, "Expect '(' after 'for'.");
-
+        int line = previous().line;
         std::unique_ptr<Stmt> initializer;
         if (match({TokenType::SEMICOLON})) {
             initializer = nullptr;
@@ -367,7 +368,7 @@ private:
             std::vector<std::unique_ptr<Stmt>> block_stmts;
             block_stmts.push_back(std::move(initializer));
             block_stmts.push_back(std::move(while_loop_stmt));
-            return BlockStmt::create(std::move(block_stmts));
+            return BlockStmt::create(std::move(block_stmts), line);
         }
         return while_loop_stmt;
     }
@@ -405,7 +406,7 @@ private:
     std::unique_ptr<Stmt> expressionStatement() {
         auto value = expression();
         consume(TokenType::SEMICOLON, "Expect ';' after value.");
-        return ExpressionStmt::create(std::move(value));
+        return ExpressionStmt::create(std::move(value), previous().line);
     }
 
     std::unique_ptr<ReturnStmt> returnStatement() {

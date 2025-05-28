@@ -43,8 +43,8 @@ void Compiler::visit(const Literal &expr) {
     if (constant >= 256) {
         throw CompileException("cannot compile >= 256 constants");
     }
-    chunk.write(OP_CONSTANT, 0);
-    chunk.write(constant, 0);
+    chunk.write(OP_CONSTANT, expr.line);
+    chunk.write(constant, expr.line);
 }
 
 
@@ -167,12 +167,12 @@ void Compiler::visit(const FunctionExpr &) {
 // statements
 void Compiler::visit(const ExpressionStmt &stmt) {
     stmt.expr->accept(*this);
-    chunk.write(OP_POP, 0); // pop the result of the expression
+    chunk.write(OP_POP, stmt.line); // pop the result of the expression
 };
 
 void Compiler::visit(const PrintStmt &stmt) {
     stmt.expr->accept(*this);
-    chunk.write(OP_PRINT, 0); // FIXME: there is no line info
+    chunk.write(OP_PRINT, stmt.expr->get_line()); // FIXME: there is no line info
 };
 
 void Compiler::visit(const VarStmt &stmt) {
@@ -228,12 +228,12 @@ void Compiler::patchJump(int offset) {
 
 void Compiler::visit(const IfStmt &stmt) {
     stmt.condition->accept(*this);
-    int thenJump = emitJump(OP_JUMP_IF_FALSE, 0);
-    chunk.write(OP_POP, 0);
+    int thenJump = emitJump(OP_JUMP_IF_FALSE, stmt.condition->get_line());
+    chunk.write(OP_POP, stmt.condition->get_line());
     stmt.thenBlock->accept(*this);
-    int elseJump = emitJump(OP_JUMP, 0);
+    int elseJump = emitJump(OP_JUMP, stmt.condition->get_line());
     patchJump(thenJump);
-    chunk.write(OP_POP, 0);
+    chunk.write(OP_POP, stmt.condition->get_line());
     if (stmt.elseBlock) {
         stmt.elseBlock->accept(*this);
     }
@@ -254,16 +254,16 @@ void Compiler::emitLoop(int loopStart) {
 void Compiler::visit(const WhileStmt &stmt) {
     int loopStart = chunk.bytecodes.size();
     stmt.condition->accept(*this);
-    int exitJump = emitJump(OP_JUMP_IF_FALSE, 0);
-    chunk.write(OP_POP, 0);
+    int exitJump = emitJump(OP_JUMP_IF_FALSE, stmt.condition->get_line());
+    chunk.write(OP_POP, stmt.condition->get_line());
     stmt.body->accept(*this);
     if (stmt.increment) {
         stmt.increment->accept(*this);
-        chunk.write(OP_POP, 0);
+        chunk.write(OP_POP, stmt.increment->get_line());
     }
     emitLoop(loopStart);
     patchJump(exitJump);
-    chunk.write(OP_POP, 0);
+    chunk.write(OP_POP, stmt.increment->get_line());
 };
 
 void Compiler::visit(const FunctionStmt &stmt) {

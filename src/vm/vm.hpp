@@ -6,6 +6,7 @@
 #include "chunk.hpp"
 #include "compiler.hpp"
 #include "vm_exception.hpp"
+#include "native_func.hpp"
 
 typedef enum {
     INTERPRET_OK,
@@ -30,7 +31,10 @@ class VM {
     std::unordered_map<std::string, Value> globals;
 public:
 
-    explicit VM(): stack(), frames(), globals()  {};
+    explicit VM(): stack(), frames(), globals()  {
+        globals["clock"] = new ClockCallable();
+        globals["printf"] = new PrintfCallable();
+    };
 
     InterpretResult run();
     InterpretResult run(BeatFunction *func);
@@ -53,6 +57,8 @@ public:
     Value peek(int i) {
         return stack[stack.size() - 1 - i];
     }
-
+    void print_stack_trace();
+    void error(int line, std::string msg);
+    void define_native_function(std::string name, LoxCallable* fun);
 
 };

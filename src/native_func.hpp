@@ -6,6 +6,7 @@
 #include <ranges>
 #include <string_view>
 
+#include "exception.hpp"
 #include "token.hpp"
 
 class AssertCallable final : public LoxCallable {

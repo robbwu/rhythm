@@ -42,9 +42,10 @@ public:
 class ExpressionStmt: public Stmt {
 public:
     std::unique_ptr<Expr> expr;
-    explicit ExpressionStmt(std::unique_ptr<Expr> expr): expr(std::move(expr)) {}
-    static std::unique_ptr<ExpressionStmt> create(std::unique_ptr<Expr> expr) {
-        return std::make_unique<ExpressionStmt>(ExpressionStmt(std::move(expr)));
+    int line;
+    explicit ExpressionStmt(std::unique_ptr<Expr> expr, int line): expr(std::move(expr)), line(line) {}
+    static std::unique_ptr<ExpressionStmt> create(std::unique_ptr<Expr> expr, int line) {
+        return std::make_unique<ExpressionStmt>(ExpressionStmt(std::move(expr), line));
     }
     void accept(StmtVisitor& visitor) const override {
         visitor.visit(*this);
@@ -80,10 +81,11 @@ public:
 
 class BlockStmt: public Stmt {
 public:
+    int line;
     std::vector<std::unique_ptr<Stmt>> statements;
-    explicit BlockStmt(std::vector<std::unique_ptr<Stmt>> statements): statements(std::move(statements)) {}
-    static std::unique_ptr<BlockStmt> create(std::vector<std::unique_ptr<Stmt>> statements) {
-        return std::make_unique<BlockStmt>(std::move(statements));
+    explicit BlockStmt(std::vector<std::unique_ptr<Stmt>> statements, int line): statements(std::move(statements)), line(line) {}
+    static std::unique_ptr<BlockStmt> create(std::vector<std::unique_ptr<Stmt>> statements, int line) {
+        return std::make_unique<BlockStmt>(std::move(statements), line);
     }
     void accept(StmtVisitor& visitor) const override {
         visitor.visit(*this);
@@ -155,17 +157,21 @@ class FunctionExpr : public Expr {
 public:
     std::vector<Token> params;
     std::vector<std::unique_ptr<Stmt>> body;
+    int line;
 
-    FunctionExpr(std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body)
-        : params(std::move(params)), body(std::move(body)) {}
+    FunctionExpr(std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body, int line)
+        : params(std::move(params)), body(std::move(body)), line(line) {}
 
     static std::unique_ptr<FunctionExpr> create(
-        std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body) {
-        return std::make_unique<FunctionExpr>(std::move(params), std::move(body));
+        std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body, int line) {
+        return std::make_unique<FunctionExpr>(std::move(params), std::move(body), line);
     }
 
     void accept(ExprVisitor& visitor) const override {
         visitor.visit(*this);
+    }
+    int get_line() const override {
+        return line;
     }
 };
 

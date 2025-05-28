@@ -123,7 +123,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
         $<$<CONFIG:Release>:-O2 -g>
 )
 target_compile_options(beat PRIVATE
-        $<$<CONFIG:Release>:-O2 -g>
+        $<$<CONFIG:Release>:-O3 -march=native -flto -DNDEBUG>
 )
 
 install(TARGETS ${PROJECT_NAME}

@@ -2,6 +2,7 @@
 #include <variant>
 #include "token.hpp"
 #include "vm.hpp"
+#include "lox_function.hpp"
 
 extern bool debug_trace_exeuction;
 
@@ -20,7 +21,7 @@ InterpretResult VM::run(BeatFunction *func){
         // initialize the frame;
         frames.push_back(std::make_shared<CallFrame>(func, &func->chunk.bytecodes[0], 0));
     } else {
-        throw VMRuntimeError(0, "NOT IMPLEMENTED YET");
+        error(0, "NOT IMPLEMENTED YET");
     }
     return run();
 }
@@ -37,14 +38,12 @@ InterpretResult VM::run() {
         Value b = pop(); \
         Value a = pop(); \
         if (!std::holds_alternative<double>(a) || !std::holds_alternative<double>(b)) \
-            throw VMRuntimeError(0, "binary op operands must be numbers"); \
+            error(0, "binary op operands must be numbers"); \
         push( std::get<double>(a) op std::get<double>(b)); \
     } while (false)
 
-
+    auto frame = frames.back();
     for (;;) {
-        auto &frame = frames.back();
-
         if (debug_trace_exeuction) {
             printf("          ");
             for (auto & slot : stack) {
@@ -59,7 +58,7 @@ InterpretResult VM::run() {
         uint8_t instruction = READ_BYTE();
         switch (instruction) {
             case OP_CONSTANT: {
-                Value constant = READ_CONSTANT();
+                Value &constant = READ_CONSTANT();
                 push(constant);
                 break;
             }
@@ -97,7 +96,7 @@ InterpretResult VM::run() {
                 else if (std::holds_alternative<std::string>(a) && std::holds_alternative<std::string>(b))
                     push( std::get<std::string>(a) + std::get<std::string>(b));
                 else
-                    throw VMRuntimeError(0, "binary op operands must both be numbers or strings");
+                    error(0, "binary op operands must both be numbers or strings");
                 break;
             }
             case OP_SUBTRACT: BINARY_OP(-); break;
@@ -121,7 +120,7 @@ InterpretResult VM::run() {
                 auto name = READ_STRING();
                 auto it = globals.find(name);
                 if (it == globals.end()) {
-                    throw VMRuntimeError(0, std::format("global variable {} not found", name));
+                    error(0, std::format("global variable {} not found", name));
                 }
                 push(globals[name]);
                 break;
@@ -169,34 +168,54 @@ InterpretResult VM::run() {
                 }
                 stack.resize(frame->frame_pointer-1); // restore stack to the frame pointer
                 frames.pop_back(); // pop the current frame
+                frame = frames.back();
                 push(result);
                 break;
             }
             case OP_CALL: {
                 int argCount = READ_BYTE();
                 if (argCount > 255) {
-                    throw VMRuntimeError(0, "cannot call function with more than 255 arguments");
+                    error(0, "cannot call function with more than 255 arguments");
                 }
                 if (argCount < 0) {
-                    throw VMRuntimeError(0, "cannot call function with negative arguments");
+                    error(0, "cannot call function with negative arguments");
                 }
                 if (argCount > stack.size() - frame->frame_pointer - 1) {
-                    throw VMRuntimeError(0, "not enough arguments for function call");
+                    error(0, "not enough arguments for function call");
                 }
                 auto fun = peek(argCount);
                 if (!std::holds_alternative<LoxCallable*>(fun)) {
-                    throw VMRuntimeError(0, "OP_CALL cannot find LoxCallable* on stack");
+                    error(0, "OP_CALL cannot find LoxCallable* on stack");
                 }
                 LoxCallable* func = std::get<LoxCallable*>(fun);
+
                 BeatFunction* beat_func = dynamic_cast<BeatFunction*>(func);
-                if ( beat_func == nullptr) {
-                    throw VMRuntimeError(0, std::format("OP_CALL expected a BeatFunction but got {}", func->toString()));
+                if ( beat_func != nullptr) {
+                    if (beat_func->arity() != argCount) {
+                        error(0, std::format("function {} expected {} arguments but got {}", beat_func->toString(), beat_func->arity(), argCount));
+                    }
+                    // create a new call frame; frame pointer points to the first of the arguments
+                    frames.push_back(std::make_shared<CallFrame>(beat_func, &beat_func->chunk.bytecodes[0], stack.size() - argCount));
+                    frame = frames.back();
+                    break;
+                } else if (func != nullptr) { // not BeatFunction, must be subclass of LoxCallable, native functions
+                    if (func->arity() != -1 && func->arity() != argCount) {
+                        error(0, std::format("function {} expected {} arguments but got {}", func->toString(), func->arity(), argCount));
+                    }
+                    std::vector<Value> arguments;
+                    arguments.reserve(argCount);
+                    for (int i = 0; i < argCount; i++) {
+                        arguments.push_back(pop());
+                    }
+                    std::reverse(arguments.begin(), arguments.end()); // reverse the order of arguments
+                    Value result = func->call(nullptr, arguments);
+                    pop(); // pop the function from the stack
+                    push(result); // push the result of the function call
+                    break;
+                } else {
+                    error(0, "OP_CALL cannot find LoxCallable* on stack");
                 }
-                if (beat_func->arity() != argCount) {
-                    throw VMRuntimeError(0, std::format("function {} expected {} arguments but got {}", beat_func->toString(), beat_func->arity(), argCount));
-                }
-                // create a new call frame; frame pointer points to the first of the arguments
-                frames.push_back(std::make_shared<CallFrame>(beat_func, &beat_func->chunk.bytecodes[0], stack.size() - argCount));
+
 
                 break;
             }
@@ -208,4 +227,30 @@ InterpretResult VM::run() {
 #undef READ_CONSTANT
 #undef BINARY_OP
 
+}
+
+
+void VM::print_stack_trace() {
+    for (int i = frames.size() - 1; i >= 0; i--) {
+        auto& frame = frames[i];
+        auto  function = frame->function;
+        size_t instruction = frame->ip - &function->chunk.bytecodes[0] - 1;
+        fprintf(stderr, "[line %d] in ",
+                function->chunk.lines[instruction]);
+        if (function->name == "") {
+            fprintf(stderr, "script\n");
+        } else {
+            fprintf(stderr, "%s()\n", function->name.c_str());
+        }
+    }
+}
+
+void VM::error(int line, std::string msg) {
+    if (line == 0) {
+        std::cerr << "Runtime error: " << msg << std::endl;
+    } else {
+        std::cerr << "Runtime error at line " << line << ": " << msg << std::endl;
+    }
+    print_stack_trace();
+    throw VMRuntimeError(line, msg);
 }
