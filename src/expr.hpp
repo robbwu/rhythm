@@ -105,12 +105,13 @@ public:
 class Literal : public Expr {
 public:
     Value value;
+    int line;
 
-    Literal(Value _value)
-        : value(_value) {}
+    Literal(Value _value, int line)
+        : value(_value), line(line) {}
 
-    static std::unique_ptr<Literal> create(Value _value) {
-        return std::make_unique<Literal>(_value);
+    static std::unique_ptr<Literal> create(Value _value, int line) {
+        return std::make_unique<Literal>(_value, line);
     }
 
     void accept(ExprVisitor& visitor) const override {
@@ -279,6 +280,3 @@ public:
         visitor.visit(*this);
     }
 };
-
-
-

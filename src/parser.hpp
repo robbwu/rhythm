@@ -53,7 +53,7 @@ private:
             }
             if (auto prop = dynamic_cast<PropertyAccess*>(expr.get())) {
                 // Convert property assignment to subscript assignment
-                auto stringKey = Literal::create(Value(prop->name.lexeme));
+                auto stringKey = Literal::create(Value(prop->name.lexeme), prop->name.line);
                 return SubscriptAssignment::create(
                     std::move(prop->object),
                     std::move(stringKey),
@@ -178,12 +178,12 @@ private:
 
     // primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER ;
     std::unique_ptr<Expr> primary() {
-        if (match({TokenType::FALSE})) return Literal::create(false);
-        if (match({TokenType::TRUE})) return Literal::create(true);
-        if (match({TokenType::NIL})) return Literal::create(nullptr);
+        if (match({TokenType::FALSE})) return Literal::create(false, previous().line);
+        if (match({TokenType::TRUE})) return Literal::create(true, previous().line);
+        if (match({TokenType::NIL})) return Literal::create(nullptr, previous().line);
 
         if (match({TokenType::NUMBER, TokenType::STRING})) {
-            return Literal::create(previous().literal);
+            return Literal::create(previous().literal,  previous().line);
         }
         if (match({TokenType::IDENTIFIER})) return Variable::create(previous());
 
@@ -357,17 +357,8 @@ private:
         consume(TokenType::RIGHT_PAREN, "Expect ')' after for clauses");
 
         std::unique_ptr<Stmt> body = statement();
-        // de-sugar for into while
-        // if (increment) {
-        //     std::unique_ptr<Stmt> incrStmt = ExpressionStmt::create(std::move(increment));
-        //     std::vector<std::unique_ptr<Stmt>> block;
-        //     block.push_back(std::move(body));
-        //     block.push_back(std::move(incrStmt));
-        //     body = BlockStmt::create(std::move(block));
-        //
-        // }
 
-        if (condition == nullptr) condition = Literal::create(true);
+        if (condition == nullptr) condition = Literal::create(true, previous().line);
         // body = WhileStmt::create(std::move(condition), std::move(body));
         auto while_loop_stmt = WhileStmt::create(std::move(condition), std::move(body), std::move(increment));
 

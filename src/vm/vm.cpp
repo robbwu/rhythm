@@ -3,7 +3,14 @@
 #include "token.hpp"
 #include "vm.hpp"
 
-// #define DEBUG_TRACE_EXECUTION
+extern bool debug_trace_exeuction;
+
+#define ASSERT_MSG(expr, msg) \
+    if (!(expr)) { \
+        std::cerr << "Assertion failed: " << #expr << ", message: " << msg << ", in file " << __FILE__ << ", line " << __LINE__ << '\n'; \
+        std::abort(); \
+    }
+
 
 InterpretResult VM::run(BeatFunction *func){
     if(func->type == BeatFunctionType::SCRIPT) {
@@ -37,16 +44,18 @@ InterpretResult VM::run() {
 
     for (;;) {
         auto &frame = frames.back();
-#ifdef DEBUG_TRACE_EXECUTION
-        printf("          ");
-        for (auto & slot : stack) {
-            printf("[ ");
-            std::cout << slot;
-            printf(" ]");
+
+        if (debug_trace_exeuction) {
+            printf("          ");
+            for (auto & slot : stack) {
+                printf("[ ");
+                std::cout << slot;
+                printf(" ]");
+            }
+            printf("\n");
+            frame->function->chunk.disassembleInstruction((int)(frame->ip - &frame->function->chunk.bytecodes[0]));
         }
-        printf("\n");
-        frame->function->chunk.disassembleInstruction((int)(frame->ip - &frame->function->chunk.bytecodes[0]));
-#endif
+
         uint8_t instruction = READ_BYTE();
         switch (instruction) {
             case OP_CONSTANT: {
@@ -79,16 +88,7 @@ InterpretResult VM::run() {
                 push(-std::get<double>(v));
                 break;
             }
-            case OP_RETURN: {
-                auto result = pop();
-                if (frames.size()==1) { // if this is the last frame, we are done
-                    return INTERPRET_OK;
-                }
-                stack.resize(stack.size() - 1 - frame->function->arity()); // restore stack to the frame pointer
-                frames.pop_back(); // pop the current frame
-                push(result);
-                break;
-            }
+
             case OP_ADD: {
                 Value b = pop();
                 Value a = pop();
@@ -158,6 +158,20 @@ InterpretResult VM::run() {
                 frame->ip -= offset;
                 break;
             }
+            case OP_RETURN: {
+                // std::cout << "XXX OP_RETURN frames left" << frames.size() << std::endl;
+                auto result = pop();
+                if (frames.size()==1) { // if this is the last frame, we are done
+                    // assert(stack.size() == 0);
+                    // pop();
+                    ASSERT_MSG(stack.size() == 0, std::format("stack size {}, wanted 0", stack.size()));
+                    return INTERPRET_OK;
+                }
+                stack.resize(frame->frame_pointer-1); // restore stack to the frame pointer
+                frames.pop_back(); // pop the current frame
+                push(result);
+                break;
+            }
             case OP_CALL: {
                 int argCount = READ_BYTE();
                 if (argCount > 255) {
@@ -181,7 +195,7 @@ InterpretResult VM::run() {
                 if (beat_func->arity() != argCount) {
                     throw VMRuntimeError(0, std::format("function {} expected {} arguments but got {}", beat_func->toString(), beat_func->arity(), argCount));
                 }
-                // create a new call frame
+                // create a new call frame; frame pointer points to the first of the arguments
                 frames.push_back(std::make_shared<CallFrame>(beat_func, &beat_func->chunk.bytecodes[0], stack.size() - argCount));
 
                 break;

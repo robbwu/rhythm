@@ -11,6 +11,7 @@
 bool printAst = false;
 bool noLoop = false;
 bool disassemble = false;
+bool debug_trace_exeuction = false;
 
 void run( VM &vm, Compiler &compiler, std::string &source);
 
@@ -30,6 +31,7 @@ void printUsage() {
     std::cout << "  -a, --ast        Print AST before execution" << std::endl;
     std::cout << "  -n, --no-loop    Disable loop constructs (forces recursion)" << std::endl;
     std::cout << "  -d, --disasm     Print disassembled bytecode chunk"    << std::endl;
+    std::cout << "  -t, --trace      Trace execution for debugging purpose (SLOW!!)" << std::endl;
 }
 
 void runFile(VM &vm,  Compiler &compiler, char *script_file) {
@@ -94,6 +96,9 @@ int main(int argc, char **argv) {
         }
         if (std::strcmp(argv[i], "-d") == 0 || std::strcmp(argv[i], "--disasm") == 0) {
             disassemble = true;
+        }
+        if (std::strcmp(argv[i], "-t") == 0 || std::strcmp(argv[i], "--trace") == 0) {
+            debug_trace_exeuction = true;
         }
     }
 

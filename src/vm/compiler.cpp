@@ -236,9 +236,8 @@ void Compiler::visit(const IfStmt &stmt) {
     chunk.write(OP_POP, 0);
     if (stmt.elseBlock) {
         stmt.elseBlock->accept(*this);
-        patchJump(elseJump);
-        // chunk.write(OP_POP, 0);
     }
+    patchJump(elseJump);
 };
 
 void Compiler::emitLoop(int loopStart) {
