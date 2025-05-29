@@ -154,7 +154,13 @@ void Compiler::visit(const ArrayLiteral &expr) {
     chunk.write(expr.elements.size(), expr.get_line());
 };
 
-void Compiler::visit(const MapLiteral &) {
+void Compiler::visit(const MapLiteral &expr) {
+    for (const auto &pair : expr.pairs) {
+        pair.first->accept(*this);
+        pair.second->accept(*this);
+    }
+    chunk.write(OP_MAP_LITERAL, expr.get_line());
+    chunk.write(expr.pairs.size(), expr.get_line());
 };
 
 void Compiler::visit(const Subscript &expr) {
@@ -163,7 +169,16 @@ void Compiler::visit(const Subscript &expr) {
     chunk.write(OP_SUBSCRIPT, expr.index->get_line());
 };
 
-void Compiler::visit(const PropertyAccess &) {
+// obj.name := obj["name"]
+void Compiler::visit(const PropertyAccess &expr) {
+    expr.object->accept(*this);
+    int constant = chunk.addConstant(expr.name.lexeme);
+    if (constant >= 256) {
+        throw CompileException("cannot compile >= 256 constants");
+    }
+    chunk.write(OP_CONSTANT, expr.name.line);
+    chunk.write(constant, expr.name.line);
+    chunk.write(OP_SUBSCRIPT, expr.object->get_line());
 };
 
 void Compiler::visit(const SubscriptAssignment &expr) {

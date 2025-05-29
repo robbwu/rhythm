@@ -66,6 +66,8 @@ int Chunk::disassembleInstruction(int offset) {
             return byteInstruction("OP_CALL", offset);
         case OP_ARRAY_LITERAL:
             return byteInstruction("OP_ARRAY_LITERAL", offset);
+        case OP_MAP_LITERAL:
+            return byteInstruction("OP_MAP_LITERAL", offset);
         case OP_SUBSCRIPT:
             return simpleInstruction("OP_SUBSCRIPT", offset);
         case OP_SUBSCRIPT_ASSIGNMENT:

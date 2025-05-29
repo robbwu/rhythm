@@ -228,13 +228,28 @@ InterpretResult VM::run() {
                 push(array);
                 break;
             }
+            case OP_MAP_LITERAL: {
+                int size = READ_BYTE();
+                auto map = std::make_shared<Map>(std::unordered_map<Value, Value>());
+                for (int i = 0; i < size; i++) {
+                    auto value = pop();
+                    auto key = pop();
+                    map->data[key] = value;
+                }
+                push(map);
+                break;
+            }
             case OP_SUBSCRIPT: {
                 auto i = pop();
                 auto obj = pop();
                 if (std::holds_alternative<std::shared_ptr<Array>>(obj)) {
                     push(std::get<std::shared_ptr<Array>>(obj)->data.at((int)std::get<double>(i)));
                 } else if (std::holds_alternative<std::shared_ptr<Map>>(obj)) {
-                    // TODO
+                    auto it = std::get<std::shared_ptr<Map>>(obj)->data.find(i);
+                    if (it == std::get<std::shared_ptr<Map>>(obj)->data.end())
+                        push(nullptr); // if the key is not found, return nil
+                    else
+                        push(it->second);
                 } else {
                     std::cout << "obj " << obj << std::endl;
                     error(0, std::format("OP_SUBSCRIPT obj can only be Array or Map"));
@@ -249,7 +264,15 @@ InterpretResult VM::run() {
                     std::get<std::shared_ptr<Array>>(obj)->data.at((int)std::get<double>(i)) = value;
                     push(value);
                 } else if (std::holds_alternative<std::shared_ptr<Map>>(obj)) {
-                    // TODO
+                    auto& map = std::get<std::shared_ptr<Map>>(obj)->data;
+                    auto it = map.find(i);
+                    if (std::holds_alternative<nullptr_t>(value)) { // remove key if value is nil
+                        map.erase(i);
+                        push(nullptr);
+                        break;
+                    }
+                    map[i] = value; // assign the value to the key
+                    push(value);
                 } else {
                     std::cout << "obj " << obj << std::endl;
                     error(0, std::format("OP_SUBSCRIPT obj can only be Array or Map"));
