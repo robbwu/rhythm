@@ -45,6 +45,7 @@ public:
         globals["assert"] = new AssertCallable();
         globals["for_each"] = new ForEachCallable();
         globals["tonumber"] = new ToNumberCallable();
+        globals["slurp"] = new SlurpCallable();
 
         using namespace native::NativeMathFunctionNames;
         using namespace native;

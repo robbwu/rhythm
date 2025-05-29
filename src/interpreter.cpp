@@ -24,6 +24,7 @@ Interpreter::Interpreter() {
     globals->define("assert", new AssertCallable());
     globals->define("for_each", new ForEachCallable());
     globals->define("tonumber", new ToNumberCallable());
+    globals->define("slurp", new SlurpCallable());
 
     using namespace native::NativeMathFunctionNames;
     using namespace native;

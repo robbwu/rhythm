@@ -221,3 +221,37 @@ public:
 
     std::string toString()  override { return "<native fn>"; }
 };
+
+// slurp the whole stdin into a single string
+class SlurpCallable final : public LoxCallable {
+    // zero arguments
+    int arity() override { return 0; }
+
+    // return milli-seconds since Unix epoch, as a double
+    Value call(RuntimeContext*, std::vector<Value> values) override {
+        if (values.size() != arity() )
+            throw RuntimeError({}, "slurp() requires 0 argument");
+        std::string all(std::istreambuf_iterator<char>(std::cin), {});
+        return std::move(all);
+    }
+
+    std::string toString()  override { return "<native fn>"; }
+};
+
+class FromJsonCallable final : public LoxCallable {
+public:
+    // zero arguments
+    int arity() override { return 1; }
+
+    // return milli-seconds since Unix epoch, as a double
+    Value call(RuntimeContext*, std::vector<Value> values) override {
+        if (values.size() != 1 )
+            throw RuntimeError({}, "from_json() requires 1 argument");
+        auto &v = values[0];
+        if (!std::holds_alternative<std::string>(v)) {
+            throw RuntimeError({}, "from_json() requires string argument");
+        }
+    }
+
+    std::string toString()  override { return "<native fn>"; }
+};
