@@ -329,6 +329,8 @@ void Compiler::visit(const ReturnStmt &stmt) {
     chunk.write(OP_RETURN, stmt.kw.line);
 };
 
-void Compiler::visit(const BreakStmt &) {};
+void Compiler::visit(const BreakStmt &) {
+
+};
 
 void Compiler::visit(const ContinueStmt &) {};
