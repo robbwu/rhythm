@@ -10,6 +10,7 @@
 
 #include "exception.hpp"
 #include "token.hpp"
+#include "json.hpp"
 
 class AssertCallable final : public LoxCallable {
 public:
@@ -238,12 +239,11 @@ class SlurpCallable final : public LoxCallable {
     std::string toString()  override { return "<native fn>"; }
 };
 
+
 class FromJsonCallable final : public LoxCallable {
 public:
-    // zero arguments
     int arity() override { return 1; }
-
-    // return milli-seconds since Unix epoch, as a double
+    // read a JSON string into Value
     Value call(RuntimeContext*, std::vector<Value> values) override {
         if (values.size() != 1 )
             throw RuntimeError({}, "from_json() requires 1 argument");
@@ -251,7 +251,104 @@ public:
         if (!std::holds_alternative<std::string>(v)) {
             throw RuntimeError({}, "from_json() requires string argument");
         }
+        auto j = nlohmann::json::parse(std::get<std::string>(v));
+        // Recursive function to convert JSON to Value
+        std::function<Value(const nlohmann::json&)> convert = [&](const nlohmann::json& json) -> Value {
+            if (json.is_null()) {
+                return nullptr;
+            } else if (json.is_boolean()) {
+                return json.get<bool>();
+            } else if (json.is_number()) {
+                return json.get<double>();
+            } else if (json.is_string()) {
+                return json.get<std::string>();
+            } else if (json.is_array()) {
+                std::vector<Value> arr;
+                for (const auto& elem : json) {
+                    arr.push_back(convert(elem));
+                }
+                return std::make_shared<Array>(arr);
+            } else if (json.is_object()) {
+                std::unordered_map<Value, Value> map;
+                for (const auto& [key, value] : json.items()) {
+                    map[std::string(key)] = convert(value);
+                }
+                return std::make_shared<Map>(map);
+            } else {
+                throw RuntimeError({}, "unsupported JSON type");
+            }
+        };
+        return convert(j);
     }
 
     std::string toString()  override { return "<native fn>"; }
+};
+
+class ToJsonCallable final : public LoxCallable {
+public:
+    int arity() override { return 1; }
+
+    Value call(RuntimeContext*, std::vector<Value> values) override {
+        if (values.size() != 1)
+            throw RuntimeError({}, "to_json() requires 1 argument");
+
+        auto &v = values[0];
+
+        // Recursive function to convert Value to JSON
+        std::function<nlohmann::json(const Value&)> convert = [&](const Value& value) -> nlohmann::json {
+            return std::visit(overloaded{
+                [&](std::nullptr_t) -> nlohmann::json {
+                    return nlohmann::json();
+                },
+                [&](bool b) -> nlohmann::json {
+                    return b;
+                },
+                [&](double d) -> nlohmann::json {
+                    return d;
+                },
+                [&](const std::string& s) -> nlohmann::json {
+                    return s;
+                },
+                [&](LoxCallable* fn) -> nlohmann::json {
+                    throw RuntimeError({}, "cannot serialize function to JSON");
+                },
+                [&](std::shared_ptr<Array> arr) -> nlohmann::json {
+                    nlohmann::json json_arr = nlohmann::json::array();
+                    for (const auto& elem : arr->data) {
+                        json_arr.push_back(convert(elem));
+                    }
+                    return json_arr;
+                },
+                [&](std::shared_ptr<Map> map) -> nlohmann::json {
+                    nlohmann::json json_obj = nlohmann::json::object();
+                    for (const auto& [key, value] : map->data) {
+                        // Convert key to string (JSON object keys must be strings)
+                        std::string key_str;
+                        std::visit(overloaded{
+                            [&](const std::string& s) { key_str = s; },
+                            [&](double d) {
+                                if (is_integer(d)) {
+                                    key_str = std::to_string(static_cast<long long>(d));
+                                } else {
+                                    key_str = std::to_string(d);
+                                }
+                            },
+                            [&](bool b) { key_str = b ? "true" : "false"; },
+                            [&](std::nullptr_t) { key_str = "nil"; },
+                            [&](auto&&) {
+                                throw RuntimeError({}, "unsupported map key type for JSON serialization");
+                            }
+                        }, key);
+                        json_obj[key_str] = convert(value);
+                    }
+                    return json_obj;
+                }
+            }, value);
+        };
+
+        nlohmann::json j = convert(v);
+        return j.dump();
+    }
+
+    std::string toString() override { return "<native fn>"; }
 };
