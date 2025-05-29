@@ -76,6 +76,7 @@ InterpretResult VM::run() {
             }
             case OP_NOT: {
                 push(! std::get<bool>(pop()));
+                stack.back() = !std::get<bool>(stack.back());
                 break;
             }
             case OP_NEGATE: {
@@ -96,14 +97,6 @@ InterpretResult VM::run() {
                 } else {
                     error(0, "binary op operands must both be numbers or strings");
                 }
-                // if (std::holds_alternative<double>(a) && std::holds_alternative<double>(b))
-                // if (std::holds_alternative<double>(a) )
-                    // push( std::get<double>(a) + std::get<double>(b));
-                // else if (std::holds_alternative<std::string>(a) && std::holds_alternative<std::string>(b))
-                // else if (std::holds_alternative<std::string>(a))
-                    // push( std::get<std::string>(a) + std::get<std::string>(b));
-                // else
-                    // error(0, "binary op operands must both be numbers or strings");
                 break;
             }
             case OP_SUBTRACT: BINARY_OP(-); break;
@@ -112,8 +105,7 @@ InterpretResult VM::run() {
 
             case OP_EQUAL: {
                 Value b = pop();
-                Value a = pop();
-                push(a == b);
+                stack.back() = (stack.back() == b);
                 break;
             }
             case OP_GREATER:  BINARY_OP(>); break;
