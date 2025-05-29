@@ -27,7 +27,7 @@ InterpretResult VM::run(BeatFunction *func){
 }
 
 
-InterpretResult VM::run() {
+InterpretResult VM::run(int ret_frame) {
 
 #define READ_BYTE() (*frame->ip++)
 #define READ_SHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
@@ -157,18 +157,29 @@ InterpretResult VM::run() {
                 break;
             }
             case OP_RETURN: {
-                // std::cout << "XXX OP_RETURN frames left" << frames.size() << std::endl;
+                // std::cout << "Upon OP_RETURN frames left: " << frames.size() << std::endl;
+                // std::cout << "Stack" << std::endl;
+                // std::cout << "frame pointer: " << frame->frame_pointer << std::endl;
+                // for (auto s: stack) {
+                //     std::cout << s << ", ";
+                // }
+                // std::cout << std::endl;
                 auto result = pop();
-                if (frames.size()==1) { // if this is the last frame, we are done
-                    // assert(stack.size() == 0);
-                    // pop();
-                    ASSERT_MSG(stack.size() == 0, std::format("stack size {}, wanted 0", stack.size()));
+                // if (frames.size()==1) { // if this is the last frame, we are done
+                //     // assert(stack.size() == 0);
+                //     // pop();
+                //     // ASSERT_MSG(stack.size() == 0, std::format("stack size {}, wanted 0", stack.size()));
+                //     return INTERPRET_OK;
+                // }
+                if (frames.size()>1) // only if this is not the last frame
+                    stack.resize(frame->frame_pointer-1); // restore stack to the frame pointer
+                frames.pop_back(); // pop the current frame
+                if (!frames.empty())
+                    frame = frames.back();
+                push(result);
+                if (frames.size() <= ret_frame) {
                     return INTERPRET_OK;
                 }
-                stack.resize(frame->frame_pointer-1); // restore stack to the frame pointer
-                frames.pop_back(); // pop the current frame
-                frame = frames.back();
-                push(result);
                 break;
             }
             case OP_CALL: {
@@ -207,7 +218,7 @@ InterpretResult VM::run() {
                         arguments.push_back(pop());
                     }
                     std::reverse(arguments.begin(), arguments.end()); // reverse the order of arguments
-                    Value result = func->call(nullptr, arguments);
+                    Value result = func->call(this, arguments);
                     pop(); // pop the function from the stack
                     push(result); // push the result of the function call
                     break;
@@ -313,4 +324,49 @@ void VM::error(int line, std::string msg) {
     }
     print_stack_trace();
     throw VMRuntimeError(line, msg);
+}
+
+
+Value VM::callFunction(LoxCallable* func, const std::vector<Value>& args) {
+    // Push function onto stack
+    push(func);
+
+    // Push arguments onto stack
+    for (const auto& arg : args) {
+        push(arg);
+    }
+
+    // Handle the call similar to OP_CALL
+    int argCount = args.size();
+
+    BeatFunction* beat_func = dynamic_cast<BeatFunction*>(func);
+    if (beat_func != nullptr) {
+        if (beat_func->arity() != argCount) {
+            error(0, std::format("function {} expected {} arguments but got {}",
+                    beat_func->toString(), beat_func->arity(), argCount));
+        }
+
+        // Create a new call frame and execute
+        // auto currentFrame = frames.back();
+        int num_frames = frames.size();
+        frames.push_back(std::make_shared<CallFrame>(beat_func, &beat_func->chunk.bytecodes[0], stack.size() - argCount));
+
+        // Execute the function by running until return when the given frame is run;
+        InterpretResult result = run(num_frames);
+
+        // The result should be on top of the stack
+        return peek();
+    } else {
+        error(0, "not implemented--native function cannot call native function yet");
+        // Native function - call directly
+        std::vector<Value> arguments;
+        arguments.reserve(argCount);
+        for (int i = 0; i < argCount; i++) {
+            arguments.push_back(pop());
+        }
+        std::reverse(arguments.begin(), arguments.end());
+        Value result = func->call(this, arguments);
+        pop(); // pop the function
+        return result;
+    }
 }

@@ -11,7 +11,7 @@ public:
     int arity() override { return 1; }
 
     // return milli-seconds since Unix epoch, as a double
-    Value call(Interpreter* interp, std::vector<Value> arguments) override {
+    Value call(RuntimeContext*, std::vector<Value> arguments) override {
         if (arguments.size() != 1) {
             throw RuntimeError({}, "len() needs a single argument");
         }
@@ -38,7 +38,7 @@ class PushCallable final : public LoxCallable {
     int arity() override { return 2; }
 
     // return milli-seconds since Unix epoch, as a double
-    Value call(Interpreter* interp, std::vector<Value> arguments) override {
+    Value call(RuntimeContext*, std::vector<Value> arguments) override {
         if (arguments.size() != 2) {
             throw RuntimeError({}, "push(array, v) needs two argument");
         }
@@ -57,7 +57,7 @@ public:
     // zero arguments
     int arity() override { return 1; }
     // pop(array): pop v from the back of the array and return it;
-    Value call(Interpreter* interp, std::vector<Value> arguments) override {
+    Value call(RuntimeContext*, std::vector<Value> arguments) override {
         if (arguments.size() != 1) {
             throw RuntimeError({}, "push(array, v) needs two argument");
         }
@@ -77,7 +77,7 @@ class ForEachCallable final : public LoxCallable {
 public:
     int arity() override { return 2; }
 
-    Value call(Interpreter* interp, std::vector<Value> arguments) override {
+    Value call(RuntimeContext* context, std::vector<Value> arguments) override {
         if (arguments.size() != 2) {
             throw RuntimeError({}, "for_each(m, f) needs two argument");
         }
@@ -94,7 +94,7 @@ public:
         }
 
         for (auto &it : m->data) {
-            f->call(interp, {it.first, it.second});
+            context->callFunction(f, {it.first, it.second});
         }
         return nullptr;
     }

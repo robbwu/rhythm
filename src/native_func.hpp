@@ -17,7 +17,7 @@ public:
     int arity() override { return 1; }
 
     // return milli-seconds since Unix epoch, as a double
-    Value call(Interpreter*, std::vector<Value> args) override {
+    Value call(RuntimeContext*, std::vector<Value> args) override {
         if (args.size() != 1) {
             throw RuntimeError({}, "assert() takes 1 argument");
         }
@@ -37,7 +37,7 @@ public:
     int arity() override { return 0; }
 
     // return milli-seconds since Unix epoch, as a double
-    Value call(Interpreter*, std::vector<Value>) override {
+    Value call(RuntimeContext*, std::vector<Value>) override {
         std::string line;
         std::getline(std::cin, line);
         return line;
@@ -52,7 +52,7 @@ public:
     int arity() override { return 2; }
 
     // return milli-seconds since Unix epoch, as a double
-    Value call(Interpreter* interp, std::vector<Value> args) override {
+    Value call(RuntimeContext* interp, std::vector<Value> args) override {
         std::vector<Value> results;
         auto &str = std::get<std::string>(args[0]);
         auto &delim = std::get<std::string>(args[1]);
@@ -72,7 +72,7 @@ public:
     int arity() override { return 0; }
 
     // return milli-seconds since Unix epoch, as a double
-    Value call(Interpreter*, std::vector<Value>) override {
+    Value call(RuntimeContext*, std::vector<Value>) override {
         using namespace std::chrono;
         auto now_ms = duration_cast<milliseconds>(
                           system_clock::now().time_since_epoch()).count();
@@ -91,7 +91,7 @@ struct PrintfCallable final : public LoxCallable
     int arity() override { return -1; }
     std::string toString() override { return "<native printf>"; }
 
-    Value call(Interpreter*, std::vector<Value> args) override
+    Value call(RuntimeContext*, std::vector<Value> args) override
     {
         if (args.empty())
             throw RuntimeError({}, "printf needs a format string");
@@ -210,7 +210,7 @@ public:
     int arity() override { return 1; }
 
     // return milli-seconds since Unix epoch, as a double
-    Value call(Interpreter*, std::vector<Value> values) override {
+    Value call(RuntimeContext*, std::vector<Value> values) override {
         if (values.size() != 1 )
             throw RuntimeError({}, "tonumber() requires 1 argument");
         auto &v = values[0];

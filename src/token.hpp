@@ -28,11 +28,17 @@ struct Map {
     explicit Map(const std::unordered_map<Value, Value>& data) : data(data) {}
 };
 
+class RuntimeContext {
+public:
+    virtual ~RuntimeContext() = default;
+    virtual Value callFunction(LoxCallable* func, const std::vector<Value>& args) = 0;
+};
+
 class LoxCallable {
 public:
     virtual ~LoxCallable() = default;
 
-    virtual Value call(Interpreter *interpreter, std::vector<Value> arguments) = 0;
+    virtual Value call(RuntimeContext *context, std::vector<Value> arguments) = 0;
     virtual int arity() = 0;
     virtual std::string toString() = 0;
 };

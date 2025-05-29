@@ -2,6 +2,7 @@
 #include <utility>
 
 #include "interpreter.hpp"
+#include "token.hpp"
 
 class LoxFunction: public LoxCallable {
 private:
@@ -10,12 +11,13 @@ private:
 public:
     explicit LoxFunction(const FunctionStmt* declaration, std::shared_ptr<Environment> closure): declaration(declaration), closure(std::move(closure)) {}
 
-    Value call(Interpreter *interpreter, std::vector<Value> arguments) override {
+    Value call(RuntimeContext *ctxt, std::vector<Value> arguments) override {
         auto env = std::make_shared<Environment>(closure);
         for (int i=0; i<declaration->params.size(); i++) {
             env->define(declaration->params[i].lexeme, arguments[i]);
         }
         try {
+            auto interpreter = dynamic_cast<Interpreter*>(ctxt);
             interpreter->executeBlock(declaration->body, env);
         } catch (const Return& ret) {
             return ret.value;
@@ -40,12 +42,13 @@ private:
 public:
     explicit LoxFunctionExpr(const FunctionExpr* declaration, std::shared_ptr<Environment> closure): declaration(declaration), closure(std::move(closure)) {}
 
-    Value call(Interpreter *interpreter, std::vector<Value> arguments) override {
+    Value call(RuntimeContext *ctxt, std::vector<Value> arguments) override {
         auto env = std::make_shared<Environment>(closure);
         for (int i=0; i<declaration->params.size(); i++) {
             env->define(declaration->params[i].lexeme, arguments[i]);
         }
         try {
+            auto interpreter = dynamic_cast<Interpreter*>(ctxt);
             interpreter->executeBlock(declaration->body, env);
         } catch (const Return& ret) {
             return ret.value;

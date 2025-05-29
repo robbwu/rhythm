@@ -54,7 +54,7 @@ public:
 
     int arity() override { return arity_;}
 
-    Value call(Interpreter *interpreter, std::vector<Value> arguments) override {
+    Value call(RuntimeContext *ctxt, std::vector<Value> arguments) override {
         return {};
     }
 

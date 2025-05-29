@@ -39,7 +39,7 @@ class NativeMath1ArgCallable : public LoxCallable {
 public:
     int arity() override { return 1; }
 
-    Value call(Interpreter* /*interpreter*/, std::vector<Value> arguments) override {
+    Value call(RuntimeContext* /*interpreter*/, std::vector<Value> arguments) override {
         if (arguments.size() != 1) {
             throw RuntimeError({}, std::string(LoxFuncName) + "() expects 1 argument.");
         }
@@ -69,7 +69,7 @@ class NativeMath2ArgsCallable : public LoxCallable {
 public:
     int arity() override { return 2; }
 
-    Value call(Interpreter* /*interpreter*/, std::vector<Value> arguments) override {
+    Value call(RuntimeContext* /*interpreter*/, std::vector<Value> arguments) override {
         if (arguments.size() != 2) {
             throw RuntimeError({}, std::string(LoxFuncName) + "() expects 2 arguments.");
         }
@@ -94,4 +94,3 @@ public:
 };
 
 } // namespace cclox
-

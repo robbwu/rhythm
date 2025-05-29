@@ -13,7 +13,7 @@ class FloorCallable final : public LoxCallable {
     int arity() override { return 1; }
 
     // return milli-seconds since Unix epoch, as a double
-    Value call(Interpreter*, std::vector<Value> args) override {
+    Value call(RuntimeContext*, std::vector<Value> args) override {
         if (args.size() != 1) {
             throw RuntimeError({}, "floor() needs 1 argument");
         }
@@ -30,7 +30,7 @@ public:
     int arity() override { return 1; }
 
     // return milli-seconds since Unix epoch, as a double
-    Value call(Interpreter*, std::vector<Value> args) override {
+    Value call(RuntimeContext*, std::vector<Value> args) override {
         if (args.size() != 1) {
             throw RuntimeError({}, "ceil() needs 1 argument");
         }
@@ -40,4 +40,3 @@ public:
 
     std::string toString()  override { return "<native fn>"; }
 };
-

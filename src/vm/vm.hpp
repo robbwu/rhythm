@@ -27,7 +27,7 @@ public:
         : function(func), ip(instruction_pointer), frame_pointer(fp) {}
 };
 
-class VM {
+class VM: public RuntimeContext {
     std::vector<Value> stack; // stack VM
     std::vector<std::shared_ptr<CallFrame>> frames; // call frame stack
 
@@ -69,13 +69,15 @@ public:
         globals[fmod_name] =  new NativeMath2ArgsCallable<std::fmod, fmod_name>();
     };
 
-    InterpretResult run();
+    InterpretResult run(int ret_frame = 0);
     InterpretResult run(BeatFunction *func);
 
     inline InterpretResult interpret(const std::string& source, Compiler compiler) {
         // compiler.compile(source);
         return INTERPRET_OK;
     };
+
+    Value callFunction(LoxCallable* func, const std::vector<Value>& args) override;
 
 
     inline void push(const Value& v) {stack.push_back(v);}

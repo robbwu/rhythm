@@ -80,7 +80,7 @@ public:
     }
 };
 
-class Interpreter: public ExprVisitor, public StmtVisitor {
+class Interpreter: public ExprVisitor, public StmtVisitor, public  RuntimeContext{
 private:
     Value _result;
     // Store both distance and index for each variable
@@ -111,6 +111,9 @@ public:
         for (auto &stmt : stmts) {
             execute(*stmt);
         }
+    }
+    Value callFunction(LoxCallable* func, const std::vector<Value>& args) override {
+        return func->call(this, args);  // Delegate to the function
     }
     // void print(const Expr& expr);
     void visit(const Binary& binary) override;
@@ -165,4 +168,3 @@ private:
     Interpreter&  interp;
     std::shared_ptr<Environment>  previous;
 };
-
