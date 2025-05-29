@@ -214,8 +214,31 @@ InterpretResult VM::run() {
                 } else {
                     error(0, "OP_CALL cannot find LoxCallable* on stack");
                 }
-
-
+                break;
+            }
+            case OP_ARRAY_LITERAL: {
+                int size = READ_BYTE();
+                auto array = std::make_shared<Array>(std::vector<Value>());
+                array->data.reserve(size);
+                // array->reserve(size);
+                for (int i = 0; i < size; i++) {
+                    array->data.push_back(pop());
+                }
+                std::reverse(array->data.begin(), array->data.end()); // reverse the order of elements
+                push(array);
+                break;
+            }
+            case OP_SUBSCRIPT: {
+                auto i = pop();
+                auto obj = pop();
+                if (std::holds_alternative<std::shared_ptr<Array>>(obj)) {
+                    push(std::get<std::shared_ptr<Array>>(obj)->data.at((int)std::get<double>(i)));
+                } else if (std::holds_alternative<std::shared_ptr<Map>>(obj)) {
+                    // TODO
+                } else {
+                    std::cout << "obj " << obj << std::endl;
+                    error(0, std::format("OP_SUBSCRIPT obj can only be Array or Map"));
+                }
                 break;
             }
             default:

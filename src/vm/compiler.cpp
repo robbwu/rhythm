@@ -2,6 +2,7 @@
 
 #include "compiler.hpp"
 #include "token.hpp"
+#include "vm/chunk.hpp"
 
 extern bool disassemble;
 
@@ -145,13 +146,21 @@ void Compiler::visit(const Call &expr) {
     chunk.write(argCount, expr.paren.line);
 };
 
-void Compiler::visit(const ArrayLiteral &) {
+void Compiler::visit(const ArrayLiteral &expr) {
+    for (const auto &elem : expr.elements) {
+        elem->accept(*this);
+    }
+    chunk.write(OP_ARRAY_LITERAL, expr.get_line());
+    chunk.write(expr.elements.size(), expr.get_line());
 };
 
 void Compiler::visit(const MapLiteral &) {
 };
 
-void Compiler::visit(const Subscript &) {
+void Compiler::visit(const Subscript &expr) {
+    expr.object->accept(*this);
+    expr.index->accept(*this);
+    chunk.write(OP_SUBSCRIPT, expr.index->get_line());
 };
 
 void Compiler::visit(const PropertyAccess &) {
