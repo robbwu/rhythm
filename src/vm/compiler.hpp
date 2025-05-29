@@ -21,6 +21,13 @@ public:
         bool isCaptured;
     } Local;
     int scopeDepth = 0;
+    struct LoopContext {
+        std::vector<int> breakJumps;    // Jump locations to patch for break
+        std::vector<int> continueJumps; // Jump locations to patch for continue
+        int loopStart;                   // Where continue should jump to
+        int numLocals;
+    };
+    std::vector<LoopContext> loopStack; // Stack of nested loop contexts
 
 
     // use as a stack for local variables
@@ -78,6 +85,12 @@ public:
     int emitJump(uint8_t instruction, int line);
     void patchJump(int offset);
     void emitLoop(int loopStart);
+
+    void beginLoop(int loopStart);
+    void endLoop();
+    void addBreakJump(int jump);
+    void addContinueJump(int jump);
+    bool isInLoop() const { return !loopStack.empty(); }
 
 
     void visit(const Binary&) override;

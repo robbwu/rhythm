@@ -218,6 +218,7 @@ void Compiler::visit(const VarStmt &stmt) {
         chunk.write(constant, stmt.name.line);
     } else { // local variable declaration
         locals.back().depth = scopeDepth;
+        // std::cout << "LocalV " << stmt.name.lexeme << " at depth " << scopeDepth << std::endl;
         // no need to emit any opcodes; just bookkeep the position of the local variables on
         // compile stack (and therefore the runtime VM stack because they mirror each other).
     }
@@ -277,6 +278,8 @@ void Compiler::emitLoop(int loopStart) {
 
 void Compiler::visit(const WhileStmt &stmt) {
     int loopStart = chunk.bytecodes.size();
+    beginLoop(loopStart);
+    // beginScope();
     stmt.condition->accept(*this);
     int exitJump = emitJump(OP_JUMP_IF_FALSE, stmt.condition->get_line());
     chunk.write(OP_POP, stmt.condition->get_line());
@@ -288,7 +291,55 @@ void Compiler::visit(const WhileStmt &stmt) {
     emitLoop(loopStart);
     patchJump(exitJump);
     chunk.write(OP_POP, stmt.condition->get_line());
+    // endScope();
+    endLoop();  // End loop context and patch break/continue jumps
 };
+
+void Compiler::beginLoop(int loopStart) {
+    loopStack.push_back(LoopContext{});
+    loopStack.back().loopStart = loopStart;
+    loopStack.back().numLocals = locals.size();
+}
+
+void Compiler::endLoop() {
+    if (loopStack.empty()) {
+        throw CompileException("endLoop called without beginLoop");
+    }
+    LoopContext& context = loopStack.back();
+    for (int jumpLoc : context.breakJumps) {
+        patchJump(jumpLoc);
+    }
+
+    // continue: TODO
+
+    loopStack.pop_back();
+    // pop locals that are out of scope from stack
+}
+
+void Compiler::addBreakJump(int jump) {
+    if (loopStack.empty()) {
+        throw CompileException("break statement not in loop");
+    }
+    loopStack.back().breakJumps.push_back(jump);
+}
+
+void Compiler::visit(const BreakStmt &stmt) {
+    if (!isInLoop()) {
+        throw CompileException("break statement not in loop");
+    }
+    // need to pop the stack of local variables that will immediately
+    // be out of scope after the break jump. But how many pops?
+    // std::cout << "at break stmt, number of locals " << locals.size() << std::endl;
+    // std::cout << "  matching loop beginning locals " << loopStack.back().numLocals << std::endl;
+    int numPops = (locals.size() - loopStack.back().numLocals);
+    for (int i = 0; i < numPops; i++) {
+        chunk.write(OP_POP, stmt.kw.line);
+    }
+    int jump = emitJump(OP_JUMP, stmt.kw.line);
+    addBreakJump(jump);
+};
+
+void Compiler::visit(const ContinueStmt &) {};
 
 void Compiler::visit(const FunctionStmt &stmt) {
     if (scopeDepth > 0) {
@@ -328,9 +379,3 @@ void Compiler::visit(const ReturnStmt &stmt) {
         chunk.write(OP_NIL, stmt.kw.line); // return nil if no value is provided
     chunk.write(OP_RETURN, stmt.kw.line);
 };
-
-void Compiler::visit(const BreakStmt &) {
-
-};
-
-void Compiler::visit(const ContinueStmt &) {};
