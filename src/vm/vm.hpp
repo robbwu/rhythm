@@ -7,6 +7,8 @@
 #include "compiler.hpp"
 #include "vm_exception.hpp"
 #include "native_func.hpp"
+#include "native_func_array.hpp"
+#include "native_math.hpp"
 
 typedef enum {
     INTERPRET_OK,
@@ -34,6 +36,9 @@ public:
     explicit VM(): stack(), frames(), globals()  {
         globals["clock"] = new ClockCallable();
         globals["printf"] = new PrintfCallable();
+        globals["assert"] = new AssertCallable();
+        globals["len"] = new LenCallable();
+        globals["floor"] = new FloorCallable();
     };
 
     InterpretResult run();

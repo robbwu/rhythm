@@ -166,7 +166,11 @@ void Compiler::visit(const Subscript &expr) {
 void Compiler::visit(const PropertyAccess &) {
 };
 
-void Compiler::visit(const SubscriptAssignment &) {
+void Compiler::visit(const SubscriptAssignment &expr) {
+    expr.object->accept(*this);
+    expr.index->accept(*this);
+    expr.value->accept(*this);
+    chunk.write(OP_SUBSCRIPT_ASSIGNMENT, expr.index->get_line());
 };
 
 void Compiler::visit(const FunctionExpr &expr) {

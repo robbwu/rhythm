@@ -68,6 +68,8 @@ int Chunk::disassembleInstruction(int offset) {
             return byteInstruction("OP_ARRAY_LITERAL", offset);
         case OP_SUBSCRIPT:
             return simpleInstruction("OP_SUBSCRIPT", offset);
+        case OP_SUBSCRIPT_ASSIGNMENT:
+            return simpleInstruction("OP_SUBSCRIPT_ASSIGNMENT", offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;

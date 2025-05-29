@@ -12,7 +12,7 @@ typedef enum  {
     OP_SET_LOCAL, OP_GET_LOCAL,
     OP_POP,
     OP_JUMP_IF_FALSE, OP_JUMP, OP_LOOP, OP_CALL,
-    OP_ARRAY_LITERAL, OP_SUBSCRIPT,
+    OP_ARRAY_LITERAL, OP_SUBSCRIPT, OP_SUBSCRIPT_ASSIGNMENT,
 } OpCode;
 
 // using Chunk = std::vector<uint8_t>;

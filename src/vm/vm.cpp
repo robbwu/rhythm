@@ -75,7 +75,7 @@ InterpretResult VM::run() {
                 break;
             }
             case OP_NOT: {
-                push(! std::get<bool>(pop()));
+                // push(! std::get<bool>(pop()));
                 stack.back() = !std::get<bool>(stack.back());
                 break;
             }
@@ -233,6 +233,21 @@ InterpretResult VM::run() {
                 auto obj = pop();
                 if (std::holds_alternative<std::shared_ptr<Array>>(obj)) {
                     push(std::get<std::shared_ptr<Array>>(obj)->data.at((int)std::get<double>(i)));
+                } else if (std::holds_alternative<std::shared_ptr<Map>>(obj)) {
+                    // TODO
+                } else {
+                    std::cout << "obj " << obj << std::endl;
+                    error(0, std::format("OP_SUBSCRIPT obj can only be Array or Map"));
+                }
+                break;
+            }
+            case OP_SUBSCRIPT_ASSIGNMENT: {
+                auto value = pop();
+                auto i = pop();
+                auto obj = pop();
+                if (std::holds_alternative<std::shared_ptr<Array>>(obj)) {
+                    std::get<std::shared_ptr<Array>>(obj)->data.at((int)std::get<double>(i)) = value;
+                    push(value);
                 } else if (std::holds_alternative<std::shared_ptr<Map>>(obj)) {
                     // TODO
                 } else {
