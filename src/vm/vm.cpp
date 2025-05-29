@@ -36,10 +36,9 @@ InterpretResult VM::run() {
 #define BINARY_OP(op) \
     do { \
         Value b = pop(); \
-        Value a = pop(); \
-        if (!std::holds_alternative<double>(a) || !std::holds_alternative<double>(b)) \
+        if (!std::holds_alternative<double>(b)) \
             error(0, "binary op operands must be numbers"); \
-        push( std::get<double>(a) op std::get<double>(b)); \
+        stack.back() = std::get<double>(stack.back()) op std::get<double>(b); \
     } while (false)
 
     auto frame = frames.back();
@@ -80,23 +79,31 @@ InterpretResult VM::run() {
                 break;
             }
             case OP_NEGATE: {
-                auto v = pop();
-                if (!std::holds_alternative<double>(v)) {
+                if (!std::holds_alternative<double>(stack.back())) {
                     throw new VMRuntimeError(0, "negate operand is not a number" );
                 }
-                push(-std::get<double>(v));
+                stack.back() = -std::get<double>(stack.back());
                 break;
             }
-
+            // stack: [a, b] => [a+b]
             case OP_ADD: {
                 Value b = pop();
-                Value a = pop();
-                if (std::holds_alternative<double>(a) && std::holds_alternative<double>(b))
-                    push( std::get<double>(a) + std::get<double>(b));
-                else if (std::holds_alternative<std::string>(a) && std::holds_alternative<std::string>(b))
-                    push( std::get<std::string>(a) + std::get<std::string>(b));
-                else
+                // Value a = pop();
+                if (std::holds_alternative<double>(b)) {
+                    stack.back() = std::get<double>(stack.back()) + std::get<double>(b);
+                } else if (std::holds_alternative<std::string>(b)) {
+                    stack.back() = std::get<std::string>(stack.back()) + std::get<std::string>(b);
+                } else {
                     error(0, "binary op operands must both be numbers or strings");
+                }
+                // if (std::holds_alternative<double>(a) && std::holds_alternative<double>(b))
+                // if (std::holds_alternative<double>(a) )
+                    // push( std::get<double>(a) + std::get<double>(b));
+                // else if (std::holds_alternative<std::string>(a) && std::holds_alternative<std::string>(b))
+                // else if (std::holds_alternative<std::string>(a))
+                    // push( std::get<std::string>(a) + std::get<std::string>(b));
+                // else
+                    // error(0, "binary op operands must both be numbers or strings");
                 break;
             }
             case OP_SUBTRACT: BINARY_OP(-); break;

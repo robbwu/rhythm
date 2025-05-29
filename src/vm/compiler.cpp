@@ -263,7 +263,7 @@ void Compiler::visit(const WhileStmt &stmt) {
     }
     emitLoop(loopStart);
     patchJump(exitJump);
-    chunk.write(OP_POP, stmt.increment->get_line());
+    chunk.write(OP_POP, stmt.condition->get_line());
 };
 
 void Compiler::visit(const FunctionStmt &stmt) {
