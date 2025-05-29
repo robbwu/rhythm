@@ -160,7 +160,18 @@ void Compiler::visit(const PropertyAccess &) {
 void Compiler::visit(const SubscriptAssignment &) {
 };
 
-void Compiler::visit(const FunctionExpr &) {
+void Compiler::visit(const FunctionExpr &expr) {
+    Compiler functionCompiler;
+    functionCompiler.beginScope();
+    for (const auto &param : expr.params) {
+        functionCompiler.locals.push_back({param, functionCompiler.scopeDepth, false});
+    }
+    auto func = functionCompiler.compileBeatFunction(expr.body, "anon", expr.params.size(), BeatFunctionType::FUNCTION);
+    if (disassemble)
+        func->chunk.disassembleChunk(std::format("BeatFunc: {}", func->name));
+    int constant = chunk.addConstant((LoxCallable*)func);
+    chunk.write(OP_CONSTANT, expr.get_line());
+    chunk.write(constant, expr.get_line());
 };
 
 
