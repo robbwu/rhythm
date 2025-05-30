@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
+#include <functional>
 #include <vector>
+
 #include "token.hpp"
 
 typedef enum  {
@@ -13,6 +15,7 @@ typedef enum  {
     OP_POP,
     OP_JUMP_IF_FALSE, OP_JUMP, OP_LOOP, OP_CALL,
     OP_ARRAY_LITERAL, OP_MAP_LITERAL, OP_SUBSCRIPT, OP_SUBSCRIPT_ASSIGNMENT,
+    OP_CLOSURE,
 } OpCode;
 
 // using Chunk = std::vector<uint8_t>;
@@ -61,4 +64,20 @@ public:
     std::string toString() override {
         return "<BeatFn " + name + ">";
     }
+};
+
+class BeatClosure: public LoxCallable {
+public:
+    BeatFunction* function;
+
+    explicit BeatClosure(BeatFunction* beatFunction) : function(beatFunction) {}
+    int arity() override { return function->arity();}
+    Value call(RuntimeContext *ctxt, std::vector<Value> arguments) override {
+        return function->call(ctxt, arguments);
+    }
+    std::string toString() override {
+        return "<BeatClosure " + function->name + ">";
+    }
+
+    // static BeatClosure * create(BeatFunction * script);
 };

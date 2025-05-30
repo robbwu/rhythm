@@ -67,7 +67,7 @@ void run( VM &vm, Compiler &compiler, std::string &source) {
     if (disassemble)
         script->chunk.disassembleChunk("test chunk");
 
-    vm.run(script);
+    vm.run(new BeatClosure(script)); // leaking? probably fine if this is a script
 }
 
 void runPrompt(VM &vm, Compiler &compiler)

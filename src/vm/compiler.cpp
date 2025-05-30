@@ -198,7 +198,9 @@ void Compiler::visit(const FunctionExpr &expr) {
     if (disassemble)
         func->chunk.disassembleChunk(std::format("BeatFunc: {}", func->name));
     int constant = chunk.addConstant((LoxCallable*)func);
-    chunk.write(OP_CONSTANT, expr.get_line());
+    // chunk.write(OP_CONSTANT, expr.get_line());
+    // chunk.write(constant, expr.get_line());
+    chunk.write(OP_CLOSURE, expr.get_line());
     chunk.write(constant, expr.get_line());
 };
 
@@ -369,8 +371,12 @@ void Compiler::visit(const FunctionStmt &stmt) {
     auto func = functionCompiler.compileBeatFunction(stmt.body, stmt.name.lexeme, stmt.params.size(), BeatFunctionType::FUNCTION);
     if (disassemble)
         func->chunk.disassembleChunk(std::format("BeatFunc: {}", func->name));
+
     int constant = chunk.addConstant((LoxCallable*)func);
-    chunk.write(OP_CONSTANT, stmt.name.line);
+    // chunk.write(OP_CONSTANT, stmt.name.line);
+    // chunk.write(constant, stmt.name.line);
+    // chunk.write(OP_POP, stmt.name.line);
+    chunk.write(OP_CLOSURE, stmt.name.line);
     chunk.write(constant, stmt.name.line);
 
     if (scopeDepth == 0) { // global variable declaration

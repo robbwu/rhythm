@@ -13,13 +13,13 @@ extern bool debug_trace_exeuction;
     }
 
 
-InterpretResult VM::run(BeatFunction *func){
-    if(func->type == BeatFunctionType::SCRIPT) {
+InterpretResult VM::run(BeatClosure *closure){
+    if(closure->function->type == BeatFunctionType::SCRIPT) {
         // reset the stack and frames
         stack.clear();
         frames.clear();
         // initialize the frame;
-        frames.push_back(std::make_shared<CallFrame>(func, &func->chunk.bytecodes[0], 0));
+        frames.push_back(std::make_shared<CallFrame>(closure, &closure->function->chunk.bytecodes[0], 0));
     } else {
         error(0, "NOT IMPLEMENTED YET");
     }
@@ -31,7 +31,7 @@ InterpretResult VM::run(int ret_frame) {
 
 #define READ_BYTE() (*frame->ip++)
 #define READ_SHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
-#define READ_CONSTANT() (frame->function->chunk.constants[READ_BYTE()])
+#define READ_CONSTANT() (frame->closure->function->chunk.constants[READ_BYTE()])
 #define READ_STRING() std::get<std::string>(READ_CONSTANT())
 #define BINARY_OP(op) \
     do { \
@@ -51,7 +51,7 @@ InterpretResult VM::run(int ret_frame) {
                 printf(" ]");
             }
             printf("\n");
-            frame->function->chunk.disassembleInstruction((int)(frame->ip - &frame->function->chunk.bytecodes[0]));
+            frame->closure->function->chunk.disassembleInstruction((int)(frame->ip - &frame->closure->function->chunk.bytecodes[0]));
         }
 
         uint8_t instruction = READ_BYTE();
@@ -199,13 +199,13 @@ InterpretResult VM::run(int ret_frame) {
                 }
                 LoxCallable* func = std::get<LoxCallable*>(fun);
 
-                BeatFunction* beat_func = dynamic_cast<BeatFunction*>(func);
-                if ( beat_func != nullptr) {
-                    if (beat_func->arity() != argCount) {
-                        error(0, std::format("function {} expected {} arguments but got {}", beat_func->toString(), beat_func->arity(), argCount));
+                BeatClosure* beat_closure = dynamic_cast<BeatClosure*>(func);
+                if ( beat_closure != nullptr) {
+                    if (beat_closure->arity() != argCount) {
+                        error(0, std::format("function {} expected {} arguments but got {}", beat_closure->toString(), beat_closure->arity(), argCount));
                     }
                     // create a new call frame; frame pointer points to the first of the arguments
-                    frames.push_back(std::make_shared<CallFrame>(beat_func, &beat_func->chunk.bytecodes[0], stack.size() - argCount));
+                    frames.push_back(std::make_shared<CallFrame>(beat_closure, &beat_closure->function->chunk.bytecodes[0], stack.size() - argCount));
                     frame = frames.back();
                     break;
                 } else if (func != nullptr) { // not BeatFunction, must be subclass of LoxCallable, native functions
@@ -290,6 +290,16 @@ InterpretResult VM::run(int ret_frame) {
                 }
                 break;
             }
+            case OP_CLOSURE: {
+                auto func = std::get<LoxCallable*>(READ_CONSTANT());
+                auto beat_func = dynamic_cast<BeatFunction*>(func);
+                if (!beat_func) {
+                    error(0, "OP_CLOSURE operand must be a BeatFunction");
+                }
+                auto closure = new BeatClosure(beat_func); //FIXME: this leaks?
+                push(closure);
+                break;
+            }
             default:
                 throw std::runtime_error("Unknown instruction");
         }
@@ -304,7 +314,7 @@ InterpretResult VM::run(int ret_frame) {
 void VM::print_stack_trace() {
     for (int i = frames.size() - 1; i >= 0; i--) {
         auto& frame = frames[i];
-        auto  function = frame->function;
+        auto  function = frame->closure->function;
         size_t instruction = frame->ip - &function->chunk.bytecodes[0] - 1;
         fprintf(stderr, "[line %d] in ",
                 function->chunk.lines[instruction]);
@@ -339,17 +349,17 @@ Value VM::callFunction(LoxCallable* func, const std::vector<Value>& args) {
     // Handle the call similar to OP_CALL
     int argCount = args.size();
 
-    BeatFunction* beat_func = dynamic_cast<BeatFunction*>(func);
-    if (beat_func != nullptr) {
-        if (beat_func->arity() != argCount) {
+    BeatClosure* closure = dynamic_cast<BeatClosure*>(func);
+    if (closure != nullptr) {
+        if (closure->arity() != argCount) {
             error(0, std::format("function {} expected {} arguments but got {}",
-                    beat_func->toString(), beat_func->arity(), argCount));
+                    closure->toString(), closure->arity(), argCount));
         }
 
         // Create a new call frame and execute
         // auto currentFrame = frames.back();
         int num_frames = frames.size();
-        frames.push_back(std::make_shared<CallFrame>(beat_func, &beat_func->chunk.bytecodes[0], stack.size() - argCount));
+        frames.push_back(std::make_shared<CallFrame>(closure, &closure->function->chunk.bytecodes[0], stack.size() - argCount));
 
         // Execute the function by running until return when the given frame is run;
         InterpretResult result = run(num_frames);

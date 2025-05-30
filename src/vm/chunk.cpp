@@ -72,6 +72,13 @@ int Chunk::disassembleInstruction(int offset) {
             return simpleInstruction("OP_SUBSCRIPT", offset);
         case OP_SUBSCRIPT_ASSIGNMENT:
             return simpleInstruction("OP_SUBSCRIPT_ASSIGNMENT", offset);
+        case OP_CLOSURE: {
+            offset++;
+            uint8_t constant = bytecodes[offset++];
+            printf("%-16s %4d ", "OP_CLOSURE", constant);
+            std::cout << constants[constant] << std::endl;
+            return offset;
+        }
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;

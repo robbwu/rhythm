@@ -19,12 +19,12 @@ typedef enum {
 
 class CallFrame {
 public:
-    BeatFunction* function;
+    BeatClosure* closure;
     uint8_t* ip; // instruction pointer
     int frame_pointer; // where the function's stack starts in the VM stack
 
-    CallFrame(BeatFunction* func, uint8_t* instruction_pointer, int fp)
-        : function(func), ip(instruction_pointer), frame_pointer(fp) {}
+    CallFrame(BeatClosure* closure, uint8_t* instruction_pointer, int fp)
+        : closure(closure), ip(instruction_pointer), frame_pointer(fp) {}
 };
 
 class VM: public RuntimeContext {
@@ -73,7 +73,7 @@ public:
     };
 
     InterpretResult run(int ret_frame = 0);
-    InterpretResult run(BeatFunction *func);
+    InterpretResult run(BeatClosure*);
 
     inline InterpretResult interpret(const std::string& source, Compiler compiler) {
         // compiler.compile(source);
