@@ -12,9 +12,14 @@ class CompileException: public std::runtime_error {
 
 class Compiler: ExprVisitor, StmtVisitor {
 private:
-    Compiler *enclosing = nullptr;
     Chunk chunk;
+    typedef struct {
+        uint8_t index;
+        bool isLocal;
+    } Upvalue;
+    std::vector<Upvalue> upvalues;
 public:
+    Compiler *enclosing = nullptr;
     typedef struct {
         Token name;
         int depth;
@@ -36,7 +41,7 @@ public:
     // because statements have net-zero effect on stack
     std::vector<Local> locals;
 
-    Compiler() = default;
+    Compiler(Compiler* enclosing ): enclosing(enclosing) {}
 
     Chunk compile(const Expr& expr) {
         expr.accept(*this);
@@ -57,10 +62,12 @@ public:
 
     BeatFunction* compileBeatFunction(const std::vector<std::unique_ptr<Stmt>> &stmts, std::string name, int arity, BeatFunctionType type) {
         chunk = Chunk(); // reset the chunk
+        // upvalues.clear();
         compile(std::move(stmts));
         chunk.write(OP_NIL, 0);
         chunk.write(OP_RETURN, 0); // add return at the end of the function
-        return new BeatFunction(arity, name, chunk, type);
+        std::cout << "Compiling BeatFunction: " << name << " with upvalue count: " << upvalues.size() << std::endl;
+        return new BeatFunction(arity, name, chunk, type, upvalues.size());
     }
 
     inline void clear() {
@@ -81,6 +88,9 @@ public:
         }
     }
     int resolveLocal(Token token);
+    int resolveUpvalue(Token name);
+    int addUpvalue( uint8_t index,bool isLocal);
+
 
     int emitJump(uint8_t instruction, int line);
     void patchJump(int offset);

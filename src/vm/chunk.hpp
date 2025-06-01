@@ -11,7 +11,7 @@ typedef enum  {
     OP_ADD, OP_SUBTRACT, OP_MULTIPLY, OP_DIVIDE, OP_EQUAL, OP_GREATER, OP_LESS,
     OP_PRINT, OP_NIL,
     OP_DEFINE_GLOBAL, OP_GET_GLOBAL, OP_SET_GLOBAL,
-    OP_SET_LOCAL, OP_GET_LOCAL,
+    OP_SET_LOCAL, OP_GET_LOCAL, OP_SET_UPVALUE, OP_GET_UPVALUE,
     OP_POP,
     OP_JUMP_IF_FALSE, OP_JUMP, OP_LOOP, OP_CALL,
     OP_ARRAY_LITERAL, OP_MAP_LITERAL, OP_SUBSCRIPT, OP_SUBSCRIPT_ASSIGNMENT,
@@ -52,8 +52,9 @@ public:
     int arity_;
     Chunk chunk;
     BeatFunctionType type;
+    int upvalueCount = 0;
 
-    BeatFunction(int _arity, const std::string &name, Chunk &chunk, BeatFunctionType type): arity_(_arity), name(name), chunk(std::move(chunk)), type(type) {}
+    BeatFunction(int _arity, const std::string &name, Chunk &chunk, BeatFunctionType type, int cnt): arity_(_arity), name(name), chunk(std::move(chunk)), type(type), upvalueCount(cnt) {}
 
     int arity() override { return arity_;}
 
@@ -66,9 +67,13 @@ public:
     }
 };
 
+
+
 class BeatClosure: public LoxCallable {
 public:
     BeatFunction* function;
+    int upvalue_count;
+    std::vector<Value*> upvalues; // FIXME: this is leaking
 
     explicit BeatClosure(BeatFunction* beatFunction) : function(beatFunction) {}
     int arity() override { return function->arity();}

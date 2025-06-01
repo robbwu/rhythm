@@ -91,15 +91,21 @@ void Compiler::visit(const Unary &expr) {
 
 void Compiler::visit(const Variable &expr) {
     int arg = resolveLocal(expr.name);
-    if (arg == -1) { // global scope
-        // TODO: this is wasteful--should deduplicate strings in globals contants
-        int constant = chunk.addConstant(expr.name.lexeme);
-        chunk.write(OP_GET_GLOBAL, expr.name.line);
-        chunk.write(constant, expr.name.line);
-    } else {
+    if (arg != -1) {
         chunk.write(OP_GET_LOCAL, expr.name.line);
         chunk.write(arg, expr.name.line);
+        return;
     }
+    arg = resolveUpvalue(expr.name);
+    if (arg != -1 ) {
+        // chunk.write(OP_GET_UPVALUE, expr.name.line);
+        return;
+    }
+    // TODO: this is wasteful--should deduplicate strings in globals contants
+    int constant = chunk.addConstant(expr.name.lexeme);
+    chunk.write(OP_GET_GLOBAL, expr.name.line);
+    chunk.write(constant, expr.name.line);
+
 };
 
 void Compiler::visit(const Assignment &expr) {
@@ -131,6 +137,32 @@ int Compiler::resolveLocal(Token token) {
         }
     }
     return -1;
+}
+
+int Compiler::resolveUpvalue(Token name) {
+    if (enclosing == NULL) return -1;
+
+    int local = enclosing->resolveLocal( name);
+    if (local != -1) {
+        std::cout << "resolving upvalue -- found in enclsoing local "  << local << std::endl;
+        return addUpvalue((uint8_t)local, true);
+    }
+
+    int upvalue = enclosing->resolveUpvalue(name);
+    if (upvalue != -1) {
+        std::cout << "resolving upvalue -- found in enclsoing upvalue "  << upvalue << std::endl;
+        return addUpvalue((uint8_t)upvalue, false);
+    }
+
+    return -1;
+}
+
+int Compiler::addUpvalue( uint8_t index,bool isLocal) {
+    std::cout << "adding upvalue " << (int)index << " isLocal: " << isLocal;
+    int upvalueCount = upvalues.size();
+    upvalues.push_back({index, isLocal});
+    std::cout << " upvalue count: " << upvalues.size() << std::endl;
+    return upvalueCount;
 }
 
 void Compiler::visit(const Call &expr) {
@@ -189,7 +221,7 @@ void Compiler::visit(const SubscriptAssignment &expr) {
 };
 
 void Compiler::visit(const FunctionExpr &expr) {
-    Compiler functionCompiler;
+    Compiler functionCompiler{this};
     functionCompiler.beginScope();
     for (const auto &param : expr.params) {
         functionCompiler.locals.push_back({param, functionCompiler.scopeDepth, false});
@@ -202,6 +234,10 @@ void Compiler::visit(const FunctionExpr &expr) {
     // chunk.write(constant, expr.get_line());
     chunk.write(OP_CLOSURE, expr.get_line());
     chunk.write(constant, expr.get_line());
+    for (int i=0; i<func->upvalueCount; i++) {
+        chunk.write(upvalues[i].isLocal ? 1 : 0, expr.get_line());
+        chunk.write(upvalues[i].index, expr.get_line());
+    }
 };
 
 
@@ -363,7 +399,7 @@ void Compiler::visit(const FunctionStmt &stmt) {
         locals.push_back({stmt.name, -1, false});
     }
 
-    Compiler functionCompiler;
+    Compiler functionCompiler{this};
     functionCompiler.beginScope();
     for (const auto &param : stmt.params) {
         functionCompiler.locals.push_back({param, functionCompiler.scopeDepth, false});
@@ -378,6 +414,12 @@ void Compiler::visit(const FunctionStmt &stmt) {
     // chunk.write(OP_POP, stmt.name.line);
     chunk.write(OP_CLOSURE, stmt.name.line);
     chunk.write(constant, stmt.name.line);
+    // std::cout << "upvalue count: " << func->upvalueCount << std::endl;
+    // std::cout << "upvalues size: " << functionCompiler.upvalues.size() << std::endl;
+    for (int i=0; i<functionCompiler.upvalues.size(); i++) {
+        chunk.write(functionCompiler.upvalues[i].isLocal ? 1 : 0, stmt.name.line);
+        chunk.write(functionCompiler.upvalues[i].index, stmt.name.line);
+    }
 
     if (scopeDepth == 0) { // global variable declaration
         int constant = chunk.addConstant(stmt.name.lexeme);

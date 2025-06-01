@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "lox_function.hpp"
+
 void Chunk::disassembleChunk( const std::string& name) {
     printf("== %s ==\n", name.c_str());
     for (int offset = 0; offset < bytecodes.size();) {
@@ -76,9 +78,25 @@ int Chunk::disassembleInstruction(int offset) {
             offset++;
             uint8_t constant = bytecodes[offset++];
             printf("%-16s %4d ", "OP_CLOSURE", constant);
+            auto callable = std::get<LoxCallable*>(constants[constant]);
+            auto function = dynamic_cast<BeatFunction*>(callable);
+            if (!function) {
+                throw std::runtime_error("OP_CLOSURE must consume a BeatFunction on stack");
+            }
             std::cout << constants[constant] << std::endl;
+            std::cout << "  function upvalue count " << function->upvalueCount << std::endl;
+            for (int j = 0; j < function->upvalueCount; j++) {
+                int isLocal = bytecodes[offset++];
+                int index = bytecodes[offset++];
+                printf("%04d      |                     %s %d\n",
+                       offset - 2, isLocal ? "local" : "upvalue", index);
+            }
             return offset;
         }
+        case OP_GET_UPVALUE:
+            return byteInstruction("OP_GET_UPVALUE", offset);
+        case OP_SET_UPVALUE:
+            return byteInstruction("OP_SET_UPVALUE", offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;

@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    Compiler compiler;
+    Compiler compiler(nullptr);
     VM vm{};
 
     // Count non-option arguments
