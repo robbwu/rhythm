@@ -218,6 +218,7 @@ public:
         if (std::holds_alternative<double>(v)) return v;
         if (std::holds_alternative<bool>(v)) return (double)(std::get<bool>(v) ? 1 : 0);
         if (std::holds_alternative<std::string>(v)) return std::stod(std::get<std::string>(v));
+        return {};
     }
 
     std::string toString()  override { return "<native fn>"; }

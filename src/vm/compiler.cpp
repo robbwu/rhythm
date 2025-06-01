@@ -98,7 +98,8 @@ void Compiler::visit(const Variable &expr) {
     }
     arg = resolveUpvalue(expr.name);
     if (arg != -1 ) {
-        // chunk.write(OP_GET_UPVALUE, expr.name.line);
+        chunk.write(OP_GET_UPVALUE, expr.name.line);
+        chunk.write(arg, expr.name.line);
         return;
     }
     // TODO: this is wasteful--should deduplicate strings in globals contants
@@ -112,15 +113,21 @@ void Compiler::visit(const Assignment &expr) {
     expr.right->accept(*this);
 
     int arg = resolveLocal(expr.name);
-    if (arg == -1) { // global var assignment
-        int constant = chunk.addConstant(expr.name.lexeme);
-        chunk.write(OP_SET_GLOBAL, expr.name.line);
-        chunk.write(constant, expr.name.line);
-    } else {
+    if (arg != -1) { // global var assignment
         chunk.write(OP_SET_LOCAL, expr.name.line);
         chunk.write(arg, expr.name.line);
+        return;
+    }
+    arg = resolveUpvalue(expr.name);
+    if (arg != -1) {
+        chunk.write(OP_SET_UPVALUE, expr.name.line);
+        chunk.write(arg, expr.name.line);
+        return;
     }
 
+    int constant = chunk.addConstant(expr.name.lexeme);
+    chunk.write(OP_SET_GLOBAL, expr.name.line);
+    chunk.write(constant, expr.name.line);
 };
 
 // returns the slot index in the locals stack in both Compiler/VM (as they mirror)

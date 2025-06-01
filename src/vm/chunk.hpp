@@ -15,7 +15,7 @@ typedef enum  {
     OP_POP,
     OP_JUMP_IF_FALSE, OP_JUMP, OP_LOOP, OP_CALL,
     OP_ARRAY_LITERAL, OP_MAP_LITERAL, OP_SUBSCRIPT, OP_SUBSCRIPT_ASSIGNMENT,
-    OP_CLOSURE,
+    OP_CLOSURE, OP_CLOSE_UPVALUE,
 } OpCode;
 
 // using Chunk = std::vector<uint8_t>;
@@ -67,15 +67,23 @@ public:
     }
 };
 
+class Upvalue {
+public:
+    Value*  location; //FIXME: make this ref counted?
+    explicit Upvalue(Value* location): location(location) {}
+};
 
 
 class BeatClosure: public LoxCallable {
 public:
     BeatFunction* function;
-    int upvalue_count;
-    std::vector<Value*> upvalues; // FIXME: this is leaking
+    std::vector<std::shared_ptr<Upvalue>> upvalues; // FIXME: this is leaking
 
-    explicit BeatClosure(BeatFunction* beatFunction) : function(beatFunction) {}
+    explicit BeatClosure(BeatFunction* beatFunction) : function(beatFunction) {
+        for (int i = 0; i < function->upvalueCount; i++) {
+            upvalues.push_back(std::make_shared<Upvalue>(nullptr));
+        }
+    }
     int arity() override { return function->arity();}
     Value call(RuntimeContext *ctxt, std::vector<Value> arguments) override {
         return function->call(ctxt, arguments);

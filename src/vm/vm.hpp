@@ -17,6 +17,10 @@ typedef enum {
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
+inline static std::shared_ptr<Upvalue> captureUpvalue(Value* local) {
+    return  std::make_shared<Upvalue>(local);
+}
+
 class CallFrame {
 public:
     BeatClosure* closure;
@@ -33,6 +37,9 @@ class VM: public RuntimeContext {
 
     std::unordered_map<std::string, Value> globals;
 public:
+    // typedef struct Upvalue {
+    //     Value* value;
+    // } Upvalue;
 
     explicit VM(): stack(), frames(), globals()  {
         globals["clock"] = new ClockCallable();

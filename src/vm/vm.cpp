@@ -298,6 +298,26 @@ InterpretResult VM::run(int ret_frame) {
                 }
                 auto closure = new BeatClosure(beat_func); //FIXME: this leaks?
                 push(closure);
+                for (int i=0; i<closure->upvalues.size(); i++) {
+                    uint8_t isLocal = READ_BYTE();
+                    uint8_t index = READ_BYTE();
+                    if (isLocal) {
+                        closure->upvalues[i] = captureUpvalue(&stack[frame->frame_pointer+index]);
+                    } else {
+                        closure->upvalues[i] = frame->closure->upvalues[index];
+                    }
+                }
+                break;
+            }
+            case OP_GET_UPVALUE: {
+                uint8_t slot = READ_BYTE();
+                push(*frame->closure->upvalues[slot]->location);
+                break;
+            }
+            case OP_SET_UPVALUE: {
+                uint8_t slot = READ_BYTE();
+                *frame->closure->upvalues[slot]->location = peek(0);
+                // no pop() here because assignment is an expression; need to leave sth on stack top.
                 break;
             }
             default:
@@ -309,6 +329,8 @@ InterpretResult VM::run(int ret_frame) {
 #undef BINARY_OP
 
 }
+
+
 
 
 void VM::print_stack_trace() {
