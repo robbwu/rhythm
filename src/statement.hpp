@@ -126,10 +126,10 @@ class FunctionStmt: public Stmt {
 public:
     Token name;
     std::vector<Token> params;
-    std::vector<std::unique_ptr<Stmt>> body;
+    std::unique_ptr<BlockStmt> body;
 
-    FunctionStmt(Token name, std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body): name(name), params(std::move(params)), body(std::move(body)) {}
-    static std::unique_ptr<FunctionStmt> create(Token name, std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body) {
+    FunctionStmt(Token name, std::vector<Token> params, std::unique_ptr<BlockStmt> body): name(name), params(std::move(params)), body(std::move(body)) {}
+    static std::unique_ptr<FunctionStmt> create(Token name, std::vector<Token> params, std::unique_ptr<BlockStmt> body) {
         return std::make_unique<FunctionStmt>(std::move(name), params, std::move(body));
     }
     void accept(StmtVisitor& visitor) const override {
@@ -156,14 +156,14 @@ public:
 class FunctionExpr : public Expr {
 public:
     std::vector<Token> params;
-    std::vector<std::unique_ptr<Stmt>> body;
+    std::unique_ptr<BlockStmt> body;
     int line;
 
-    FunctionExpr(std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body, int line)
+    FunctionExpr(std::vector<Token> params, std::unique_ptr<BlockStmt> body, int line)
         : params(std::move(params)), body(std::move(body)), line(line) {}
 
     static std::unique_ptr<FunctionExpr> create(
-        std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body, int line) {
+        std::vector<Token> params, std::unique_ptr<BlockStmt> body, int line) {
         return std::make_unique<FunctionExpr>(std::move(params), std::move(body), line);
     }
 

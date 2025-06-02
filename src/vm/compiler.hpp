@@ -43,15 +43,15 @@ public:
 
     Compiler(Compiler* enclosing ): enclosing(enclosing) {}
 
-    Chunk compile(const Expr& expr) {
-        expr.accept(*this);
-        return chunk;
-    }
-
-    Chunk compile(const Stmt& stmt) {
-        stmt.accept(*this);
-        return chunk;
-    }
+    // Chunk compile(const Expr& expr) {
+    //     expr.accept(*this);
+    //     return chunk;
+    // }
+    //
+    // Chunk compile(const Stmt& stmt) {
+    //     stmt.accept(*this);
+    //     return chunk;
+    // }
 
     inline Chunk compile(const std::vector<std::unique_ptr<Stmt>>& stmts) {
         for (auto& stmt : stmts) {
@@ -60,10 +60,18 @@ public:
         return chunk;
     }
 
-    BeatFunction* compileBeatFunction(const std::vector<std::unique_ptr<Stmt>> &stmts, std::string name, int arity, BeatFunctionType type) {
+    BeatFunction* compileBeatFunction(const std::unique_ptr<BlockStmt> &body, std::string name, int arity, BeatFunctionType type) {
         chunk = Chunk(); // reset the chunk
         // upvalues.clear();
-        compile(std::move(stmts));
+        // compile(std::move(stmts));
+        if (type == BeatFunctionType::FUNCTION)
+            body->accept(*this);
+        else if (type == BeatFunctionType::SCRIPT) { // avoid block stmt; no begin scope/end scope etc for script.
+            for (auto &stmt : body->statements) {
+                stmt->accept(*this);
+            }
+        }
+
         chunk.write(OP_NIL, 0);
         chunk.write(OP_RETURN, 0); // add return at the end of the function
         std::cout << "Compiling BeatFunction: " << name << " with upvalue count: " << upvalues.size() << std::endl;
@@ -80,11 +88,16 @@ public:
     }
 
     inline void endScope() {
+        std::cout << "endScope " << scopeDepth << std::endl;
         scopeDepth--;
         while (!locals.empty()  && locals.back().depth > scopeDepth) {
             auto local = locals.back();
             locals.pop_back();
-            chunk.write(OP_POP, local.name.line);
+            if (local.isCaptured) {
+                chunk.write(OP_CLOSE_UPVALUE, local.name.line);
+            } else {
+                chunk.write(OP_POP, local.name.line);
+            }
         }
     }
     int resolveLocal(Token token);

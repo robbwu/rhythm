@@ -108,7 +108,10 @@ void Resolver::resolveFunction(const FunctionExpr& expr, FunctionType type) {
         declare(param);
         define(param);
     }
-    resolve(expr.body);
+    // resolve(expr.body);
+    for (auto &stmt : expr.body->statements) {
+        resolve(stmt.get());
+    }
     endScope();
     current_function = enclosing_function;
 }
@@ -131,7 +134,10 @@ void Resolver::resolveFunction(const FunctionStmt& stmt, FunctionType type) {
         declare(param);
         define(param);
     }
-    resolve(stmt.body);
+    // resolve(stmt.body);
+    for (auto &stmt : stmt.body->statements) {
+        resolve(stmt.get());
+    }
     endScope();
     current_function = enclosing_function;
 }

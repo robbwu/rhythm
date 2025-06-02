@@ -152,6 +152,7 @@ int Compiler::resolveUpvalue(Token name) {
     int local = enclosing->resolveLocal( name);
     if (local != -1) {
         std::cout << "resolving upvalue -- found in enclsoing local "  << local << std::endl;
+        enclosing->locals[local].isCaptured = true;
         return addUpvalue((uint8_t)local, true);
     }
 

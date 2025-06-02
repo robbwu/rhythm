@@ -223,8 +223,9 @@ private:
         // parse body
         consume(TokenType::LEFT_BRACE, "expected '{' before body");
         auto body = block();
+        auto block = BlockStmt::create(std::move(body), line);
 
-        return FunctionExpr::create(std::move(parameters), std::move(body), line);
+        return FunctionExpr::create(std::move(parameters), std::move(block), line);
     }
 
     std::unique_ptr<Expr> arrayLiteral() {
@@ -289,8 +290,9 @@ private:
         // parse body
         consume(TokenType::LEFT_BRACE, "expected '{' before body");
         auto body = block();
+        auto block = BlockStmt::create(std::move(body), previous().line);
 
-        return FunctionStmt::create(name, parameters, std::move(body));
+        return FunctionStmt::create(name, parameters, std::move(block));
     }
 
     std::unique_ptr<Stmt> statement() {
@@ -319,14 +321,16 @@ private:
     }
 
     // parse sequence of Stmts up until }
-    std::vector<std::unique_ptr<Stmt>> block() {
+    std::vector<std::unique_ptr<Stmt>>  block() {
         std::vector<std::unique_ptr<Stmt>> statements;
         while (!check(TokenType::RIGHT_BRACE) && !isAtEnd()) {
             statements.push_back(declaration());
         }
 
+
         consume(TokenType::RIGHT_BRACE, "expected '}'");
         return statements;
+
     }
 
     // desugar for into while statement

@@ -61,8 +61,9 @@ void run( VM &vm, Compiler &compiler, std::string &source) {
     }
 
     compiler.clear();
+    auto block =  BlockStmt::create(std::move(stmts),0);
     // auto chunk = compiler.compile(std::move(stmts));
-    auto script = compiler.compileBeatFunction(std::move(stmts), "", 0, BeatFunctionType::SCRIPT);
+    auto script = compiler.compileBeatFunction(std::move(block), "", 0, BeatFunctionType::SCRIPT);
     // chunk.write(OP_RETURN, 0); // TODO: remove me
     if (disassemble)
         script->chunk.disassembleChunk("test chunk");

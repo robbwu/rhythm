@@ -183,15 +183,14 @@ void AstPrinter::visit(const FunctionStmt& funStmt) {
     std::cout << ")\n";
 
     IndentGuard guard(*this);
-    for (const auto& stmt : funStmt.body) {
-        stmt->accept(*this);
-    }
+    funStmt.body->accept(*this);
 }
 
 void AstPrinter::visit(const ReturnStmt& returnStmt) {
     std::cout << get_indent();
     std::cout << "RETURN ";
-    returnStmt.value->accept(*this);
+    if (returnStmt.value)
+        returnStmt.value->accept(*this);
     std::cout << std::endl;
 }
 

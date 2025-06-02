@@ -97,6 +97,8 @@ int Chunk::disassembleInstruction(int offset) {
             return byteInstruction("OP_GET_UPVALUE", offset);
         case OP_SET_UPVALUE:
             return byteInstruction("OP_SET_UPVALUE", offset);
+        case OP_CLOSE_UPVALUE:
+            return simpleInstruction("OP_CLOSE_UPVALUE", offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;

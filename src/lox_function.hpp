@@ -18,7 +18,7 @@ public:
         }
         try {
             auto interpreter = dynamic_cast<Interpreter*>(ctxt);
-            interpreter->executeBlock(declaration->body, env);
+            interpreter->executeBlock(declaration->body->statements, env);
         } catch (const Return& ret) {
             return ret.value;
         }
@@ -49,7 +49,7 @@ public:
         }
         try {
             auto interpreter = dynamic_cast<Interpreter*>(ctxt);
-            interpreter->executeBlock(declaration->body, env);
+            interpreter->executeBlock(declaration->body->statements, env);
         } catch (const Return& ret) {
             return ret.value;
         }
