@@ -70,18 +70,24 @@ public:
 class Upvalue {
 public:
     Value*  location; //FIXME: make this ref counted?
+    Upvalue*  next = nullptr;
+    Value   closed = nullptr; // in OP_CLOSE_UPVALUE, the stack value is moved to here on heap
     explicit Upvalue(Value* location): location(location) {}
+
+    ~Upvalue() {
+        std::cout << "XXXXXXXXXXX Upvalue destructor called for value: " << closed << std::endl;
+    }
 };
 
 
 class BeatClosure: public LoxCallable {
 public:
     BeatFunction* function;
-    std::vector<std::shared_ptr<Upvalue>> upvalues; // FIXME: this is leaking
+    std::vector<Upvalue*> upvalues; // FIXME: this is leaking
 
     explicit BeatClosure(BeatFunction* beatFunction) : function(beatFunction) {
         for (int i = 0; i < function->upvalueCount; i++) {
-            upvalues.push_back(std::make_shared<Upvalue>(nullptr));
+            upvalues.push_back((nullptr));
         }
     }
     int arity() override { return function->arity();}

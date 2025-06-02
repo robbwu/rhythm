@@ -151,14 +151,14 @@ int Compiler::resolveUpvalue(Token name) {
 
     int local = enclosing->resolveLocal( name);
     if (local != -1) {
-        std::cout << "resolving upvalue -- found in enclsoing local "  << local << std::endl;
+        // std::cout << "resolving upvalue -- found in enclsoing local "  << local << std::endl;
         enclosing->locals[local].isCaptured = true;
         return addUpvalue((uint8_t)local, true);
     }
 
     int upvalue = enclosing->resolveUpvalue(name);
     if (upvalue != -1) {
-        std::cout << "resolving upvalue -- found in enclsoing upvalue "  << upvalue << std::endl;
+        // std::cout << "resolving upvalue -- found in enclsoing upvalue "  << upvalue << std::endl;
         return addUpvalue((uint8_t)upvalue, false);
     }
 
@@ -166,10 +166,10 @@ int Compiler::resolveUpvalue(Token name) {
 }
 
 int Compiler::addUpvalue( uint8_t index,bool isLocal) {
-    std::cout << "adding upvalue " << (int)index << " isLocal: " << isLocal;
+    // std::cout << "adding upvalue " << (int)index << " isLocal: " << isLocal;
     int upvalueCount = upvalues.size();
     upvalues.push_back({index, isLocal});
-    std::cout << " upvalue count: " << upvalues.size() << std::endl;
+    // std::cout << " upvalue count: " << upvalues.size() << std::endl;
     return upvalueCount;
 }
 

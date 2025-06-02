@@ -164,15 +164,24 @@ InterpretResult VM::run(int ret_frame) {
                 //     std::cout << s << ", ";
                 // }
                 // std::cout << std::endl;
+                if (frames.size() > 1){
+                    // std::cout << "frame_pointer " << frame->frame_pointer << std::endl;
+                    closeUpvalues(&stack[frame->frame_pointer]);
+                    printOpenUpvalues();
+                }
                 auto result = pop();
+
                 // if (frames.size()==1) { // if this is the last frame, we are done
                 //     // assert(stack.size() == 0);
                 //     // pop();
                 //     // ASSERT_MSG(stack.size() == 0, std::format("stack size {}, wanted 0", stack.size()));
                 //     return INTERPRET_OK;
                 // }
-                if (frames.size()>1) // only if this is not the last frame
+                if (frames.size()>1) {
+
+                    // only if this is not the last frame
                     stack.resize(frame->frame_pointer-1); // restore stack to the frame pointer
+                }
                 frames.pop_back(); // pop the current frame
                 if (!frames.empty())
                     frame = frames.back();
@@ -302,15 +311,23 @@ InterpretResult VM::run(int ret_frame) {
                     uint8_t isLocal = READ_BYTE();
                     uint8_t index = READ_BYTE();
                     if (isLocal) {
+                        // printf("XXX OP_CLOSURE %s:captured local index %d\n", closure->toString().c_str(), index);
                         closure->upvalues[i] = captureUpvalue(&stack[frame->frame_pointer+index]);
                     } else {
+                        // printf("XXX OP_CLOSURE %s:captured non-local index %d\n", closure->toString().c_str(), index);
                         closure->upvalues[i] = frame->closure->upvalues[index];
                     }
+                    printOpenUpvalues();
                 }
                 break;
             }
             case OP_GET_UPVALUE: {
                 uint8_t slot = READ_BYTE();
+                // printf("slot %d\n", slot);
+                // std::cout << "size of current upvalues " << frame->closure->upvalues.size() << std::endl;
+                // auto upvalue = frame->closure->upvalues[slot];
+                // printf("upvalue: location %p\n", upvalue->location );
+                // std::cout << "getupvalue "<< *frame->closure->upvalues[slot]->location << std::endl;
                 push(*frame->closure->upvalues[slot]->location);
                 break;
             }
@@ -318,6 +335,14 @@ InterpretResult VM::run(int ret_frame) {
                 uint8_t slot = READ_BYTE();
                 *frame->closure->upvalues[slot]->location = peek(0);
                 // no pop() here because assignment is an expression; need to leave sth on stack top.
+                break;
+            }
+            case OP_CLOSE_UPVALUE: {
+                // std::cout << "upvalue count of current frame" << frame->closure->upvalues.size() << std::endl;
+                // throw std::runtime_error("OP_CLOSE_UPVALUE not implemented");
+                closeUpvalues(&stack.back());
+                printOpenUpvalues();
+                pop();
                 break;
             }
             default:
@@ -329,8 +354,62 @@ InterpretResult VM::run(int ret_frame) {
 #undef BINARY_OP
 
 }
+// for debuggin purpose
+void VM::printOpenUpvalues() {
+    if (!debug_trace_exeuction) return;
+    auto upvalue =  openUpvalues;
+    std::cout << "[[";
+    while (upvalue != nullptr) {
+        std::cout <<  *upvalue->location << ", ";
+        upvalue = upvalue->next;
+    }
+    std::cout << "]]" << std::endl;
+}
 
+Upvalue* VM::captureUpvalue(Value* local) {
+    // has this local already be captured as upvalue?
+    Upvalue* prev = NULL;
+    Upvalue* upvalue = openUpvalues;
+    while (upvalue != NULL && upvalue->location > local) {
+        prev = upvalue;
+        upvalue = upvalue->next;
+    }
 
+    if (upvalue != NULL && upvalue->location == local) {
+        // already captured!
+        // std::shared_ptr<Upvalue> upvalue_adopter(upvalue); // TODO: maybe not using Value* as intermdiary?
+        return upvalue;
+    }
+
+    // if (upvalue != nullptr) std::cout <<  *upvalue->location << std::endl;
+    // else std::cout <<  "current upvalue is null" << std::endl;
+    auto createdUpvalue = new Upvalue(local);
+    createdUpvalue->next = upvalue;
+    // std::cout << "next         " << upvalue << std::endl;
+    // std::cout << "openUpvalues " << openUpvalues << std::endl;
+    if (prev == nullptr) {
+        openUpvalues = createdUpvalue;
+    } else {
+        prev->next = createdUpvalue;
+    }
+    // std::cout << "XXX created upvalue for " << *createdUpvalue->location << std::endl;
+    // std::cout << "new openUpvalues " << openUpvalues << std::endl;
+    return createdUpvalue;
+}
+
+void VM::closeUpvalues(Value* last) {
+    // std::cout << "### closeUpvalue " << *last << std::endl;
+    // std::cout << "  openUpvalues  location " << openUpvalues->location << std::endl;
+    // std::cout << "  last                   " << last << std::endl;
+    while (openUpvalues != NULL &&
+        openUpvalues->location >= last) {
+        auto upvalue = openUpvalues;
+        upvalue->closed = *upvalue->location; // copied Value from stack to heap
+        upvalue->location = &upvalue->closed;
+        openUpvalues = upvalue->next;
+        // std::cout << "### closed an open upvalue " << upvalue->closed << std::endl;
+    }
+}
 
 
 void VM::print_stack_trace() {

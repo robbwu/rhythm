@@ -74,7 +74,7 @@ public:
 
         chunk.write(OP_NIL, 0);
         chunk.write(OP_RETURN, 0); // add return at the end of the function
-        std::cout << "Compiling BeatFunction: " << name << " with upvalue count: " << upvalues.size() << std::endl;
+        // std::cout << "Compiling BeatFunction: " << name << " with upvalue count: " << upvalues.size() << std::endl;
         return new BeatFunction(arity, name, chunk, type, upvalues.size());
     }
 
@@ -88,7 +88,6 @@ public:
     }
 
     inline void endScope() {
-        std::cout << "endScope " << scopeDepth << std::endl;
         scopeDepth--;
         while (!locals.empty()  && locals.back().depth > scopeDepth) {
             auto local = locals.back();

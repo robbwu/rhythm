@@ -17,9 +17,7 @@ typedef enum {
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
-inline static std::shared_ptr<Upvalue> captureUpvalue(Value* local) {
-    return  std::make_shared<Upvalue>(local);
-}
+
 
 class CallFrame {
 public:
@@ -37,11 +35,14 @@ class VM: public RuntimeContext {
 
     std::unordered_map<std::string, Value> globals;
 public:
+    Upvalue* openUpvalues = nullptr;
     // typedef struct Upvalue {
     //     Value* value;
     // } Upvalue;
 
     explicit VM(): stack(), frames(), globals()  {
+        stack.reserve(256); // this is to prevent dynamicly enlarging stack that invalidates its pointers
+
         globals["clock"] = new ClockCallable();
         globals["printf"] = new PrintfCallable();
         globals["len"] = new LenCallable();
@@ -88,6 +89,10 @@ public:
     };
 
     Value callFunction(LoxCallable* func, const std::vector<Value>& args) override;
+
+    Upvalue* captureUpvalue(Value* local);
+    void closeUpvalues(Value* last);
+    void printOpenUpvalues();
 
 
     inline void push(const Value& v) {stack.push_back(v);}

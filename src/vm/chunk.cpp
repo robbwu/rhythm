@@ -84,7 +84,6 @@ int Chunk::disassembleInstruction(int offset) {
                 throw std::runtime_error("OP_CLOSURE must consume a BeatFunction on stack");
             }
             std::cout << constants[constant] << std::endl;
-            std::cout << "  function upvalue count " << function->upvalueCount << std::endl;
             for (int j = 0; j < function->upvalueCount; j++) {
                 int isLocal = bytecodes[offset++];
                 int index = bytecodes[offset++];
