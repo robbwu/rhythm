@@ -242,9 +242,9 @@ void Compiler::visit(const FunctionExpr &expr) {
     // chunk.write(constant, expr.get_line());
     chunk.write(OP_CLOSURE, expr.get_line());
     chunk.write(constant, expr.get_line());
-    for (int i=0; i<func->upvalueCount; i++) {
-        chunk.write(upvalues[i].isLocal ? 1 : 0, expr.get_line());
-        chunk.write(upvalues[i].index, expr.get_line());
+    for (int i=0; i<functionCompiler.upvalues.size(); i++) {
+        chunk.write(functionCompiler.upvalues[i].isLocal ? 1 : 0, expr.get_line());
+        chunk.write(functionCompiler.upvalues[i].index, expr.get_line());
     }
 };
 
