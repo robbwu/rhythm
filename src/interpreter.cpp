@@ -16,6 +16,8 @@ Interpreter::Interpreter() {
 
     globals->define("clock", new ClockCallable());
     globals->define("printf", new PrintfCallable());
+    globals->define("sprintf", new SprintfCallable());
+
     globals->define("len", new LenCallable());
     globals->define("push", new PushCallable());
     globals->define("pop", new PopCallable());

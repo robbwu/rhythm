@@ -45,6 +45,7 @@ public:
 
         globals["clock"] = new ClockCallable();
         globals["printf"] = new PrintfCallable();
+        globals["sprintf"] = new SprintfCallable();
         globals["len"] = new LenCallable();
         globals["push"] = new PushCallable();
         globals["pop"] = new PopCallable();
