@@ -1,12 +1,14 @@
 var a = [];  // declaration of dynamic array a
 
-append(a, 1);
-append(a, "hello") // this is like python list
+push(a, 1);
+push(a, "hello"); // this is like python list
 
 print len(a); // #a expression is the length of a, should be 2
 
-print a[1] // would print "hello"
+print a[1]; // would print "hello"
 
+
+a = [1,2,3,4,5]; 
 // pass an array to a function is by reference
 fun sum(a) {
     var n = len(a);
@@ -16,3 +18,5 @@ fun sum(a) {
     }
     return s;
 }
+
+printf("sum of an array is %d\n", sum(a)); // expects sum of an array is 15
