@@ -1,0 +1,37 @@
+fun makeBinaryOp(operation) {
+    if (operation == "add") {
+        return fun(a, b) { return a + b; };
+    } else if (operation == "multiply") {
+        return fun(a, b) { return a * b; };
+    } else if (operation == "power") {
+        return fun(a, b) { return pow(a, b); };
+    }
+    return nil;
+}
+
+var add = makeBinaryOp("add");
+var multiply = makeBinaryOp("multiply");
+var power = makeBinaryOp("power");
+
+print add(3, 4);      // Should print: 7
+print multiply(3, 4); // Should print: 12
+print power(3, 4);    // Should print: 81
+
+// Closure with configuration
+fun makeValidator(minLength, maxLength) {
+    return fun(text) {
+        var l = len(text);
+        if (l < minLength) {
+            return sprintf("Too short (min: %d)", minLength);
+        }
+        if (l > maxLength) {
+            return sprintf("Too long (max: %d)", maxLength);
+        }
+        return "Valid";
+    };
+}
+
+var emailValidator = makeValidator(5, 50);
+print emailValidator("a");           // Should print: Too short (min: 5)
+print emailValidator("test@test.com"); // Should print: Valid
+print emailValidator("verylongemailaddressthatexceedsthelimitof50characters@domain.com"); // Should print: Too long (max: 50)

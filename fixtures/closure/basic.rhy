@@ -1,0 +1,28 @@
+// Basic closure test - capturing outer variable
+var x = "outer";
+
+fun makeGreeter() {
+    var greeting = "Hello";
+    return fun(name) {
+        print greeting + " " + name + " from " + x;
+    };
+}
+
+var greet = makeGreeter();
+greet("Alice"); // Should print: Hello Alice from outer
+
+// Test that closure captures value, not reference to variable name
+var counter = 0;
+fun makeIncrementer() {
+    var count = counter;
+    return fun() {
+        count = count + 1;
+        return count;
+    };
+}
+
+var inc1 = makeIncrementer();
+counter = 100; // This shouldn't affect the closure
+print inc1(); // Should print: 1
+print inc1(); // Should print: 2
+print counter; // Should print: 100

@@ -1,0 +1,26 @@
+// Test closures created in loops
+var funcs = [];
+
+// This should capture the final value of i
+for (var i = 0; i < 3; i = i + 1) {
+    push(funcs, fun() { return i; });
+}
+
+for (var j = 0; j < len(funcs); j = j + 1) {
+    print funcs[j](); // Should all print: 3
+}
+
+// Proper way to capture loop variable
+var funcs2 = [];
+
+fun makeClosure(n) {
+    return fun() { return n; };
+}
+
+for (var i = 0; i < 3; i = i + 1) {
+    push(funcs2, makeClosure(i));
+}
+
+for (var j = 0; j < len(funcs2); j = j + 1) {
+    print funcs2[j](); // Should print: 0, 1, 2
+}

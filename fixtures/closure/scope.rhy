@@ -1,0 +1,44 @@
+// Test variable scoping with closures
+var x = "global x";
+var y = "global y";
+
+fun testScope() {
+    var x = "function x";
+
+    fun inner1() {
+        var y = "inner1 y";
+        return fun() {
+            return "inner1 closure: x=" + x + ", y=" + y;
+        };
+    }
+
+    fun inner2() {
+        return fun() {
+            return "inner2 closure: x=" + x + ", y=" + y;
+        };
+    }
+
+    return {"closure1": inner1(), "closure2": inner2()};
+}
+
+var closures = testScope();
+print closures["closure1"](); // Should print: inner1 closure: x=function x, y=inner1 y
+print closures["closure2"](); // Should print: inner2 closure: x=function x, y=global y
+
+// Test closure with block scopes
+fun testBlockScope() {
+    var result = [];
+    {
+        var a = "block a";
+        push(result, fun() { return a; });
+    }
+    {
+        var a = "different block a";
+        push(result, fun() { return a; });
+    }
+    return result;
+}
+
+var blockClosures = testBlockScope();
+print blockClosures[0](); // Should print: block a
+print blockClosures[1](); // Should print: different block a

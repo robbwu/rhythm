@@ -1,0 +1,38 @@
+// Recursive closures
+fun makeFactorial() {
+    var factorial;
+    factorial = fun(n) {
+        if (n <= 1) {
+            return 1;
+        }
+        return n * factorial(n - 1);
+    };
+    return factorial;
+}
+
+var fact = makeFactorial();
+print fact(5); // Should print: 120
+
+// Mutual recursion with closures
+fun makeMutualRecursion() {
+    var isEven;
+    var isOdd;
+
+    isEven = fun(n) {
+        if (n == 0) return true;
+        return isOdd(n - 1);
+    };
+
+    isOdd = fun(n) {
+        if (n == 0) return false;
+        return isEven(n - 1);
+    };
+
+    return {"even": isEven, "odd": isOdd};
+}
+
+var mutual = makeMutualRecursion();
+print mutual["even"](4); // Should print: true
+print mutual["odd"](4);  // Should print: false
+print mutual["even"](5); // Should print: false
+print mutual["odd"](5);  // Should print: true

@@ -1,0 +1,33 @@
+// Nested closures test
+fun outerFunction(x) {
+    fun middleFunction(y) {
+        fun innerFunction(z) {
+            return x + y + z;
+        }
+        return innerFunction;
+    }
+    return middleFunction;
+}
+
+var result = outerFunction(1)(2)(3);
+print result; // Should print: 6
+
+// Test multiple levels of variable capture
+var global = "global";
+fun level1() {
+    var level1Var = "level1";
+    fun level2() {
+        var level2Var = "level2";
+        fun level3() {
+            var level3Var = "level3";
+            return fun() {
+                return global + "-" + level1Var + "-" + level2Var + "-" + level3Var;
+            };
+        }
+        return level3();
+    }
+    return level2();
+}
+
+var deepClosure = level1();
+print deepClosure(); // Should print: global-level1-level2-level3

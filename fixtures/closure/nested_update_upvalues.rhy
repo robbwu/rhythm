@@ -1,0 +1,33 @@
+// Test modifying upvalues
+fun makeCounter() {
+    var count = 0;
+    return fun() {
+        count = count + 1;
+        return count;
+    };
+}
+
+var counter1 = makeCounter();
+var counter2 = makeCounter();
+
+print counter1(); // Should print: 1
+print counter1(); // Should print: 2
+print counter2(); // Should print: 1
+print counter1(); // Should print: 3
+print counter2(); // Should print: 2
+
+// Test multiple closures sharing same upvalue
+fun makeSharedCounter() {
+    var count = 0;
+    return {
+        "inc": fun() { count = count + 1; return count; },
+        "dec": fun() { count = count - 1; return count; },
+        "get": fun() { return count; }
+    };
+}
+
+var shared = makeSharedCounter();
+print shared["inc"](); // Should print: 1
+print shared["inc"](); // Should print: 2
+print shared["dec"](); // Should print: 1
+print shared["get"](); // Should print: 1
