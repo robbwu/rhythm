@@ -11,6 +11,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 
+# Raylib GUI config
+#find_package(raylib 3.0 REQUIRED)
+
+
 # Generate version information
 execute_process(
         COMMAND git rev-parse --short HEAD
@@ -100,6 +104,29 @@ add_executable( beat
         src/statement.cpp
         src/ast_printer.cpp
 )
+
+# GUI
+find_package(glfw3 REQUIRED)
+find_package(OpenGL REQUIRED)
+include_directories(third_party/imgui_1.91.9b)
+
+add_executable(scratch
+        scratch/imgui_main.cpp
+        third_party/imgui_1.91.9b/imgui.cpp
+        third_party/imgui_1.91.9b/imgui_draw.cpp
+        third_party/imgui_1.91.9b/imgui_widgets.cpp
+        third_party/imgui_1.91.9b/imgui_tables.cpp
+        third_party/imgui_1.91.9b/imgui_impl_glfw.cpp
+        third_party/imgui_1.91.9b/imgui_impl_opengl3.cpp
+)
+if (APPLE)
+    target_link_libraries(scratch "-framework IOKit")
+    target_link_libraries(scratch "-framework Cocoa")
+    target_link_libraries(scratch "-framework OpenGL")
+endif()
+
+target_link_libraries(scratch glfw ${OpenGL_LIBRARIES})
+
 
 set(DEBUG_FLAGS -g -O0 -fno-omit-frame-pointer)
 set(SAN_FLAGS   -fsanitize=address,undefined)
