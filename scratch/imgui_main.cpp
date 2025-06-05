@@ -37,12 +37,12 @@ public:
         original = std::cout.rdbuf(this);
     }
 
-    ~ConsoleBuffer() {
+    ~ConsoleBuffer() override {
         std::cout.rdbuf(original);
     }
 
 protected:
-    virtual int overflow(int c) {
+    int overflow(int c) override {
         if (c != EOF) {
             consoleOutput << static_cast<char>(c);
         }
@@ -174,7 +174,7 @@ int main() {
                 // Clear previous output
                 consoleOutput.str("");
                 consoleOutput.clear();
-                
+
                 auto text = editor.GetText();
                 try {
                     std::cout << "=== Running Code ===\n";
