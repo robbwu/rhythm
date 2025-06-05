@@ -118,6 +118,15 @@ add_executable(scratch
         third_party/imgui_1.91.9b/imgui_tables.cpp
         third_party/imgui_1.91.9b/imgui_impl_glfw.cpp
         third_party/imgui_1.91.9b/imgui_impl_opengl3.cpp
+        third_party/TextEditor.cpp
+        src/scanner.cpp
+        src/expr.cpp
+        src/parser.cpp
+        src/statement.cpp
+        src/ast_printer.cpp
+        src/vm/chunk.cpp
+        src/vm/vm.cpp
+        src/vm/compiler.cpp
 )
 if (APPLE)
     target_link_libraries(scratch "-framework IOKit")

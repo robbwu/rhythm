@@ -2,12 +2,78 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
+#include "TextEditor.h"
 #include <stdio.h>
+#include <string>
+#include <sstream>
+
+
+#include "ast_printer.hpp"
+#include "parser.hpp"
+#include "scanner.hpp"
+#include "vm/compiler.hpp"
+#include "vm/vm.hpp"
+
+bool noLoop = false;
+bool debug_trace_exeuction = false;
+bool disassemble = false;
+
+void parseText(const std::string& text);
+
 
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
+
+std::stringstream consoleOutput;
+std::string consoleText;
+std::stringstream errorOutput;
+std::string errorText;
+
+// Custom streambuf to redirect stdout
+class ConsoleBuffer : public std::streambuf {
+public:
+    ConsoleBuffer() {
+        original = std::cout.rdbuf(this);
+    }
+
+    ~ConsoleBuffer() {
+        std::cout.rdbuf(original);
+    }
+
+protected:
+    virtual int overflow(int c) {
+        if (c != EOF) {
+            consoleOutput << static_cast<char>(c);
+        }
+        return c;
+    }
+
+private:
+    std::streambuf* original;
+};
+class ErrorBuffer : public std::streambuf {
+public:
+    ErrorBuffer() {
+        original = std::cerr.rdbuf(this);
+    }
+
+    ~ErrorBuffer() {
+        std::cerr.rdbuf(original);
+    }
+
+protected:
+    virtual int overflow(int c) {
+        if (c != EOF) {
+            errorOutput << static_cast<char>(c);
+        }
+        return c;
+    }
+
+private:
+    std::streambuf* original;
+};
 
 int main() {
     glfwSetErrorCallback(glfw_error_callback);
@@ -66,6 +132,16 @@ int main() {
     IM_ASSERT(font != nullptr);
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    TextEditor editor;
+    editor.SetReadOnly(false);
+    editor.SetText("Hello, World!");
+    auto lang = TextEditor::LanguageDefinition::Rhythm();
+    editor.SetLanguageDefinition(lang);
+    editor.SetShowWhitespaces(false);
+    editor.SetHandleKeyboardInputs(true);
+    std::string display;
+    bool autoScroll = true;
+
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -79,10 +155,88 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         {
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-            ImGui::Text("I'm ALIVE!");               // Display some text (you can use a format strings too)
-            ImGui::End();
+            ImGui::Begin("Console", nullptr, ImGuiWindowFlags_MenuBar);
 
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::MenuItem("Clear")) {
+                    consoleOutput.str("");
+                    consoleOutput.clear();
+                    consoleText.clear();
+                }
+                ImGui::Checkbox("Auto-scroll", &autoScroll);
+                ImGui::EndMenuBar();
+            }
+
+            // Update console text from buffer
+            consoleText = consoleOutput.str();
+
+            // Console output area
+            ImGui::BeginChild("ConsoleOutput", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
+            ImGui::TextUnformatted(consoleText.c_str());
+
+            // Auto scroll to bottom
+            if (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                ImGui::SetScrollHereY(1.0f);
+            }
+
+            ImGui::EndChild();
+            ImGui::End();
+        }
+
+        {
+            ImGui::Begin("Errors", nullptr, ImGuiWindowFlags_MenuBar);
+
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::MenuItem("Clear")) {
+                    errorOutput.str("");
+                    errorOutput.clear();
+                    errorText.clear();
+                }
+                ImGui::EndMenuBar();
+            }
+
+            errorText = errorOutput.str();
+
+            ImGui::BeginChild("ErrorOutput", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f)); // Red text for errors
+            ImGui::TextUnformatted(errorText.c_str());
+            ImGui::PopStyleColor();
+
+            if (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                ImGui::SetScrollHereY(1.0f);
+            }
+
+            ImGui::EndChild();
+            ImGui::End();
+        }
+
+        {
+            ImGui::Begin("TextEditor", 0, ImGuiWindowFlags_MenuBar);
+
+            if (ImGui::Button("Run")) {
+                ConsoleBuffer consoleBuffer;
+                ErrorBuffer errorBuffer;
+
+                // Clear previous output
+                consoleOutput.str("");
+                consoleOutput.clear();
+                errorOutput.str("");
+                errorOutput.clear();
+
+
+                auto text = editor.GetText();
+                try {
+                    std::cout << "=== Running Code ===\n";
+                    parseText(text);
+                    std::cout << "=== Execution Complete ===\n";
+                } catch (const std::exception& e) {
+                    std::cerr << "Error: " << e.what() << "\n";  // This will now appear in the Error window
+                } catch (...) {
+                    std::cerr << "Unknown error occurred during execution.\n";  // This too
+                }
+            };
+            editor.Render("Some text to edit");
+            ImGui::End();
         }
         // Rendering
         ImGui::Render();
@@ -106,4 +260,23 @@ int main() {
     glfwTerminate();
 
     return 0;
+}
+
+
+void parseText(const std::string& text) {
+    auto scanner = Scanner(text);
+    std::vector<Token> tokens = scanner.scanTokens();
+    auto parser = Parser(tokens);
+    auto stmts = parser.parse();
+    AstPrinter printer;
+    // printer.print(stmts);
+    VM vm{};
+
+    Compiler compiler{nullptr};
+    compiler.clear();
+    auto block =  BlockStmt::create(std::move(stmts),0);
+    auto script = compiler.compileBeatFunction(std::move(block), "", 0, BeatFunctionType::SCRIPT);
+
+    // script->chunk.disassembleChunk("test chunk");
+    vm.run(new BeatClosure(script)); // leaking? probably fine if this is a script
 }
