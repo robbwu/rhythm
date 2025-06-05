@@ -247,12 +247,16 @@ int main() {
                 auto text = editor.GetText();
                 try {
                     std::cout << "=== Running Code ===\n";
+                    const auto start{std::chrono::steady_clock::now()};
                     runSource(text);
+                    const auto finish{std::chrono::steady_clock::now()};
                     std::cout << "=== Execution Complete ===\n";
+                    const std::chrono::duration<double> elapsed_seconds{finish - start};
+                    std::cout << "Time elapsed(s) " << elapsed_seconds << '\n'; // C++20's chrono::duration operator<<
                 } catch (const std::exception& e) {
-                    std::cerr << "Error: " << e.what() << "\n";
+                    std::cout << "Error: " << e.what() << "\n";
                 } catch (...) {
-                    std::cerr << "Unknown error occurred during execution.\n";
+                    std::cout << "Unknown error occurred during execution.\n";
                 }
             }
 
