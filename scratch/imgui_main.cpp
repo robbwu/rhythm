@@ -28,8 +28,7 @@ static void glfw_error_callback(int error, const char* description)
 
 std::stringstream consoleOutput;
 std::string consoleText;
-std::stringstream errorOutput;
-std::string errorText;
+
 
 // Custom streambuf to redirect stdout
 class ConsoleBuffer : public std::streambuf {
@@ -53,27 +52,7 @@ protected:
 private:
     std::streambuf* original;
 };
-class ErrorBuffer : public std::streambuf {
-public:
-    ErrorBuffer() {
-        original = std::cerr.rdbuf(this);
-    }
 
-    ~ErrorBuffer() {
-        std::cerr.rdbuf(original);
-    }
-
-protected:
-    virtual int overflow(int c) {
-        if (c != EOF) {
-            errorOutput << static_cast<char>(c);
-        }
-        return c;
-    }
-
-private:
-    std::streambuf* original;
-};
 
 int main() {
     glfwSetErrorCallback(glfw_error_callback);
@@ -130,6 +109,8 @@ int main() {
     font_cfg.RasterizerDensity = 2;
     ImFont* font = io.Fonts->AddFontFromFileTTF("/tmp/Roboto-Medium.ttf", 16.0f,&font_cfg);
     IM_ASSERT(font != nullptr);
+    ImFont* monoFont = io.Fonts->AddFontFromFileTTF("/tmp/LiberationMono-Regular.ttf", 16.0f, &font_cfg);
+    IM_ASSERT(monoFont != nullptr);
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     TextEditor editor;
@@ -183,47 +164,17 @@ int main() {
             ImGui::End();
         }
 
-        {
-            ImGui::Begin("Errors", nullptr, ImGuiWindowFlags_MenuBar);
-
-            if (ImGui::BeginMenuBar()) {
-                if (ImGui::MenuItem("Clear")) {
-                    errorOutput.str("");
-                    errorOutput.clear();
-                    errorText.clear();
-                }
-                ImGui::EndMenuBar();
-            }
-
-            errorText = errorOutput.str();
-
-            ImGui::BeginChild("ErrorOutput", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f)); // Red text for errors
-            ImGui::TextUnformatted(errorText.c_str());
-            ImGui::PopStyleColor();
-
-            if (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-                ImGui::SetScrollHereY(1.0f);
-            }
-
-            ImGui::EndChild();
-            ImGui::End();
-        }
 
         {
             ImGui::Begin("TextEditor", 0, ImGuiWindowFlags_MenuBar);
 
             if (ImGui::Button("Run")) {
                 ConsoleBuffer consoleBuffer;
-                ErrorBuffer errorBuffer;
 
                 // Clear previous output
                 consoleOutput.str("");
                 consoleOutput.clear();
-                errorOutput.str("");
-                errorOutput.clear();
-
-
+                
                 auto text = editor.GetText();
                 try {
                     std::cout << "=== Running Code ===\n";
@@ -235,7 +186,9 @@ int main() {
                     std::cerr << "Unknown error occurred during execution.\n";  // This too
                 }
             };
+            ImGui::PushFont(monoFont);
             editor.Render("Some text to edit");
+            ImGui::PopFont();
             ImGui::End();
         }
         // Rendering
