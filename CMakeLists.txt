@@ -112,6 +112,7 @@ include_directories(third_party/imgui_1.91.9b)
 
 add_executable(scratch
         scratch/imgui_main.cpp
+        scratch/file.cpp
         third_party/imgui_1.91.9b/imgui.cpp
         third_party/imgui_1.91.9b/imgui_draw.cpp
         third_party/imgui_1.91.9b/imgui_widgets.cpp

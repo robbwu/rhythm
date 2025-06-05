@@ -7,18 +7,19 @@
 #include <string>
 #include <sstream>
 
-
 #include "ast_printer.hpp"
 #include "parser.hpp"
 #include "scanner.hpp"
 #include "vm/compiler.hpp"
 #include "vm/vm.hpp"
 
+#include "file.hpp"
+
 bool noLoop = false;
 bool debug_trace_exeuction = false;
 bool disassemble = false;
 
-void parseText(const std::string& text);
+void runSource(const std::string& text);
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -28,6 +29,12 @@ static void glfw_error_callback(int error, const char* description)
 
 std::stringstream consoleOutput;
 std::string consoleText;
+
+// File management variables
+std::string currentFilePath = "untitled.rhy";
+char filePathBuffer[512] = "untitled.rhy";
+bool hasUnsavedChanges = false;
+std::string lastSavedContent = "";
 
 
 // Custom streambuf to redirect stdout
@@ -164,10 +171,72 @@ int main() {
             ImGui::End();
         }
 
-
         {
-            ImGui::Begin("TextEditor", 0, ImGuiWindowFlags_MenuBar);
+            // Window title with unsaved changes indicator
+            std::string windowTitle = "TextEditor - " + currentFilePath;
+            if (hasUnsavedChanges) {
+                windowTitle += " *";
+            }
+            ImGui::Begin(windowTitle.c_str(), 0, ImGuiWindowFlags_MenuBar);
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::BeginMenu("File")) {
+                    if (ImGui::MenuItem("New", "Ctrl+N")) {
+                        editor.SetText("");
+                        currentFilePath = "untitled.rhythm";
+                        strcpy(filePathBuffer, currentFilePath.c_str());
+                        lastSavedContent = "";
+                        hasUnsavedChanges = false;
+                    }
 
+                    if (ImGui::MenuItem("Open", "Ctrl+O")) {
+                        std::string content;
+                        if (loadFile(filePathBuffer, content)) {
+                            editor.SetText(content);
+                            currentFilePath = filePathBuffer;
+                            lastSavedContent = content;
+                            hasUnsavedChanges = false;
+                            consoleOutput << "File loaded: " << currentFilePath << std::endl;
+                        } else {
+                            consoleOutput << "Failed to load file: " << filePathBuffer << std::endl;
+                        }
+                    }
+
+                    if (ImGui::MenuItem("Save", "Ctrl+S")) {
+                        std::string content = editor.GetText();
+                        if (saveFile(currentFilePath, content)) {
+                            lastSavedContent = content;
+                            hasUnsavedChanges = false;
+                            consoleOutput << "File saved: " << currentFilePath << std::endl;
+                        } else {
+                            consoleOutput << "Failed to save file: " << currentFilePath << std::endl;
+                        }
+                    }
+
+                    if (ImGui::MenuItem("Save As", "Ctrl+Shift+S")) {
+                        std::string content = editor.GetText();
+                        if (saveFile(filePathBuffer, content)) {
+                            currentFilePath = filePathBuffer;
+                            lastSavedContent = content;
+                            hasUnsavedChanges = false;
+                            consoleOutput << "File saved as: " << currentFilePath << std::endl;
+                        } else {
+                            consoleOutput << "Failed to save file: " << filePathBuffer << std::endl;
+                        }
+                    }
+
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenuBar();
+            }
+           // File path input
+            ImGui::Text("File:");
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(-150);
+            if (ImGui::InputText("##filepath", filePathBuffer, sizeof(filePathBuffer))) {
+                // Update current file path when user types
+            }
+
+            ImGui::SameLine();
             if (ImGui::Button("Run")) {
                 ConsoleBuffer consoleBuffer;
 
@@ -178,14 +247,41 @@ int main() {
                 auto text = editor.GetText();
                 try {
                     std::cout << "=== Running Code ===\n";
-                    parseText(text);
+                    runSource(text);
                     std::cout << "=== Execution Complete ===\n";
                 } catch (const std::exception& e) {
-                    std::cerr << "Error: " << e.what() << "\n";  // This will now appear in the Error window
+                    std::cerr << "Error: " << e.what() << "\n";
                 } catch (...) {
-                    std::cerr << "Unknown error occurred during execution.\n";  // This too
+                    std::cerr << "Unknown error occurred during execution.\n";
                 }
-            };
+            }
+
+            // Quick save/load buttons
+            ImGui::SameLine();
+            if (ImGui::Button("Save")) {
+                std::string content = editor.GetText();
+                if (saveFile(currentFilePath, content)) {
+                    lastSavedContent = content;
+                    hasUnsavedChanges = false;
+                    consoleOutput << "File saved: " << currentFilePath << std::endl;
+                } else {
+                    consoleOutput << "Failed to save file: " << currentFilePath << std::endl;
+                }
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Load")) {
+                std::string content;
+                if (loadFile(filePathBuffer, content)) {
+                    editor.SetText(content);
+                    currentFilePath = filePathBuffer;
+                    lastSavedContent = content;
+                    hasUnsavedChanges = false;
+                    consoleOutput << "File loaded: " << currentFilePath << std::endl;
+                } else {
+                    consoleOutput << "Failed to load file: " << filePathBuffer << std::endl;
+                }
+            }
             ImGui::PushFont(monoFont);
             editor.Render("Some text to edit");
             ImGui::PopFont();
@@ -216,7 +312,7 @@ int main() {
 }
 
 
-void parseText(const std::string& text) {
+void runSource(const std::string& text) {
     auto scanner = Scanner(text);
     std::vector<Token> tokens = scanner.scanTokens();
     auto parser = Parser(tokens);
@@ -228,7 +324,7 @@ void parseText(const std::string& text) {
     Compiler compiler{nullptr};
     compiler.clear();
     auto block =  BlockStmt::create(std::move(stmts),0);
-    auto script = compiler.compileBeatFunction(std::move(block), "", 0, BeatFunctionType::SCRIPT);
+    auto script = compiler.compileBeatFunction(block, "", 0, BeatFunctionType::SCRIPT);
 
     // script->chunk.disassembleChunk("test chunk");
     vm.run(new BeatClosure(script)); // leaking? probably fine if this is a script
