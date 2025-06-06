@@ -160,12 +160,15 @@ int main() {
 
             // Console output area
             ImGui::BeginChild("ConsoleOutput", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
-            ImGui::TextUnformatted(consoleText.c_str());
-
+            ImGui::PushFont(monoFont);
+            ImGui::InputTextMultiline("##console", const_cast<char*>(consoleText.c_str()), consoleText.size() + 1,
+                                     ImVec2(-1, -1),
+                                     ImGuiInputTextFlags_ReadOnly);
             // Auto scroll to bottom
             if (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
                 ImGui::SetScrollHereY(1.0f);
             }
+            ImGui::PopFont();
 
             ImGui::EndChild();
             ImGui::End();
