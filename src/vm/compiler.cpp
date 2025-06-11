@@ -16,6 +16,7 @@ void Compiler::visit(const Binary &expr) {
         case TokenType::MINUS: chunk.write(OP_SUBTRACT, line); break;
         case TokenType::STAR: chunk.write(OP_MULTIPLY, line); break;
         case TokenType::SLASH: chunk.write(OP_DIVIDE, line); break;
+        case TokenType::PERCENT: chunk.write(OP_MODULO, line); break;
 
         case TokenType::EQUAL_EQUAL: chunk.write(OP_EQUAL, line); break;
         case TokenType::BANG_EQUAL:

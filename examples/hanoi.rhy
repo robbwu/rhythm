@@ -1,4 +1,5 @@
-
+// prints moves that move top n disks from src peg to
+// dst peg; with tmp peg as temporary holder peg
 fun hanoi(n, src, dst, tmp) {
     if (n==0) return;
     hanoi(n-1, src, tmp, dst);

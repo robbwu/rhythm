@@ -102,6 +102,17 @@ InterpretResult VM::run(int ret_frame) {
             case OP_SUBTRACT: BINARY_OP(-); break;
             case OP_MULTIPLY: BINARY_OP(*); break;
             case OP_DIVIDE:   BINARY_OP(/); break;
+            case OP_MODULO:   {
+                Value b = pop();
+                if (!std::holds_alternative<double>(b) || !std::holds_alternative<double>(stack.back())) {
+                    error(0, "binary % operands must be numbers");
+                }
+                if (!is_integer((double)std::get<double>(b)) || !is_integer((double)std::get<double>(stack.back()))) {
+                    error(0, "binary % operands must be integers");
+                }
+                stack.back() = (double)((int)std::get<double>(stack.back()) % (int) std::get<double>(b));
+                break;
+            }
 
             case OP_EQUAL: {
                 Value b = pop();
