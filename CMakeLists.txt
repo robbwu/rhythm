@@ -10,6 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/assets)
 
 # Raylib GUI config
 #find_package(raylib 3.0 REQUIRED)
@@ -113,6 +114,7 @@ include_directories(third_party/imgui_1.91.9b)
 add_executable(scratch
         scratch/imgui_main.cpp
         scratch/file.cpp
+        scratch/embedded_fonts.cpp
         third_party/imgui_1.91.9b/imgui.cpp
         third_party/imgui_1.91.9b/imgui_draw.cpp
         third_party/imgui_1.91.9b/imgui_widgets.cpp

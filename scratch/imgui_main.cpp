@@ -14,6 +14,8 @@
 #include "vm/vm.hpp"
 
 #include "file.hpp"
+#include "embedded_fonts.hpp"
+
 
 bool noLoop = false;
 bool debug_trace_exeuction = false;
@@ -113,10 +115,22 @@ int main() {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     auto font_cfg = ImFontConfig();
+    // FIXME: auto adjust this scalar.
     font_cfg.RasterizerDensity = 2;
-    ImFont* font = io.Fonts->AddFontFromFileTTF("/tmp/Roboto-Medium.ttf", 16.0f,&font_cfg);
+    ImFont* font = io.Fonts->AddFontFromMemoryTTF(
+        Roboto_Medium_ttf,           // font data
+        Roboto_Medium_ttf_len,       // font data size
+        16.0f,                       // font size
+        &font_cfg                    // font config
+    );
     IM_ASSERT(font != nullptr);
-    ImFont* monoFont = io.Fonts->AddFontFromFileTTF("/tmp/LiberationMono-Regular.ttf", 16.0f, &font_cfg);
+
+    ImFont* monoFont = io.Fonts->AddFontFromMemoryTTF(
+        LiberationMono_Regular_ttf,         // font data
+        LiberationMono_Regular_ttf_len,     // font data size
+        16.0f,                       // font size
+        &font_cfg                    // font config
+    );
     IM_ASSERT(monoFont != nullptr);
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -239,6 +253,14 @@ int main() {
                 // Update current file path when user types
             }
 
+            if (ImGui::Button("New")) {
+                editor.SetText("");
+                currentFilePath = "untitled.rhy";
+                strcpy(filePathBuffer, currentFilePath.c_str());
+                lastSavedContent = "";
+                hasUnsavedChanges = false;
+                consoleOutput << "New file created" << std::endl;
+            }
             ImGui::SameLine();
             if (ImGui::Button("Run")) {
                 ConsoleBuffer consoleBuffer;
