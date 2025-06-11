@@ -1,0 +1,20 @@
+fun peasant_multiply(x, y) {
+    var prod = 0;
+    while (x>0) {
+          if (x%2 == 1)
+             prod = prod + y;
+          x = floor(x/2);
+          y = y + y;
+    }
+    return prod; 
+
+}
+
+fun peasant_recursive(x,y) {
+    if (x==0) return 0;
+    else if (x%2==0) return peasant_recursive(x/2, y+y);
+    else return y + peasant_recursive(floor(x/2), y+y); 
+}
+
+print peasant_multiply(123, 456); // expect 56088
+print peasant_recursive(123, 456); // expect 56088

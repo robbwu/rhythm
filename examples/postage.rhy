@@ -1,0 +1,19 @@
+fun postage(n) {
+    assert(n > 23); 
+    if (n == 24)
+        printf("7+7+5+5");
+    else if  (n == 25)
+        printf("5+5+5+5+5");
+    else if (n == 26)
+        printf("7+7+7+5");
+    else if (n == 27)
+        printf("7+5+5+5+5");
+    else if (n == 28)
+        printf("7+7+7+7");
+    else {
+        postage(n - 5);
+        printf("+5");
+	}
+}
+postage(42); //expects 7+5+5+5+5+5+5+5
+
