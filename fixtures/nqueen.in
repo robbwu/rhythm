@@ -1,11 +1,22 @@
 var n = 8;
 var part = [];
 
+fun clone(a) {
+	return from_json(to_json(a));
+}
+
+var tracer = {"children": []}; 
+
 // takes partial solution part, explore all legal next moves
 // and return number of solutions with prefix part.
-fun nqueen(n, part) {
+fun nqueen(n, part, tracer) {
+	var tracer_node = {};
+	tracer_node.children = [];
+	tracer_node.part = clone(part);
+	push(tracer.children, tracer_node);
     var k = len(part);
     if (k == n) {
+		tracer_node.ret = 1; 
         return 1;
     }
     var cnt = 0;
@@ -19,13 +30,30 @@ fun nqueen(n, part) {
         }
         if (legal) {
             push(part, c);
-            cnt = cnt + nqueen(n, part);
+            cnt = cnt + nqueen(n, part, tracer_node);
             pop(part);
         }
     }
+	tracer_node.ret = cnt; 
     return cnt;
 }
 
-var num_sols = nqueen(n, []);
-assert( num_sols == 92 );
+var num_sols = nqueen(n, [], tracer);
+printf("num sol: %d\n", num_sols); 
+//assert( num_sols == 92 );
 print "OK";
+//print tracer;
+
+fun print_tracer(t, indent) {
+	if (t == nil) return; 
+	printf("%spart %s ", indent, t.part); 
+	printf("ret %s\n", t.ret); 
+	//printf("%schildren:\n", indent);
+	var n = len(t.children);
+	for (var i=0; i<n; i=i+1) {
+		print_tracer(t.children[i], indent+"  "); 
+	}
+}
+print_tracer(tracer, ""); 
+
+
