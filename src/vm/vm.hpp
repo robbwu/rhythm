@@ -1,15 +1,11 @@
 #pragma once
-#include <iostream>
-#include <ostream>
-#include <utility>
 
 #include "chunk.hpp"
 #include "compiler.hpp"
-#include "vm_exception.hpp"
 #include "native_func.hpp"
 #include "native_func_array.hpp"
 #include "native_func_math.hpp"
-#include "native_math.hpp"
+#include "vm_exception.hpp"
 
 typedef enum {
     INTERPRET_OK,
@@ -36,9 +32,6 @@ class VM: public RuntimeContext {
     std::unordered_map<std::string, Value> globals;
 public:
     Upvalue* openUpvalues = nullptr;
-    // typedef struct Upvalue {
-    //     Value* value;
-    // } Upvalue;
 
     explicit VM(): stack(), frames(), globals()  {
         stack.reserve(256); // this is to prevent dynamicly enlarging stack that invalidates its pointers
@@ -84,11 +77,6 @@ public:
     InterpretResult run(int ret_frame = 0);
     InterpretResult run(BeatClosure*);
 
-    inline InterpretResult interpret(const std::string& source, Compiler compiler) {
-        // compiler.compile(source);
-        return INTERPRET_OK;
-    };
-
     Value callFunction(LoxCallable* func, const std::vector<Value>& args) override;
 
     Upvalue* captureUpvalue(Value* local);
@@ -96,8 +84,8 @@ public:
     void printOpenUpvalues();
 
 
-    inline void push(const Value& v) {stack.push_back(v);}
-    inline Value pop() {
+    void push(const Value& v) {stack.push_back(v);}
+    Value pop() {
         auto result = stack.back();
         stack.pop_back();
         return result;

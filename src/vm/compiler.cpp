@@ -297,19 +297,19 @@ int Compiler::emitJump(uint8_t instruction, int line) {
     chunk.write(instruction, line);
     chunk.write(0xff, line);
     chunk.write(0xff, line);
-    return chunk.bytecodes.size() - 2;
+    return chunk.bytecodes().size() - 2;
 }
 
 void Compiler::patchJump(int offset) {
     // -2 to adjust for the bytecode for the jump offset itself.
-    int jump = chunk.bytecodes.size() - offset - 2;
+    int jump = chunk.bytecodes().size() - offset - 2;
 
     if (jump > UINT16_MAX) {
         throw CompileException("Too much code to jump over.");
     }
 
-    chunk.bytecodes[offset] = (jump >> 8) & 0xff;
-    chunk.bytecodes[offset + 1] = jump & 0xff;
+    chunk.m_bytecodes[offset] = (jump >> 8) & 0xff;
+    chunk.m_bytecodes[offset + 1] = jump & 0xff;
 }
 
 void Compiler::visit(const IfStmt &stmt) {
@@ -329,7 +329,7 @@ void Compiler::visit(const IfStmt &stmt) {
 void Compiler::emitLoop(int loopStart) {
     chunk.write(OP_LOOP, 0);
 
-    int offset = chunk.bytecodes.size() - loopStart + 2;
+    int offset = chunk.m_bytecodes.size() - loopStart + 2;
     if (offset > UINT16_MAX)
         throw CompileException("Loop body too large.");
 
@@ -338,7 +338,7 @@ void Compiler::emitLoop(int loopStart) {
 }
 
 void Compiler::visit(const WhileStmt &stmt) {
-    int loopStart = chunk.bytecodes.size();
+    int loopStart = chunk.m_bytecodes.size();
     beginLoop(loopStart);
     // beginScope();
     stmt.condition->accept(*this);

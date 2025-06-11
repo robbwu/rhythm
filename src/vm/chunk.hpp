@@ -21,22 +21,40 @@ typedef enum  {
 // using Chunk = std::vector<uint8_t>;
 class Chunk {
 public:
-    std::vector<uint8_t> bytecodes;
-    std::vector<Value> constants;
-    std::vector<int> lines;
+    std::vector<uint8_t> m_bytecodes; // TODO: make this private
 
     void disassembleChunk(const std::string& name);
     int disassembleInstruction(int offset);
     int addConstant(const Value& value);
-    inline void write(uint8_t byte, int line) {
-        bytecodes.push_back(byte);
-        lines.push_back(line);
+    void write(uint8_t byte, int line) {
+        m_bytecodes.push_back(byte);
+        m_lines.push_back(line);
     }
 
     int constantInstruction(const char* name, int offset);
     int byteInstruction(const char* name,int offset);
     int simpleInstruction(const char* name, int offset);
     int jumpInstruction(const char* name, int sign, int offset);
+
+    void clear_byteclodes() {
+        m_bytecodes.clear();
+    }
+    void clear_lines()
+    {
+        m_lines.clear();
+    }
+    [[nodiscard]] const std::vector<uint8_t>& bytecodes() const {
+        return m_bytecodes;
+    }
+    [[nodiscard]] const std::vector<Value>& constants() const {
+        return m_constants;
+    }
+    [[nodiscard]] const std::vector<int>& lines() const {
+        return m_lines;
+    }
+private:
+    std::vector<Value> m_constants;
+    std::vector<int> m_lines;
 };
 
 enum class BeatFunctionType {

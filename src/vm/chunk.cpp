@@ -6,19 +6,19 @@
 
 void Chunk::disassembleChunk( const std::string& name) {
     printf("== %s ==\n", name.c_str());
-    for (int offset = 0; offset < bytecodes.size();) {
+    for (int offset = 0; offset < m_bytecodes.size();) {
         offset = disassembleInstruction(offset);
     }
 }
 
 int Chunk::disassembleInstruction(int offset) {
     printf("%04d ", offset);
-    if (offset > 0 && lines[offset] == lines[offset - 1]) {
+    if (offset > 0 && m_lines[offset] == m_lines[offset - 1]) {
         printf("   | ");
      } else {
-         printf("%4d ", lines[offset]);
+         printf("%4d ", m_lines[offset]);
      }
-    uint8_t instruction = bytecodes[offset];
+    uint8_t instruction = m_bytecodes[offset];
     switch (instruction) {
         case OP_RETURN:
             return simpleInstruction("OP_RETURN", offset);
@@ -76,17 +76,17 @@ int Chunk::disassembleInstruction(int offset) {
             return simpleInstruction("OP_SUBSCRIPT_ASSIGNMENT", offset);
         case OP_CLOSURE: {
             offset++;
-            uint8_t constant = bytecodes[offset++];
+            uint8_t constant = m_bytecodes[offset++];
             printf("%-16s %4d ", "OP_CLOSURE", constant);
-            auto callable = std::get<LoxCallable*>(constants[constant]);
+            auto callable = std::get<LoxCallable*>(m_constants[constant]);
             auto function = dynamic_cast<BeatFunction*>(callable);
             if (!function) {
                 throw std::runtime_error("OP_CLOSURE must consume a BeatFunction on stack");
             }
-            std::cout << constants[constant] << std::endl;
+            std::cout << m_constants[constant] << std::endl;
             for (int j = 0; j < function->upvalueCount; j++) {
-                int isLocal = bytecodes[offset++];
-                int index = bytecodes[offset++];
+                int isLocal = m_bytecodes[offset++];
+                int index = m_bytecodes[offset++];
                 printf("%04d      |                     %s %d\n",
                        offset - 2, isLocal ? "local" : "upvalue", index);
             }
@@ -111,27 +111,27 @@ int Chunk::simpleInstruction(const char* name, int offset) {
 }
 
 int Chunk::addConstant(const Value& value) {
-    int offset = constants.size();
-    constants.push_back(value);
+    int offset = m_constants.size();
+    m_constants.push_back(value);
     return offset;
 }
 
  int Chunk::constantInstruction(const char* name, int offset) {
-    uint8_t constant = bytecodes[offset + 1];
+    uint8_t constant = m_bytecodes[offset + 1];
     printf("%-16s %4d '", name, constant);
-    std::cout << constants[constant];
+    std::cout << m_constants[constant];
     printf("'\n");
     return offset + 2;
 }
 
 int Chunk::byteInstruction(const char* name,int offset) {
-    uint8_t slot = bytecodes[offset + 1];
+    uint8_t slot = m_bytecodes[offset + 1];
     printf("%-16s %4d\n", name, slot);
     return offset + 2;
 }
 int Chunk::jumpInstruction(const char* name, int sign, int offset) {
-    uint16_t jump = (uint16_t)(bytecodes[offset + 1] << 8);
-    jump |= bytecodes[offset + 2];
+    uint16_t jump = (uint16_t)(m_bytecodes[offset + 1] << 8);
+    jump |= m_bytecodes[offset + 2];
     printf("%-16s %4d -> %d\n", name, offset,
            offset + 3 + sign * jump);
     return offset + 3;

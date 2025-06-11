@@ -11,13 +11,7 @@ class CompileException: public std::runtime_error {
 };
 
 class Compiler: ExprVisitor, StmtVisitor {
-private:
-    Chunk chunk;
-    typedef struct {
-        uint8_t index;
-        bool isLocal;
-    } Upvalue;
-    std::vector<Upvalue> upvalues;
+
 public:
     Compiler *enclosing = nullptr;
     typedef struct {
@@ -79,8 +73,8 @@ public:
     }
 
     inline void clear() {
-        chunk.bytecodes.clear();
-        chunk.lines.clear();
+        chunk.clear_byteclodes();
+        chunk.clear_lines();
     }
 
     inline void beginScope() {
@@ -140,4 +134,12 @@ public:
     void visit(const ReturnStmt&) override;
     void visit(const BreakStmt&) override;
     void visit(const ContinueStmt&) override;
+
+private:
+    Chunk chunk;
+    typedef struct {
+        uint8_t index;
+        bool isLocal;
+    } Upvalue;
+    std::vector<Upvalue> upvalues;
 };

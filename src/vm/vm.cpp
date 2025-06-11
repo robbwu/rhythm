@@ -19,7 +19,7 @@ InterpretResult VM::run(BeatClosure *closure){
         stack.clear();
         frames.clear();
         // initialize the frame;
-        frames.push_back(std::make_shared<CallFrame>(closure, &closure->function->chunk.bytecodes[0], 0));
+        frames.push_back(std::make_shared<CallFrame>(closure, &closure->function->chunk.m_bytecodes[0], 0));
     } else {
         error(0, "NOT IMPLEMENTED YET");
     }
@@ -31,7 +31,7 @@ InterpretResult VM::run(int ret_frame) {
 
 #define READ_BYTE() (*frame->ip++)
 #define READ_SHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
-#define READ_CONSTANT() (frame->closure->function->chunk.constants[READ_BYTE()])
+#define READ_CONSTANT() (frame->closure->function->chunk.constants()[READ_BYTE()])
 #define READ_STRING() std::get<std::string>(READ_CONSTANT())
 #define BINARY_OP(op) \
     do { \
@@ -51,13 +51,13 @@ InterpretResult VM::run(int ret_frame) {
                 printf(" ]");
             }
             printf("\n");
-            frame->closure->function->chunk.disassembleInstruction((int)(frame->ip - &frame->closure->function->chunk.bytecodes[0]));
+            frame->closure->function->chunk.disassembleInstruction((int)(frame->ip - &frame->closure->function->chunk.m_bytecodes[0]));
         }
 
         uint8_t instruction = READ_BYTE();
         switch (instruction) {
             case OP_CONSTANT: {
-                Value &constant = READ_CONSTANT();
+                auto constant = READ_CONSTANT();
                 push(constant);
                 break;
             }
@@ -214,7 +214,7 @@ InterpretResult VM::run(int ret_frame) {
                         error(0, std::format("function {} expected {} arguments but got {}", beat_closure->toString(), beat_closure->arity(), argCount));
                     }
                     // create a new call frame; frame pointer points to the first of the arguments
-                    frames.push_back(std::make_shared<CallFrame>(beat_closure, &beat_closure->function->chunk.bytecodes[0], stack.size() - argCount));
+                    frames.push_back(std::make_shared<CallFrame>(beat_closure, &beat_closure->function->chunk.m_bytecodes[0], stack.size() - argCount));
                     frame = frames.back();
                     break;
                 } else if (func != nullptr) { // not BeatFunction, must be subclass of LoxCallable, native functions
@@ -416,9 +416,9 @@ void VM::print_stack_trace() {
     for (int i = frames.size() - 1; i >= 0; i--) {
         auto& frame = frames[i];
         auto  function = frame->closure->function;
-        size_t instruction = frame->ip - &function->chunk.bytecodes[0] - 1;
+        size_t instruction = frame->ip - &function->chunk.m_bytecodes[0] - 1;
         fprintf(stderr, "[line %d] in ",
-                function->chunk.lines[instruction]);
+                function->chunk.lines()[instruction]);
         if (function->name == "") {
             fprintf(stderr, "script\n");
         } else {
@@ -460,7 +460,7 @@ Value VM::callFunction(LoxCallable* func, const std::vector<Value>& args) {
         // Create a new call frame and execute
         // auto currentFrame = frames.back();
         int num_frames = frames.size();
-        frames.push_back(std::make_shared<CallFrame>(closure, &closure->function->chunk.bytecodes[0], stack.size() - argCount));
+        frames.push_back(std::make_shared<CallFrame>(closure, &closure->function->chunk.m_bytecodes[0], stack.size() - argCount));
 
         // Execute the function by running until return when the given frame is run;
         InterpretResult result = run(num_frames);
