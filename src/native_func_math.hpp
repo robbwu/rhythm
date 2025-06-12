@@ -4,6 +4,8 @@
 #include <vector>
 #include <cmath>        // For C math functions like std::sin, std::pow, std::isnan, std::isinf
 #include <stdexcept>    // For std::runtime_error (though you use your custom RuntimeError)
+#include <random>
+
 
 #include "token.hpp"     // For LoxCallable, Value
 #include "exception.hpp" // For RuntimeError
@@ -91,6 +93,74 @@ public:
     std::string toString() override {
         return "<native fn " + std::string(LoxFuncName) + ">";
     }
+};
+
+inline std::mt19937 rng{std::random_device{}()};
+
+class UniformRandomRealCallable final : public LoxCallable {
+public:
+    // zero arguments
+    int arity() override { return 3; }
+
+    // return milli-seconds since Unix epoch, as a double
+    Value call(RuntimeContext*, std::vector<Value> args) override {
+        if (args.size() != arity()) {
+            throw RuntimeError({}, "uniform_random_real needs three args");
+        }
+        if (!std::holds_alternative<double>(args[0]) || !std::holds_alternative<double>(args[1])) {
+            throw RuntimeError({}, "uniform_random_real needs two real numbers and an integer");
+        }
+        double a = std::get<double>(args[0]);
+        double b = std::get<double>(args[1]);
+        int n = (int)std::get<double>(args[2]);
+        if (n < 1) {
+            throw RuntimeError({}, "uniform_random_real(a,b,n): n cannot be less than 1");
+        }
+        std::uniform_real_distribution<> dis(a, b);
+        std::vector<Value> results{}; results.reserve(n);
+        for (int i = 0; i < n; i++) {
+            results.push_back(dis(rng));
+        }
+        return std::make_shared<Array>(std::move(results));
+    }
+
+    std::string toString()  override { return "<native fn>"; }
+};
+
+class UniformRandomIntegerCallable final : public LoxCallable {
+public:
+    // zero arguments
+    int arity() override { return 3; }
+
+    // return milli-seconds since Unix epoch, as a double
+    Value call(RuntimeContext*, std::vector<Value> args) override {
+        if (args.size() != arity()) {
+            throw RuntimeError({}, "uniform_random_real needs three args");
+        }
+        if (!std::holds_alternative<double>(args[0]) || !std::holds_alternative<double>(args[1])) {
+            throw RuntimeError({}, "uniform_random_real needs two real numbers and an integer");
+        }
+        double a = std::get<double>(args[0]);
+        double b = std::get<double>(args[1]);
+        double n = (int)std::get<double>(args[2]);
+        if (!is_integer(a) || !is_integer(b) || !is_integer(n)) {
+            throw RuntimeError({}, "uniform_random_real needs three integer numbers");
+        }
+        if (a  >= b) {
+            throw RuntimeError({}, "uniform_random_real(a,b,n):  a should be less than b");
+        }
+        if (n < 1) {
+            throw RuntimeError({}, "uniform_random_real(a,b,n): n cannot be less than 1");
+        }
+        std::uniform_int_distribution<> dis((int)a, (int)b);
+        std::vector<Value> results{}; results.reserve((int)n);
+        for (int i = 0; i < n; i++) {
+            results.push_back((double)dis(rng));
+        }
+        return std::make_shared<Array>(std::move(results));
+    }
+
+    std::string toString()  override { return "<native fn>"; }
 };
 
 } // namespace cclox

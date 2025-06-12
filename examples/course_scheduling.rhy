@@ -9,13 +9,10 @@ fun min(array, less) {
 	return result; 
 }
 
-// sort things in ascending order
+// sort subarray A[lo:hi] in ascending order defined by less function
 fun qsort(A, lo, hi, less) {
 	if (hi-lo <= 1) return; // do nothing
-	//printf("lo %d, hi %d ", lo, hi);
-	//printf("A: %s", A); 
 	var p = partition(A, lo, hi, less);
-	//printf(" p %d\n", p); 
 	qsort(A, lo, p, less);
 	qsort(A, p+1, hi, less); 
 }
@@ -27,7 +24,9 @@ fun swap(A, i, j){
 	A[j] = t; 
 }
 
-// return pivot index
+// return pivot index p; partiion the array such that
+// A[lo:p] is less than A[p];
+// A[p+1:hi] is greator than A[p]; 
 fun partition(A, lo, hi, less) {
 	assert(lo < hi); 
 	var pivot = A[lo]; // use first elem as pivot

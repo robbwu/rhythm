@@ -72,6 +72,10 @@ public:
         globals[pow_name] =   new NativeMath2ArgsCallable<std::pow, pow_name>();
         globals[atan2_name] = new NativeMath2ArgsCallable<std::atan2, atan2_name>();
         globals[fmod_name] =  new NativeMath2ArgsCallable<std::fmod, fmod_name>();
+
+        // random
+        globals["random_real"] = new UniformRandomRealCallable();
+        globals["random_int"] = new UniformRandomIntegerCallable();
     };
 
     InterpretResult run(int ret_frame = 0);
