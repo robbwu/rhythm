@@ -1,0 +1,61 @@
+// AVL self balancing search tree, node based
+// tree node: n.left, n.right, n.height, n.key, n.val
+// balance factor (BF): n.right.height - n.left.height
+// AVL must maintain each nodes' BF to be within [-1, 1];
+
+// reference: https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/83cdd705cd418d10d9769b741e34a2b8_MIT6_006F11_lec06.pdf
+
+
+fun avl_insert(root, key, val, less) {
+	if (root = nil) {
+		return {"left": nil, "right": nil, "key": key, "val": val, "height": 0};
+	}
+}
+
+
+root = {
+  "left": {
+    "left": {                      // 11
+      "left": nil,
+      "right": nil,
+      "key": 11,
+      "val": nil
+    },
+    "right": {                     // 29
+      "left": {                    // 26
+        "left": nil,
+        "right": nil,
+        "key": 26,
+        "val": nil
+      },
+      "right": nil,
+      "key": 29,
+      "val": nil
+    },
+    "key": 20,                     // 20
+    "val": nil
+  },
+  "right": {                       // 65
+    "left": {                      // 50
+      "left": nil,
+      "right": nil,
+      "key": 50,
+      "val": nil
+    },
+    "right": nil,
+    "key": 65,
+    "val": nil
+  },
+  "key": 41,                       // root
+  "val": nil
+};
+
+
+
+fun print_binary_tree(root, indent) {
+	if (root == nil) return;
+	if (root.left != nil) print_binary_tree(root.left, indent + "    ");
+	printf("%sK%d\n", indent, root.key); 
+	if (root.right!= nil) print_binary_tree(root.right, indent+ "    "); 
+}
+print_binary_tree(root, ""); 

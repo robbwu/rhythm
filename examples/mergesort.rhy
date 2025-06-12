@@ -1,0 +1,43 @@
+// sort subarray A[lo:hi] in ascending order
+// mutate A. 
+fun merge_sort(A, lo, hi, less) {
+	if (hi - lo <= 1) return; // 0 or 1 sized array is already sorted.
+	var mid = ceil((lo+hi)/2);
+	merge_sort(A, lo, mid, less);
+	merge_sort(A, mid, hi, less);
+	C =  merge(A, lo, mid, A, mid, hi, less);
+	for(var i=0; i<hi-lo; i=i+1)
+		A[lo+i] = C[i]; 
+}
+
+// create a new array that is sorted, merged from two sorted arrays
+// subarrays A and B
+fun merge(A, Alo, Ahi, B, Blo, Bhi, less) {
+	var C = [];
+	var i=Alo;
+	var j=Blo;
+	while (i < Ahi and j < Bhi) {
+		// when equal we want A[i] to maintain stability
+		if (less(B[j], A[i])) { 
+			push(C, B[j]);
+			j = j+1; 
+		} else {
+			push(C, A[i]); 
+			i = i+1; 
+		}
+	}
+	// handling left over elements in either A or B
+	while (i < Ahi) { push(C, A[i]); i = i+1; }
+	while (j < Bhi) { push(C, B[j]); j = j+1; }
+	return C; 
+}
+
+
+var A = [3, 4, 2, 6, 5];
+merge_sort(A, 0, len(A), fun(a,b){return a<b;});
+
+print A; // expect [2,3,4,5,6];
+
+var intervals = [ [1,2], [1, 3], [0, 9] ];
+merge_sort(intervals, 0, len(intervals), fun(a,b){return a[0]<b[0];});
+print intervals; //expect expects [[0, 9, ], [1, 2, ], [1, 3], ]
