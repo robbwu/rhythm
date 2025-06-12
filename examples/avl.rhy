@@ -5,49 +5,121 @@
 
 // reference: https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/83cdd705cd418d10d9769b741e34a2b8_MIT6_006F11_lec06.pdf
 
+fun max(a, b) { if (a<b) return b; else return a; }
+fun height(root) {
+	if (root==nil) return -1;
+	return root.height; 
+}
+fun update_height(root) {
+	assert(root != nil);
+	root.height = max(height(root.left), height(root.right)) + 1; 
+}
+// rotate root left, return the new root
+// update the height
+fun left_rotate(root) {
+	assert(root.right != nil); 
+	var y = root.right;
+	root.right = y.left;
+	y.left = root;
+	update_height(root);
+	update_height(y); 
+	return y; 
+}
+
+fun right_rotate(root) {
+	var y = root.left;
+	root.left = y.right;
+	y.right = root;
+	update_height(root);
+	update_height(y); 
+	return y; 
+}
 
 fun avl_insert(root, key, val, less) {
-	if (root = nil) {
+
+	if (root == nil) {
 		return {"left": nil, "right": nil, "key": key, "val": val, "height": 0};
 	}
+	if (key < root.key)
+		root.left = avl_insert(root.left, key, val, less);
+	else
+		root.right = avl_insert(root.right, key, val, less); 
+
+	var left_height = height(root.left); 
+	var right_height = height(root.right); 
+
+	// now, rotate trees if it becomes unbalanced. Four situations
+	if (left_height +2 == right_height) { // right heavy
+		assert(root.right != nil);
+		if (height(root.right.left) <=  height(root.right.right)) {// right child right heavy or balanced
+			print("L\n"); 
+			root = left_rotate(root); 
+		} else {
+			printf("RL\n"); 
+			root.right = right_rotate(root.right);
+			root = left_rotate(root); 
+		}
+	} else if (left_height == right_height + 2) {
+		assert(root.left != nil);
+		if (height(root.left.left) >= height(root.left.right)) {
+			printf("R\n"); 
+			root = right_rotate(root); 
+		} else {
+			printf("LR\n"); 
+			root.left = left_rotate(root.left);
+			root = right_rotate(root); 
+		}
+	} else {
+		// no rotation. just update height
+		update_height(root); 
+	}
+	
+	return root; 
 }
 
 
 root = {
-  "left": {
-    "left": {                      // 11
-      "left": nil,
-      "right": nil,
-      "key": 11,
-      "val": nil
-    },
-    "right": {                     // 29
-      "left": {                    // 26
-        "left": nil,
-        "right": nil,
-        "key": 26,
-        "val": nil
-      },
-      "right": nil,
-      "key": 29,
-      "val": nil
-    },
-    "key": 20,                     // 20
-    "val": nil
-  },
-  "right": {                       // 65
-    "left": {                      // 50
-      "left": nil,
-      "right": nil,
-      "key": 50,
-      "val": nil
-    },
-    "right": nil,
-    "key": 65,
-    "val": nil
-  },
-  "key": 41,                       // root
-  "val": nil
+	"left": {
+		"left": {                      // 11
+			"left": nil,
+			"right": nil,
+			"key": 11,
+			"val": nil,
+			"height": 0
+		},
+		"right": {                     // 29
+			"left": {                    // 26
+				"left": nil,
+				"right": nil,
+				"key": 26,
+				"val": nil,
+				"height": 0
+			},
+			"right": nil,
+			"key": 29,
+			"val": nil,
+			"height": 1
+		},
+		"key": 20,                     // 20
+		"val": nil,
+		"height": 2
+	},
+	"right": {                       // 65
+		"left": {                      // 50
+			"left": nil,
+			"right": nil,
+			"key": 50,
+			"val": nil,
+			"height": 0
+		},
+		"right": nil,
+		"key": 65,
+		"val": nil,
+		"height": 1
+	},
+	"key": 41,                       // root
+	"val": nil,
+	"height": 3
 };
 
 
@@ -55,7 +127,17 @@ root = {
 fun print_binary_tree(root, indent) {
 	if (root == nil) return;
 	if (root.left != nil) print_binary_tree(root.left, indent + "    ");
-	printf("%sK%d\n", indent, root.key); 
+	printf("%sK%d(%d)\n", indent, root.key, root.height); 
 	if (root.right!= nil) print_binary_tree(root.right, indent+ "    "); 
 }
+print_binary_tree(root, ""); 
+
+var key = 23; 
+avl_insert(root, key, key, fun(a,b){return a<b;});
+printf("\ninserting %d\n", 23); 
+print_binary_tree(root, ""); 
+
+key = 55;
+avl_insert(root, key, key, fun(a,b){return a<b;});
+printf("\ninserting %d\n", 55); 
 print_binary_tree(root, ""); 
