@@ -75,8 +75,10 @@ InterpretResult VM::run(int ret_frame) {
                 break;
             }
             case OP_NOT: {
-                // push(! std::get<bool>(pop()));
-                stack.back() = !std::get<bool>(stack.back());
+                if (std::holds_alternative<bool>(stack.back()))
+                    stack.back() = !std::get<bool>(stack.back());
+                else if (std::holds_alternative<nullptr_t>(stack.back()))
+                    stack.back() = true;
                 break;
             }
             case OP_NEGATE: {
@@ -168,35 +170,19 @@ InterpretResult VM::run(int ret_frame) {
                 break;
             }
             case OP_RETURN: {
-                // std::cout << "Upon OP_RETURN frames left: " << frames.size() << std::endl;
-                // std::cout << "Stack" << std::endl;
-                // std::cout << "frame pointer: " << frame->frame_pointer << std::endl;
-                // for (auto s: stack) {
-                //     std::cout << s << ", ";
-                // }
-                // std::cout << std::endl;
                 if (frames.size() > 1){
-                    // std::cout << "frame_pointer " << frame->frame_pointer << std::endl;
                     closeUpvalues(&stack[frame->frame_pointer]);
                     printOpenUpvalues();
                 }
-                auto result = pop();
+                auto result = pop(); // save the return value before popping the frame
 
-                // if (frames.size()==1) { // if this is the last frame, we are done
-                //     // assert(stack.size() == 0);
-                //     // pop();
-                //     // ASSERT_MSG(stack.size() == 0, std::format("stack size {}, wanted 0", stack.size()));
-                //     return INTERPRET_OK;
-                // }
                 if (frames.size()>1) {
-
-                    // only if this is not the last frame
                     stack.resize(frame->frame_pointer-1); // restore stack to the frame pointer
                 }
                 frames.pop_back(); // pop the current frame
                 if (!frames.empty())
                     frame = frames.back();
-                push(result);
+                push(result); // push the return value back to the stack
                 if (frames.size() <= ret_frame) {
                     return INTERPRET_OK;
                 }
