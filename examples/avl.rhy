@@ -77,6 +77,25 @@ fun avl_insert(root, key, val, less) {
 	return root; 
 }
 
+// return the key-value pair if found;
+// otherwise return nil
+fun avl_find(root, key, less) {
+	if (root == nil) return nil;
+	assert(root.key != nil); 
+	if (root.key == key) return [root.key, root.val];
+	else if (less(key, root.key))
+		return avl_find(root.left, key, less);
+	else
+		return avl_find(root.right, key, less); 
+}
+
+// if key exists in the AVL tree rooted at root, then
+// remove it, and return its [key, val].
+// otherwise return nil and do nothing to the AVL tree. 
+fun avl_extract(root, key, less) {
+	
+}
+
 
 root = {
 	"left": {
@@ -114,7 +133,7 @@ root = {
 		},
 		"right": nil,
 		"key": 65,
-		"val": nil,
+		"val": "you found it!",
 		"height": 1
 	},
 	"key": 41,                       // root
@@ -202,3 +221,6 @@ for (var i=0; i<len(B); i=i+1) {
 print_binary_tree(root, ""); 
 assert(check_avl(root)); 
 printf("size of avl tree: %d\n", avl_size(root));
+
+
+print avl_find(root, 65, fun(a,b){return a<b;});  // expect [65, "you found it!"]
