@@ -15,18 +15,18 @@
 class AssertCallable final : public LoxCallable {
 public:
     // zero arguments
-    int arity() override { return 1; }
+    int arity() override { return -1; }
 
     // return milli-seconds since Unix epoch, as a double
     Value call(RuntimeContext*, std::vector<Value> args) override {
-        if (args.size() != 1) {
-            throw RuntimeError({}, "assert() takes 1 argument");
-        }
         if (is_truthy(args[0])) {
             return nullptr;
         }
-        throw std::runtime_error("assert failed; exit program");
+        std::stringstream ss;
+        ss << "assert failed; ";
 
+        if (args.size() == 2) ss << args[1];
+        throw std::runtime_error(ss.str());
     }
 
     std::string toString()  override { return "<native fn>"; }
