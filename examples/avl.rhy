@@ -290,7 +290,24 @@ fun make_avl_tree(less) {
     fun max() { if (root == nil) return nil; return avl_max(root); }
     fun print_tree() { print_binary_tree(root, ""); }
 	fun is_balanced() { return check_avl(root); }
-
+	fun extract_min() {
+		if (root == nil)
+			return nil;
+		var r = avl_extract_min(root, less);
+		root = r[0];
+		if (r[1] != nil) sz = sz - 1;
+		if (r[1] == nil) return nil;
+		return [r[1], r[2]];
+	}
+	fun extract_max() {
+		if (root == nil)
+			return nil;
+		var r = avl_extract_max(root, less);
+		root = r[0];
+		if (r[1] != nil) sz = sz - 1;
+		if (r[1] == nil) return nil;
+		return [r[1], r[2]];
+	}
     return {
         "insert":   insert,
         "find":     find,
@@ -300,7 +317,9 @@ fun make_avl_tree(less) {
         "min":      min,
         "max":      max,
         "print_tree":    print_tree,
-		"is_balanced": is_balanced
+		"is_balanced": is_balanced,
+		"extract_min": extract_min,
+		"extract_max": extract_max
     };
 }
 
@@ -310,148 +329,45 @@ fun test2() {
 	tree.insert(41, "root");
 	tree.insert(20, "x");
 	tree.insert(65, "y");
+	tree.insert(16, "halo");
+	tree.insert(27, "twenty seven");
+	tree.insert(88, "eighty eight");
 
 	print tree.find(20);   // → [20, "x"]
 	tree.remove(20);
 	print tree.size();     // → 2
 	tree.print_tree();          // shows current structure
+	var m = tree.extract_max();
+	printf("extract_max: k %s, v %s\n", m[0], m[1]);
+	printf("  size: %d\n", tree.size());
+	m = tree.extract_min();
+	printf("extract_min: k %s, v %s\n", m[0], m[1]);
+	printf("  size: %d\n", tree.size());
+
+	tree.print_tree(); 
+	
 
 	tree = make_avl_tree(fun(a,b){ return a < b; });
 	var B = random_int(0, 1000, 50);
 	for (var i=0;i<len(B); i=i+1) {
-		tree.insert(B[i], B[i]); 
+		tree.insert(B[i], B[i]);
+		assert(tree.is_balanced());
 	}
 	printf("after insertion, tree size %d\n", tree.size());
 	printf("  balanced? %s\n", tree.is_balanced());
 
 	var min = tree.min(); 
-	print min; 
+	printf("min key: %d\n", min); 
+
+	for (var i=0; i<len(B); i=i+1) {
+		tree.remove(B[i]);
+		assert(tree.is_balanced());
+	}
+	printf("after deletion, tree size %d (should be 0)\n", tree.size());
+
+
+	print "OK"; 
 }
 
 test2();
 
-fun test() {
-
-	var root = {
-		"left": {
-			"left": {                      // 11
-				"left": nil,
-				"right": nil,
-				"key": 11,
-				"val": nil,
-				"height": 0
-			},
-			"right": {                     // 29
-				"left": {                    // 26
-					"left": nil,
-					"right": nil,
-					"key": 26,
-					"val": nil,
-					"height": 0
-				},
-				"right": nil,
-				"key": 29,
-				"val": nil,
-				"height": 1
-			},
-			"key": 20,                     // 20
-			"val": nil,
-			"height": 2
-		},
-		"right": {                       // 65
-			"left": {                      // 50
-				"left": nil,
-				"right": nil,
-				"key": 50,
-				"val": nil,
-				"height": 0
-			},
-			"right": nil,
-			"key": 65,
-			"val": "you found it!",
-			"height": 1
-		},
-		"key": 41,                       // root
-		"val": nil,
-		"height": 3
-	};
-
-	var less = fun(a,b){return a<b;};
-
-	print_binary_tree(root, "");
-
-	var key = 23; 
-	avl_insert(root, key, key, fun(a,b){return a<b;});
-	printf("\ninserting %d\n", 23); 
-	print_binary_tree(root, ""); 
-
-	key = 55;
-	avl_insert(root, key, key, fun(a,b){return a<b;});
-	printf("\ninserting %d\n", 55); 
-	print_binary_tree(root, "");
-
-	key = 35;
-	avl_insert(root, key, key, fun(a,b){return a<b;});
-	printf("\ninserting %d\n", 35); 
-	print_binary_tree(root, ""); 
-
-	key = 38;
-	avl_insert(root, key, key, fun(a,b){return a<b;});
-	printf("\ninserting %d\n", key); 
-	print_binary_tree(root, "");
-
-	printf("test avl_extract 35\n");
-	print avl_find(root, 35, less); 
-	res = avl_extract(root, 35, less);
-	printf("  extracted key %s val %s\n", res[1], res[2]);
-
-
-	for (var i=0; i<5; i=i+1) {
-		var res = avl_extract_min(root, less);
-		root = res[0]; 
-		// print_binary_tree(res[0], "");
-		printf("min key: %s val: %s\n", res[1], res[2]);
-		assert(check_avl(root));
-	}
-
-	for (var i=0; i<5; i=i+1) {
-		var res = avl_extract_max(root, less);
-		root = res[0]; 
-		printf("max key: %s val: %s\n", res[1], res[2]);
-		assert(check_avl(root));
-		if (avl_size(root) == 0) break; 
-	}
-
-
-	print check_avl(root); 
-	var B = random_int(0, 1000, 50);
-	print B; 
-
-	for (var i=0; i<len(B); i=i+1) {
-		printf("inserting %s\n", B[i]); 
-		root = avl_insert(root, B[i], B[i], fun(a,b){return a<b;});
-		assert(check_avl(root)); 
-	}
-
-	// avl_insert(root, 240,240, fun(a,b){return a<b;});
-	// print_binary_tree(root, ""); // this prints is very big so commented here
-	assert(check_avl(root)); 
-	printf("size of avl tree: %d\n", avl_size(root));
-
-	print avl_find(root, 65, fun(a,b){return a<b;});  // expect [65, "you found it!"]
-	print avl_find(root, 64, fun(a,b){return a<b;}); // expect nil
-
-	print "extracting all...";
-	for (var i=0; i<len(B); i=i+1) {
-		printf("extracting %s", B[i]);
-		res = avl_extract(root, B[i], less);
-		root = res[0];
-		printf(" found? key=%s val=%s\n", res[1], res[2]); 
-		assert(check_avl(root), "check_avl() fail after avl_extract"); 
-	}
-
-	printf("size of avl tree: %d\n", avl_size(root));
-	print_binary_tree(root, ""); 
-}
-
-// test();
