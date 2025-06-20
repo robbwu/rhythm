@@ -35,11 +35,13 @@ fun right_rotate(root) {
 	return y; 
 }
 
+// insert (key,val) into the AVL tree, only if key is not tree;
+// otherwise do nothing
 fun avl_insert(root, key, val, less) {
-
 	if (root == nil) {
 		return {"left": nil, "right": nil, "key": key, "val": val, "height": 0};
 	}
+	if (key == root.key) return root; 
 	if (key < root.key)
 		root.left = avl_insert(root.left, key, val, less);
 	else
@@ -52,20 +54,16 @@ fun avl_insert(root, key, val, less) {
 	if (left_height +2 == right_height) { // right heavy
 		assert(root.right != nil);
 		if (height(root.right.left) <=  height(root.right.right)) {// right child right heavy or balanced
-			printf("L\n"); 
 			root = left_rotate(root); 
 		} else {
-			printf("RL\n"); 
 			root.right = right_rotate(root.right);
 			root = left_rotate(root); 
 		}
 	} else if (left_height == right_height + 2) {
 		assert(root.left != nil);
 		if (height(root.left.left) >= height(root.left.right)) {
-			printf("R\n"); 
 			root = right_rotate(root); 
 		} else {
-			printf("LR\n"); 
 			root.left = left_rotate(root.left);
 			root = right_rotate(root); 
 		}
@@ -89,10 +87,124 @@ fun avl_find(root, key, less) {
 		return avl_find(root.right, key, less); 
 }
 
+// returns the [new_root, key, val]
+fun avl_extract_min(root, less) {
+	assert( root != nil );
+	if (root.left == nil) { 
+		// root is the min in the subtree rooted at `root`; remove it
+		return [root.right, root.key, root.val];
+	}
+	// otherwise go left sub tree; (min is always in the left)
+	var res = avl_extract_min(root.left, less);
+	root.left = res[0];
+	res[0] = root;
+	// after removal, the tree might become unbalanced; rotate if needed
+	
+	var left_height = height(root.left); 
+	var right_height = height(root.right); 
+
+	// now, rotate trees if it becomes unbalanced. Four situations
+	if (left_height +2 == right_height) { // right heavy
+		assert(root.right != nil);
+		if (height(root.right.left) <=  height(root.right.right)) {// right child right heavy or balanced
+			root = left_rotate(root); 
+		} else {
+			root.right = right_rotate(root.right);
+			root = left_rotate(root); 
+		}
+	} else {
+		// no rotation. just update height
+		update_height(root); 
+	}
+	res[0] = root;
+	return res; 
+}
+
+// returns the [new_root, key, val]
+fun avl_extract_max(root, less) {
+	assert( root != nil );
+	if (root.right == nil) { 
+		// root is the min in the subtree rooted at `root`; remove it
+		return [root.left, root.key, root.val];
+	}
+	// otherwise go left sub tree; (min is always in the left)
+	var res = avl_extract_max(root.right, less);
+	root.right = res[0];
+	res[0] = root;
+	// after removal, the tree might become unbalanced; rotate if needed
+	
+	var left_height = height(root.left); 
+	var right_height = height(root.right); 
+
+	if (left_height == right_height + 2) {
+		assert(root.left != nil);
+		if (height(root.left.left) >= height(root.left.right)) {
+			root = right_rotate(root); 
+		} else {
+			root.left = left_rotate(root.left);
+			root = right_rotate(root); 
+		}
+	} else {
+		// no rotation. just update height
+		update_height(root); 
+	}
+
+	res[0] = root;
+	return res; 
+}
+
 // if key exists in the AVL tree rooted at root, then
 // remove it, and return its [key, val].
 // otherwise return nil and do nothing to the AVL tree. 
 fun avl_extract(root, key, less) {
+	if (root == nil) {
+		return root; 
+	}
+	if (key == root.key) {
+		if (root.left == nil and root.right == nil) {
+			return nil; 
+		}
+		if (root.left != nil and root.right == nil) {
+			return root.left; 
+		}
+		if (root.right != nil and root.left == nil) {
+			return root.right;
+		}
+		// in following case, the node root has two children;
+		// replace with the in-order successor (the leftest 
+		
+	}
+
+		
+	if (key < root.key)
+		root.left = avl_insert(root.left, key, val, less);
+	else
+		root.right = avl_insert(root.right, key, val, less); 
+
+	var left_height = height(root.left); 
+	var right_height = height(root.right); 
+
+	// now, rotate trees if it becomes unbalanced. Four situations
+	if (left_height +2 == right_height) { // right heavy
+		assert(root.right != nil);
+		if (height(root.right.left) <=  height(root.right.right)) {// right child right heavy or balanced
+			root = left_rotate(root); 
+		} else {
+			root.right = right_rotate(root.right);
+			root = left_rotate(root); 
+		}
+	} else if (left_height == right_height + 2) {
+		assert(root.left != nil);
+		if (height(root.left.left) >= height(root.left.right)) {
+			root = right_rotate(root); 
+		} else {
+			root.left = left_rotate(root.left);
+			root = right_rotate(root); 
+		}
+	} else {
+		// no rotation. just update height
+		update_height(root); 
+	}
 	
 }
 
@@ -141,7 +253,7 @@ root = {
 	"height": 3
 };
 
-
+var less = fun(a,b){return a<b;};
 
 fun print_binary_tree(root, indent) {
 	if (root == nil) return;
@@ -149,28 +261,7 @@ fun print_binary_tree(root, indent) {
 	printf("%sK%d(%d)\n", indent, root.key, root.height); 
 	if (root.right!= nil) print_binary_tree(root.right, indent+ "    "); 
 }
-print_binary_tree(root, ""); 
-
-var key = 23; 
-avl_insert(root, key, key, fun(a,b){return a<b;});
-printf("\ninserting %d\n", 23); 
-print_binary_tree(root, ""); 
-
-key = 55;
-avl_insert(root, key, key, fun(a,b){return a<b;});
-printf("\ninserting %d\n", 55); 
 print_binary_tree(root, "");
-
-key = 35;
-avl_insert(root, key, key, fun(a,b){return a<b;});
-printf("\ninserting %d\n", 35); 
-print_binary_tree(root, ""); 
-
-key = 38;
-avl_insert(root, key, key, fun(a,b){return a<b;});
-printf("\ninserting %d\n", key); 
-print_binary_tree(root, ""); 
-
 
 // returns the maximum key of the AVL tree 
 fun avl_max(root) {
@@ -183,6 +274,13 @@ fun avl_min(root) {
 	if (root.left == nil) return root.key;
 	return avl_min(root.left); 
 }
+
+
+fun avl_size(root) {
+	if (root == nil) return 0;
+	return 1+avl_size(root.left)+avl_size(root.right);
+}
+
 // returns whether root is a balanced search tree. 
 fun check_avl(root) {
 
@@ -203,14 +301,47 @@ fun check_avl(root) {
 	return true; 
 }
 
-fun avl_size(root) {
-	if (root == nil) return 0;
-	return 1+avl_size(root.left)+avl_size(root.right);
+var key = 23; 
+avl_insert(root, key, key, fun(a,b){return a<b;});
+printf("\ninserting %d\n", 23); 
+print_binary_tree(root, ""); 
+
+key = 55;
+avl_insert(root, key, key, fun(a,b){return a<b;});
+printf("\ninserting %d\n", 55); 
+print_binary_tree(root, "");
+
+key = 35;
+avl_insert(root, key, key, fun(a,b){return a<b;});
+printf("\ninserting %d\n", 35); 
+print_binary_tree(root, ""); 
+
+key = 38;
+avl_insert(root, key, key, fun(a,b){return a<b;});
+printf("\ninserting %d\n", key); 
+print_binary_tree(root, "");
+
+for (var i=0; i<5; i=i+1) {
+	var res = avl_extract_min(root, less);
+	root = res[0]; 
+	// print_binary_tree(res[0], "");
+	printf("min key: %s val: %s\n", res[1], res[2]);
+	assert(check_avl(root));
 }
+
+for (var i=0; i<5; i=i+1) {
+	var res = avl_extract_max(root, less);
+	root = res[0]; 
+	// print_binary_tree(res[0], "");
+	printf("max key: %s val: %s\n", res[1], res[2]);
+	assert(check_avl(root));
+	if (avl_size(root) == 0) break; 
+}
+
 
 print check_avl(root); 
 var B = random_int(0, 1000, 200);
-print B;
+//print B;
 
 for (var i=0; i<len(B); i=i+1) {
 	root = avl_insert(root, B[i], B[i], fun(a,b){return a<b;});
@@ -218,9 +349,18 @@ for (var i=0; i<len(B); i=i+1) {
 }
 
 // avl_insert(root, 240,240, fun(a,b){return a<b;});
-print_binary_tree(root, ""); 
+// print_binary_tree(root, ""); // this prints is very big so commented here
 assert(check_avl(root)); 
 printf("size of avl tree: %d\n", avl_size(root));
 
 
 print avl_find(root, 65, fun(a,b){return a<b;});  // expect [65, "you found it!"]
+print avl_find(root, 64, fun(a,b){return a<b;}); // expect nil
+
+
+root2 = nil;
+
+root2 = avl_insert(root2, 1, "first", less);
+root2 = avl_insert(root2, 1, "second", less);
+print avl_size(root2);  // expects 1; 
+
