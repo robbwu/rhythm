@@ -15,6 +15,7 @@
 #include "version.hpp"
 bool printAst = false;
 bool noLoop = false;
+bool op_counters_flag = false;
 
 void printVersion() {
     std::cout << "rhythm version " << CCLOX_VERSION << std::endl;
@@ -29,6 +30,7 @@ void printUsage() {
     std::cout << "  -v, --version    Show version information" << std::endl;
     std::cout << "  -h, --help       Show this help message" << std::endl;
     std::cout << "  -a, --ast        Print AST before execution" << std::endl;
+    std::cout << "  -c, --counters   Print counters for OP codes" << std::endl;
     std::cout << "  -n, --no-loop    Disable loop constructs (forces recursion)" << std::endl;
 }
 
@@ -103,6 +105,9 @@ int main(int argc, char **argv) {
         if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
             printUsage();
             return 0;
+        }
+        if (std::strcmp(argv[i], "-c") == 0 || std::strcmp(argv[i], "--counters") == 0) {
+            op_counters_flag = true;
         }
         if (std::strcmp(argv[i], "-a") == 0 || std::strcmp(argv[i], "--ast") == 0) {
             printAst = true;

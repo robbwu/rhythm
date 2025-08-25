@@ -5,6 +5,7 @@
 #include "lox_function.hpp"
 
 extern bool debug_trace_exeuction;
+extern bool op_counters_flag;
 
 #define ASSERT_MSG(expr, msg) \
     if (!(expr)) { \
@@ -23,7 +24,17 @@ InterpretResult VM::run(BeatClosure *closure){
     } else {
         error(0, "NOT IMPLEMENTED YET");
     }
-    return run();
+    auto result = run();
+
+    if (op_counters_flag) {
+        int64_t total_ops = 0;
+        for (int i=0; i<OP_END; i++) {
+            total_ops += op_counters[i];
+        }
+        std::cout << "=== total opcodes executed: " << total_ops << std::endl;
+    }
+
+    return result;
 }
 
 
@@ -55,6 +66,7 @@ InterpretResult VM::run(int ret_frame) {
         }
 
         uint8_t instruction = READ_BYTE();
+        if (instruction < OP_END) op_counters[instruction]++;
         switch (instruction) {
             case OP_CONSTANT: {
                 auto constant = READ_CONSTANT();

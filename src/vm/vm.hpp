@@ -30,10 +30,13 @@ class VM: public RuntimeContext {
     std::vector<std::shared_ptr<CallFrame>> frames; // call frame stack
 
     std::unordered_map<std::string, Value> globals;
+
+    // for profiling
+    std::vector<int64_t> op_counters;
 public:
     Upvalue* openUpvalues = nullptr;
 
-    explicit VM(): stack(), frames(), globals()  {
+    explicit VM(): stack(), frames(), globals(), op_counters(OP_END)  {
         stack.reserve(256); // this is to prevent dynamicly enlarging stack that invalidates its pointers
 
         globals["clock"] = new ClockCallable();

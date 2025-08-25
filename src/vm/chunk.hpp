@@ -16,6 +16,7 @@ typedef enum  {
     OP_JUMP_IF_FALSE, OP_JUMP, OP_LOOP, OP_CALL,
     OP_ARRAY_LITERAL, OP_MAP_LITERAL, OP_SUBSCRIPT, OP_SUBSCRIPT_ASSIGNMENT,
     OP_CLOSURE, OP_CLOSE_UPVALUE,
+    OP_END // not used, just for counting the number of opcodes
 } OpCode;
 
 // using Chunk = std::vector<uint8_t>;

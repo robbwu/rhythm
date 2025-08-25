@@ -13,6 +13,7 @@ bool printAst = false;
 bool noLoop = false;
 bool disassemble = false;
 bool debug_trace_exeuction = false;
+bool op_counters_flag = false;
 
 void run( VM &vm, Compiler &compiler, std::string &source);
 
@@ -32,6 +33,7 @@ void printUsage() {
     std::cout << "  -a, --ast        Print AST before execution" << std::endl;
     std::cout << "  -n, --no-loop    Disable loop constructs (forces recursion)" << std::endl;
     std::cout << "  -d, --disasm     Print disassembled bytecode chunk"    << std::endl;
+    std::cout << "  -c, --counters   Print counters for OP codes" << std::endl;
     std::cout << "  -t, --trace      Trace execution for debugging purpose (SLOW!!)" << std::endl;
 }
 
@@ -101,6 +103,9 @@ int main(int argc, char **argv) {
         }
         if (std::strcmp(argv[i], "-t") == 0 || std::strcmp(argv[i], "--trace") == 0) {
             debug_trace_exeuction = true;
+        }
+        if (std::strcmp(argv[i], "-c") == 0 || std::strcmp(argv[i], "--counters") == 0) {
+            op_counters_flag = true;
         }
     }
 

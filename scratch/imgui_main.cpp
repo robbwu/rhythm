@@ -20,6 +20,7 @@
 bool noLoop = false;
 bool debug_trace_exeuction = false;
 bool disassemble = false;
+bool op_counters_flag = false;
 
 void runSource(const std::string& text);
 
