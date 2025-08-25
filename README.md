@@ -173,6 +173,34 @@ total OP_code count, specific OP_code count (comparison, arithmetic, memory acce
 This way the students can focus on the algorithmic complexity rather than
 progrmaming details and particular language specific quirks.
 
+## Build instructions
+
+### MacOS
+Requires a fairly recent C++ compiler (for C++23) from the Xcode or Xcode command line tools. Here's one that works for me
+
+```
+% clang++ --version
+Apple clang version 15.0.0 (clang-1500.3.9.4)
+Target: arm64-apple-darwin23.6.0
+Thread model: posix
+InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin
+```
+
+### Linux
+
+Requires a recent C++ compiler; this one is tested to be working:
+```
+$ c++ --version
+c++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+Copyright (C) 2023 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+```
+
+### Windows (WSL)
+Untested, but you should have no problem of building it with a recent toolchain just like linux,
+in the Windows Subsystem for Linux (WSL).
+
 ## Main inspiration
 
 Crafting Interpreters by Robert Nystrom, the Lox language at
