@@ -201,6 +201,12 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Untested, but you should have no problem of building it with a recent toolchain just like linux,
 in the Windows Subsystem for Linux (WSL).
 
+# Known Bugs & Limitations
+
+## No `continue` in loops
+For now you'll have to manage without it...
+
+
 ## Main inspiration
 
 Crafting Interpreters by Robert Nystrom, the Lox language at
