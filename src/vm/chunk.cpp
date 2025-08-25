@@ -52,6 +52,8 @@ int Chunk::disassembleInstruction(int offset) {
             return simpleInstruction("OP_MULTIPLY", offset);
         case OP_DIVIDE:
             return simpleInstruction("OP_DIVIDE", offset);
+        case OP_MODULO:
+            return simpleInstruction("OP_MODULO", offset);
         case OP_EQUAL:
             return simpleInstruction("OP_EQUAL", offset);
         case OP_GREATER:
