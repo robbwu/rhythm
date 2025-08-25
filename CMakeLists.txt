@@ -6,6 +6,10 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(BUILD_GUI
+       "Build the GUI (scratch) executable"
+       OFF)
+
 # Generate compile_commands.json for clangd LSP
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -107,65 +111,72 @@ add_executable( beat
 )
 
 # GUI
-find_package(glfw3 REQUIRED)
-find_package(OpenGL REQUIRED)
-include_directories(third_party/imgui_1.91.9b)
+if(BUILD_GUI)
+    message(STATUS "GUI (scratch) target is enabled.")
+    find_package(glfw3 REQUIRED)
+    find_package(OpenGL REQUIRED)
+    include_directories(third_party/imgui_1.91.9b)
 
-add_executable(scratch
-        scratch/imgui_main.cpp
-        scratch/file.cpp
-        scratch/embedded_fonts.cpp
-        third_party/imgui_1.91.9b/imgui.cpp
-        third_party/imgui_1.91.9b/imgui_draw.cpp
-        third_party/imgui_1.91.9b/imgui_widgets.cpp
-        third_party/imgui_1.91.9b/imgui_tables.cpp
-        third_party/imgui_1.91.9b/imgui_impl_glfw.cpp
-        third_party/imgui_1.91.9b/imgui_impl_opengl3.cpp
-        third_party/TextEditor.cpp
-        src/scanner.cpp
-        src/expr.cpp
-        src/parser.cpp
-        src/statement.cpp
-        src/ast_printer.cpp
-        src/vm/chunk.cpp
-        src/vm/vm.cpp
-        src/vm/compiler.cpp
-)
-if (APPLE)
-    target_link_libraries(scratch "-framework IOKit")
-    target_link_libraries(scratch "-framework Cocoa")
-    target_link_libraries(scratch "-framework OpenGL")
+    add_executable(scratch
+            scratch/imgui_main.cpp
+            scratch/file.cpp
+            scratch/embedded_fonts.cpp
+            third_party/imgui_1.91.9b/imgui.cpp
+            third_party/imgui_1.91.9b/imgui_draw.cpp
+            third_party/imgui_1.91.9b/imgui_widgets.cpp
+            third_party/imgui_1.91.9b/imgui_tables.cpp
+            third_party/imgui_1.91.9b/imgui_impl_glfw.cpp
+            third_party/imgui_1.91.9b/imgui_impl_opengl3.cpp
+            third_party/TextEditor.cpp
+            src/scanner.cpp
+            src/expr.cpp
+            src/parser.cpp
+            src/statement.cpp
+            src/ast_printer.cpp
+            src/vm/chunk.cpp
+            src/vm/vm.cpp
+            src/vm/compiler.cpp
+    )
+    if (APPLE)
+        target_link_libraries(scratch "-framework IOKit")
+        target_link_libraries(scratch "-framework Cocoa")
+        target_link_libraries(scratch "-framework OpenGL")
+    endif()
+
+    target_link_libraries(scratch glfw ${OpenGL_LIBRARIES})
+
+
+    set(DEBUG_FLAGS -g -O0 -fno-omit-frame-pointer)
+    set(SAN_FLAGS   -fsanitize=address,undefined)
+
+    target_compile_options(${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
+            $<$<CONFIG:Debug>:${SAN_FLAGS}>
+    )
+    target_compile_options(beat PRIVATE
+            $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
+            $<$<CONFIG:Debug>:${SAN_FLAGS}>
+    )
+    target_link_options   (${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Debug>:${SAN_FLAGS}>
+    )
+    target_link_options   (beat PRIVATE
+            $<$<CONFIG:Debug>:${SAN_FLAGS}>
+    )
+
+    target_compile_options(${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Release>:-O2 -g>
+    )
+    target_compile_options(beat PRIVATE
+            $<$<CONFIG:Release>:-O3 -march=native -flto -DNDEBUG>
+    )
+
+    install(TARGETS ${PROJECT_NAME} beat
+            RUNTIME DESTINATION bin
+            COMPONENT runtime
+    )
+
+
+else()
+    message(STATUS "GUI (scratch) target is disabled – build with -DBUILD_GUI=ON to enable.")
 endif()
-
-target_link_libraries(scratch glfw ${OpenGL_LIBRARIES})
-
-
-set(DEBUG_FLAGS -g -O0 -fno-omit-frame-pointer)
-set(SAN_FLAGS   -fsanitize=address,undefined)
-
-target_compile_options(${PROJECT_NAME} PRIVATE
-        $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
-        $<$<CONFIG:Debug>:${SAN_FLAGS}>
-)
-target_compile_options(beat PRIVATE
-        $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
-        $<$<CONFIG:Debug>:${SAN_FLAGS}>
-)
-target_link_options   (${PROJECT_NAME} PRIVATE
-        $<$<CONFIG:Debug>:${SAN_FLAGS}>
-)
-target_link_options   (beat PRIVATE
-        $<$<CONFIG:Debug>:${SAN_FLAGS}>
-)
-
-target_compile_options(${PROJECT_NAME} PRIVATE
-        $<$<CONFIG:Release>:-O2 -g>
-)
-target_compile_options(beat PRIVATE
-        $<$<CONFIG:Release>:-O3 -march=native -flto -DNDEBUG>
-)
-
-install(TARGETS ${PROJECT_NAME} beat
-        RUNTIME DESTINATION bin
-        COMPONENT runtime
-)
