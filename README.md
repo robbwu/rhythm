@@ -1,3 +1,7 @@
+# Download `beat` interpreter
+
+Go to the Actions tab in github page, click a recent successful CI workflow run, and find binaries in the Artifacts section.
+
 # Rhythm language
 
 This is a simple and dynamic programming language designed for describing
@@ -186,6 +190,15 @@ Thread model: posix
 InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin
 ```
 
+To build you need cmake, git, and make. Checkout the code repo and change directory to it. then
+```
+$ mkdir bulid && cd build
+$ cmake ..
+$ make -j
+```
+You should see two binaries produced `rhythm` and `beat`.
+`rhythm` is a slower AST tree walker interpreter and not recommended for use; `beat` is the bytecode compiler and interpreter and should be used.
+
 ### Linux
 
 Requires a recent C++ compiler; this one is tested to be working:
@@ -197,9 +210,14 @@ This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ```
 
+The build process is the same as in MacOS case.
+
 ### Windows (WSL)
 Untested, but you should have no problem of building it with a recent toolchain just like linux,
 in the Windows Subsystem for Linux (WSL).
+
+The build process is the same as in MacOS case.
+
 
 # Known Bugs & Limitations
 
