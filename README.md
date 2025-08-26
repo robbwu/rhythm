@@ -18,45 +18,45 @@ fun min(array, less) {
     var result = array[0];
     var n = len(array);
     for (var i=1; i<n; i=i+1) {
-                if (less(array[i], result))
-                        result = array[i];
+		if (less(array[i], result))
+			result = array[i];
     }
-        return result;
+    return result;
 }
 
 // sort things in ascending order
 fun qsort(A, lo, hi, less) {
-        if (hi-lo <= 1) return; // do nothing
-        //printf("lo %d, hi %d ", lo, hi);
-        //printf("A: %s", A);
-        var p = partition(A, lo, hi, less);
-        //printf(" p %d\n", p);
-        qsort(A, lo, p, less);
-        qsort(A, p+1, hi, less);
+    if (hi-lo <= 1) return; // do nothing
+    //printf("lo %d, hi %d ", lo, hi);
+    //printf("A: %s", A);
+    var p = partition(A, lo, hi, less);
+    //printf(" p %d\n", p);
+    qsort(A, lo, p, less);
+    qsort(A, p+1, hi, less);
 }
 
 // a, b are
 fun swap(A, i, j){
-        var t = A[i];
-        A[i] = A[j];
-        A[j] = t;
+    var t = A[i];
+    A[i] = A[j];
+    A[j] = t;
 }
 
 // return pivot index
 fun partition(A, lo, hi, less) {
-        assert(lo < hi);
-        var pivot = A[lo]; // use first elem as pivot
-        var i = lo+1;
-        var j = hi-1;
-        while (true) {
-                while (i < hi and less(A[i], pivot)) i = i + 1;
-                while (j > lo and less(pivot, A[j])) j = j - 1;
-                if (i >= j) {
-                        swap(A, lo, j);
-                        return j;
-                }
-                swap(A, i, j);
+    assert(lo < hi);
+    var pivot = A[lo]; // use first elem as pivot
+    var i = lo+1;
+    var j = hi-1;
+    while (true) {
+        while (i < hi and less(A[i], pivot)) i = i + 1;
+        while (j > lo and less(pivot, A[j])) j = j - 1;
+        if (i >= j) {
+            swap(A, lo, j);
+            return j;
         }
+        swap(A, i, j);
+    }
 }
 
 
@@ -75,20 +75,20 @@ qsort(intervals, 0, len(intervals), fun(a,b){return a[0]<b[0];});
 print intervals; // expects [[0, 9, ], [1, 2, ], [3, 4, ], ]
 
 fun disjoint(int1, int2) {
-        if (int1[1] < int2[0] or int2[1] < int1[0]) return true;
-        return false;
+    if (int1[1] < int2[0] or int2[1] < int1[0]) return true;
+    return false;
 }
 // returns an array of classes to take
 fun earliest_class_first(intervals) {
-        qsort(intervals, 0, len(intervals), fun(a,b){return a[0]<b[0];});
-        var res = [];
-        for (var i=0; i<len(intervals); i=i+1) {
-                if (len(res) == 0)
-                        push(res, intervals[i]);
-                else if (disjoint(res[len(res)-1], intervals[i]))
-                        push(res, intervals[i]);
-        }
-        return res;
+    qsort(intervals, 0, len(intervals), fun(a,b){return a[0]<b[0];});
+    var res = [];
+    for (var i=0; i<len(intervals); i=i+1) {
+        if (len(res) == 0)
+            push(res, intervals[i]);
+        else if (disjoint(res[len(res)-1], intervals[i]))
+            push(res, intervals[i]);
+    }
+    return res;
 }
 
 var intervals = [ [1,2], [3, 4], [0, 9] ];
@@ -96,30 +96,30 @@ print "earliest lass first result";
 print earliest_class_first(intervals); // expects [[0, 9],]
 
 fun shortest_class_first(intervals) {
-        qsort(intervals, 0, len(intervals), fun(a,b){return (a[1]-a[0])<(b[1]-b[0]);});
-        var res = [];
-        for (var i=0; i<len(intervals); i=i+1) {
-                if (len(res) == 0)
-                        push(res, intervals[i]);
-                else if (disjoint(res[len(res)-1], intervals[i]))
-                        push(res, intervals[i]);
-        }
-        return res;
+    qsort(intervals, 0, len(intervals), fun(a,b){return (a[1]-a[0])<(b[1]-b[0]);});
+    var res = [];
+    for (var i=0; i<len(intervals); i=i+1) {
+        if (len(res) == 0)
+            push(res, intervals[i]);
+        else if (disjoint(res[len(res)-1], intervals[i]))
+            push(res, intervals[i]);
+    }
+    return res;
 }
 
 print "shortest lass first result";
 print shortest_class_first(intervals); // expects [[1,2],[3,4]]
 
 fun earliest_finish_class_first(intervals) {
-        qsort(intervals, 0, len(intervals), fun(a,b){return a[1]<b[1];});
-        var res = [];
-        for (var i=0; i<len(intervals); i=i+1) {
-                if (len(res) == 0)
-                        push(res, intervals[i]);
-                else if (disjoint(res[len(res)-1], intervals[i]))
-                        push(res, intervals[i]);
-        }
-        return res;
+    qsort(intervals, 0, len(intervals), fun(a,b){return a[1]<b[1];});
+    var res = [];
+    for (var i=0; i<len(intervals); i=i+1) {
+        if (len(res) == 0)
+            push(res, intervals[i]);
+        else if (disjoint(res[len(res)-1], intervals[i]))
+            push(res, intervals[i]);
+    }
+    return res;
 }
 print "earliest finish lass first result";
 print earliest_finish_class_first(intervals); // expects [[1,2],[3,4]]
