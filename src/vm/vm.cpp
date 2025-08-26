@@ -89,7 +89,7 @@ InterpretResult VM::run(int ret_frame) {
             case OP_NOT: {
                 if (std::holds_alternative<bool>(stack.back()))
                     stack.back() = !std::get<bool>(stack.back());
-                else if (std::holds_alternative<nullptr_t>(stack.back()))
+                else if (std::holds_alternative<std::nullptr_t>(stack.back()))
                     stack.back() = true;
                 break;
             }
@@ -295,7 +295,7 @@ InterpretResult VM::run(int ret_frame) {
                 } else if (std::holds_alternative<std::shared_ptr<Map>>(obj)) {
                     auto& map = std::get<std::shared_ptr<Map>>(obj)->data;
                     auto it = map.find(i);
-                    if (std::holds_alternative<nullptr_t>(value)) { // remove key if value is nil
+                    if (std::holds_alternative<std::nullptr_t>(value)) { // remove key if value is nil
                         map.erase(i);
                         push(nullptr);
                         break;

@@ -187,7 +187,7 @@ void Interpreter::visit(const MapLiteral &mlit) {
     for (auto &pairs : mlit.pairs) {
         Value key = eval(*pairs.first);
         Value val = eval(*pairs.second);
-        if (!std::holds_alternative<nullptr_t>(val)) // nil cannot be value in a map
+        if (!std::holds_alternative<std::nullptr_t>(val)) // nil cannot be value in a map
             values[key] = val;
     }
     _result =  std::make_shared<Map>(values);
@@ -325,7 +325,7 @@ void Interpreter::visit(const SubscriptAssignment& assignment) {
 
         auto map = std::get<std::shared_ptr<Map>>(obj);
         auto it = map->data.find(index);
-        if (std::holds_alternative<nullptr_t>(value)) {
+        if (std::holds_alternative<std::nullptr_t>(value)) {
             if (it != map->data.end()) // remove key if val is nil
                 map->data.erase(it);
             _result = nullptr;
