@@ -2,6 +2,12 @@
 
 Go to the Actions tab in github page, click a recent successful CI workflow run, and find binaries in the Artifacts section.
 
+On MacOS arm64 (M-seris) you might need to bypass gatekeeper to run the downloaed `beat` cli:
+
+```bash
+% xattr -d com.apple.quarantine ./beat
+```
+
 # Rhythm language
 
 This is a simple and dynamic programming language designed for describing

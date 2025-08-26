@@ -1,7 +1,5 @@
 var s = "hello";
-
 var i = 42;
-
 var m = { i: s, "hey": "jude" };
 
 print m[42];

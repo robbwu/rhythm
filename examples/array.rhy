@@ -8,7 +8,7 @@ print len(a); // #a expression is the length of a, should be 2
 print a[1]; // would print "hello"
 
 
-a = [1,2,3,4,5]; 
+a = [1,2,3,4,5];
 // pass an array to a function is by reference
 fun sum(a) {
     var n = len(a);
@@ -20,3 +20,12 @@ fun sum(a) {
 }
 
 printf("sum of an array is %d\n", sum(a)); // expects sum of an array is 15
+
+b = [];
+for (var i=0; i<10000; i=i+1) {
+    push(b, i);
+}
+
+printf("b[3377]=%d\n", b[3377]);
+assert( b[3377] == 3377 );
+print "OK";
