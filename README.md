@@ -16,7 +16,7 @@ the language has the following interesting contrasts with other popular choices:
 
 ## Example code
 
-```
+```javascript
 fun min(array, less) {
     assert(len(array) > 0);
     var result = array[0];
