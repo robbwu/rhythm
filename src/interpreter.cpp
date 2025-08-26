@@ -10,6 +10,8 @@
 #include "native_math.hpp"
 #include "native_func_math.hpp"
 
+using nullptr_t = std::nullptr_t;
+
 Interpreter::Interpreter() {
     globals = std::make_shared<Environment>(nullptr);
     env = globals;
