@@ -40,7 +40,7 @@ public:
     // return milli-seconds since Unix epoch, as a double
     Value call(RuntimeContext*, std::vector<Value>) override {
         std::string line;
-        std::getline(std::cin, line);
+        if (!std::getline(std::cin, line)) return false;
         return line;
     }
 
@@ -473,4 +473,3 @@ public:
 
     std::string toString() override { return "<native fn>"; }
 };
-

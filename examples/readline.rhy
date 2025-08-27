@@ -1,0 +1,14 @@
+
+var cnt = 0; 
+while(true) {
+	var line = readline();
+	if (line == false) break; //readline() returns false upon stdin EOF
+	cnt = cnt + 1;
+	printf("line%d: %s\n", cnt, line);
+}
+// expects from input file readline.in1
+// line1: hello
+// line2: world
+// line3: 
+// line4: fourth line
+

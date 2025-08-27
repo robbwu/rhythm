@@ -146,3 +146,37 @@ printf("i=%d, \nf=%f, \ns=%s, \na=%s, \nm=%s\n", i, f, s, a, m);
 // a=[2.000000, 3.000000, ],
 // m={hey: jude, 2.000000: true, }
 ```
+
+### IO functions
+
+Rhythm program does not do any file/network IO except:
+1. Reading from standard input (stdin) as text: `readline()`
+2. Output to stdout using `print`, `printf`.
+
+`readline()`: reads stdin for newline and return the line just read; it returns empty string when stdin ended. A common use of `readline()` is to read multiple lines from stdin:
+
+```javascript
+var cnt = 0;
+while(true) {
+	var line = readline();
+	if (line == false) break; //readline() returns false upon stdin EOF
+	cnt = cnt + 1;
+	printf("line%d: %s\n", cnt, line);
+}
+```
+
+Given input file
+```
+hello
+world
+
+fourth line
+```
+
+It should print out
+```
+line1: hello
+line2: world
+line3:
+line4: fourth line
+```
