@@ -31,7 +31,7 @@ InterpretResult VM::run(BeatClosure *closure){
         for (int i=0; i<OP_END; i++) {
             total_ops += op_counters[i];
         }
-        std::cout << "=== total opcodes executed: " << total_ops << std::endl;
+        std::cerr << "=== total opcodes executed: " << total_ops << std::endl;
     }
 
     return result;
