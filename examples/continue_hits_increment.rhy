@@ -1,0 +1,10 @@
+// Verify 'continue' still runs the increment part of a for-loop
+var seen = [];
+for (var i = 0; i < 3; i = i + 1) {
+  push(seen, i);
+  continue;           // should jump to the increment i=i+1
+  push(seen, 999);    // dead code
+}
+print seen; // expect [0, 1, 2]
+assert(len(seen) == 3 and seen[0] == 0 and seen[1] == 1 and seen[2] == 2);
+print "OK continue hits increment";

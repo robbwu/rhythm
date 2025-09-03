@@ -308,7 +308,6 @@ for (var i = 0; i < 3; i = i + 1) {
 
 - break exits the innermost loop; continue skips to the next iteration. They also work inside nested blocks within a loop.
 
-**Note that continue does not work currently!!**
 
 ```javascript
 var i = 0;

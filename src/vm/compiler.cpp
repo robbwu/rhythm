@@ -341,11 +341,18 @@ void Compiler::emitLoop(int loopStart) {
 void Compiler::visit(const WhileStmt &stmt) {
     int loopStart = chunk.m_bytecodes.size();
     beginLoop(loopStart);
-    // beginScope();
+
     stmt.condition->accept(*this);
     int exitJump = emitJump(OP_JUMP_IF_FALSE, stmt.condition->get_line());
     chunk.write(OP_POP, stmt.condition->get_line());
     stmt.body->accept(*this);
+
+    if (!loopStack.empty()) {
+        for (int jumpLoc : loopStack.back().continueJumps) {
+            patchJump(jumpLoc);
+        }
+        loopStack.back().continueJumps.clear();
+    }
     if (stmt.increment) {
         stmt.increment->accept(*this);
         chunk.write(OP_POP, stmt.increment->get_line());
@@ -353,7 +360,7 @@ void Compiler::visit(const WhileStmt &stmt) {
     emitLoop(loopStart);
     patchJump(exitJump);
     chunk.write(OP_POP, stmt.condition->get_line());
-    // endScope();
+
     endLoop();  // End loop context and patch break/continue jumps
 };
 
@@ -385,14 +392,19 @@ void Compiler::addBreakJump(int jump) {
     loopStack.back().breakJumps.push_back(jump);
 }
 
+void Compiler::addContinueJump(int jump) {
+    if (loopStack.empty()) {
+        throw CompileException("continue statement not in loop");
+    }
+    loopStack.back().continueJumps.push_back(jump);
+}
+
 void Compiler::visit(const BreakStmt &stmt) {
     if (!isInLoop()) {
         throw CompileException("break statement not in loop");
     }
     // need to pop the stack of local variables that will immediately
     // be out of scope after the break jump. But how many pops?
-    // std::cout << "at break stmt, number of locals " << locals.size() << std::endl;
-    // std::cout << "  matching loop beginning locals " << loopStack.back().numLocals << std::endl;
     int numPops = (locals.size() - loopStack.back().numLocals);
     for (int i = 0; i < numPops; i++) {
         chunk.write(OP_POP, stmt.kw.line);
@@ -401,7 +413,19 @@ void Compiler::visit(const BreakStmt &stmt) {
     addBreakJump(jump);
 };
 
-void Compiler::visit(const ContinueStmt &) {};
+void Compiler::visit(const ContinueStmt &stmt) {
+    if (!isInLoop()) {
+        throw CompileException("continue statement not in loop");
+    }
+    // Pop locals declared in the loop body that will go out of scope
+    int numPops = (locals.size() - loopStack.back().numLocals);
+    for (int i = 0; i < numPops; i++) {
+        chunk.write(OP_POP, stmt.kw.line);
+    }
+    // Jump to the loop’s continue target (patched later)
+    int jump = emitJump(OP_JUMP, stmt.kw.line);
+    addContinueJump(jump);
+};
 
 void Compiler::visit(const FunctionStmt &stmt) {
     if (scopeDepth > 0) {

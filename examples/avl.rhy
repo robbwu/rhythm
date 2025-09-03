@@ -333,16 +333,20 @@ fun test2() {
 	tree.insert(27, "twenty seven");
 	tree.insert(88, "eighty eight");
 
-	print tree.find(20);   // → [20, "x"]
+    assert(tree.find(20)[0] == 20);
+    assert(tree.find(20)[1] == "x");
 	tree.remove(20);
-	print tree.size();     // → 2
+    assert(tree.size() == 5);
+	
 	tree.print_tree();          // shows current structure
 	var m = tree.extract_max();
 	printf("extract_max: k %s, v %s\n", m[0], m[1]);
 	printf("  size: %d\n", tree.size());
+	assert(m[0] == 88); 
 	m = tree.extract_min();
 	printf("extract_min: k %s, v %s\n", m[0], m[1]);
 	printf("  size: %d\n", tree.size());
+	assert(m[0] == 16); 
 
 	tree.print_tree(); 
 	
@@ -364,7 +368,6 @@ fun test2() {
 		assert(tree.is_balanced());
 	}
 	printf("after deletion, tree size %d (should be 0)\n", tree.size());
-
 
 	print "OK"; 
 }

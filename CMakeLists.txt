@@ -110,6 +110,81 @@ add_executable( beat
         src/ast_printer.cpp
 )
 
+include(CTest)  # defines BUILD_TESTING and enable_testing()
+if(BUILD_TESTING)
+
+    # Helper to add a test that runs a .rhy script
+    function(add_rhythm_test name script_path)
+        add_test(
+            NAME    ${name}
+            COMMAND $<TARGET_FILE:beat> ${script_path}
+    )
+        # Make it easy to locate scripts regardless of build dir
+        set_tests_properties(${name} PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            LABELS "examples"
+            TIMEOUT 20
+    )
+    endfunction()
+
+    # Helper to add a negative test (should fail)
+    function(add_rhythm_negative_test name script_path)
+        add_test(
+            NAME    ${name}
+            COMMAND $<TARGET_FILE:beat> ${script_path}
+    )
+        set_tests_properties(${name} PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            LABELS "negative"
+            WILL_FAIL TRUE        # non-zero exit code is expected
+            TIMEOUT 20
+    )
+    endfunction()
+
+    # Paths to examples
+    set(EX ${CMAKE_SOURCE_DIR}/examples)
+
+    # A small, fast initial set (assert-based or self-checking)
+    add_rhythm_test(examples_for                     ${EX}/for.rhy)
+    add_rhythm_test(examples_array                   ${EX}/array.rhy)
+    add_rhythm_test(examples_bisection               ${EX}/bisection.rhy)
+    add_rhythm_test(examples_mergesort               ${EX}/mergesort.rhy)
+    add_rhythm_test(examples_qsort                   ${EX}/qsort.rhy)
+    add_rhythm_test(examples_sqrt_newton             ${EX}/sqrt.rhy)
+    add_rhythm_test(examples_continue_while          ${EX}/continue_while.rhy)
+    add_rhythm_test(examples_continue_nested         ${EX}/continue_nested.rhy)
+    add_rhythm_test(examples_continue_for            ${EX}/continue_for.rhy)
+    add_rhythm_test(examples_continue_hits_increment ${EX}/continue_hits_increment.rhy)
+    add_rhythm_test(examples_continue_block_scope    ${EX}/continue_block_scope.rhy)
+    add_rhythm_test(examples_mixed_break_continue    ${EX}/mixed_break_continue.rhy)
+    add_rhythm_test(examples_avl                     ${EX}/avl.rhy)
+    add_rhythm_test(examples_nqueen                  ${EX}/nqueen.rhy)
+
+
+    # Optionally check for an "OK" marker when present
+    foreach(t
+      examples_for
+      examples_array
+      examples_sqrt_newton
+      examples_continue_while
+      examples_continue_nested
+      examples_continue_for
+      examples_continue_hits_increment
+      examples_continue_block_scope
+      examples_mixed_break_continue
+  )
+        set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION "OK")
+    endforeach()
+
+    # Negative tests (parser/semantic errors expected)
+    # negative cases not working yet as they crash instead of returning non-zero
+    # add_rhythm_negative_test(neg_bad_double_var ${EX}/bad_double_var.rhy)
+    # add_rhythm_negative_test(neg_bad_func       ${EX}/bad_func.rhy)
+    # add_rhythm_negative_test(neg_bad_return     ${EX}/bad_return.rhy)
+
+endif()
+
+
 # GUI
 if(BUILD_GUI)
     message(STATUS "GUI (scratch) target is enabled.")
