@@ -40,20 +40,20 @@ fun nqueen(n, part, tracer) {
 
 var num_sols = nqueen(n, [], tracer);
 printf("num sol: %d\n", num_sols); 
-//assert( num_sols == 92 );
+assert( num_sols == 92 );
 print "OK";
 //print tracer;
 
-fun print_tracer(t, indent) {
-	if (t == nil) return; 
-	printf("%spart %s ", indent, t.part); 
-	printf("ret %s\n", t.ret); 
-	//printf("%schildren:\n", indent);
-	var n = len(t.children);
-	for (var i=0; i<n; i=i+1) {
-		print_tracer(t.children[i], indent+"  "); 
-	}
-}
-print_tracer(tracer, ""); 
+// fun print_tracer(t, indent) {
+// 	if (t == nil) return; 
+// 	printf("%spart %s ", indent, t.part); 
+// 	printf("ret %s\n", t.ret); 
+// 	//printf("%schildren:\n", indent);
+// 	var n = len(t.children);
+// 	for (var i=0; i<n; i=i+1) {
+// 		print_tracer(t.children[i], indent+"  "); 
+// 	}
+// }
+// print_tracer(tracer, ""); 
 
 
