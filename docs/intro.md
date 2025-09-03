@@ -182,19 +182,6 @@ line4: fourth line
 ```
 
 
-## Program structure, control flow, ...
-
-Each `*.rhy` file is considered a script for execution. When running with
-`beat a.rhy`, the script `a.rhy` will be executed line by line, statement by statement.
-
-Common control flows include `if`, `for`, and `while`, which looks exactly the same
-as in C. For example:
-
-```javascript
-for (var i=0; i<10; i=i+1) printf("iter %d, "i);
-```
-
-
 ## Native functions
 
 | Function | Signature | Description |
@@ -231,3 +218,266 @@ for (var i=0; i<10; i=i+1) printf("iter %d, "i);
 | `fmod(x, y)` | `fmod(Number, Number) -> Number` | Returns floating-point remainder of x/y |
 | `random_real(a, b, n)` | `random_real(Number, Number, Number) -> Array` | Returns array of n random floats between a and b |
 | `random_int(a, b, n)` | `random_int(Number, Number, Number) -> Array` | Returns array of n random integers between a and b (inclusive) |
+
+
+## Comments and basic syntax
+
+- Single-line comments start with // and continue to end of line.
+- Statements typically end with a semicolon.
+
+```javascript
+// This is a comment
+var x = 1 + 2; // another comment
+```
+
+## Comparisons, concatenation, and truthiness
+
+- Relational operators: <, <=, >, >= work on numbers (and lexicographically on strings).
+- String concatenation uses +.
+
+```javascript
+print "Hello, " + "world!"; // Hello, world!
+print 3 < 5;                // true
+```
+
+- Truthiness: only false and nil are falsy. Everything else is truthy (including 0, "", [], {}).
+- and and or are short-circuiting and return the last evaluated operand (not coerced to bool).
+
+```javascript
+print "hi" or 2;    // "hi"
+print nil or "yes"; // "yes"
+print nil and 2+3;  // nil
+```
+
+## Blocks, scope, and variables
+
+- Blocks are delimited by { ... } and can appear anywhere, not only after control flow keywords.
+- Variables are block-scoped and must be declared before use with var.
+- Shadowing is allowed in inner blocks; redeclaring the same name in the same block is a compile-time error.
+- Using a variable in its own initializer is an error by design.
+
+```javascript
+var a = "global";
+{
+  var a = "outer";
+  {
+    var a = "inner";
+    print a; // inner
+  }
+  print a; // outer
+}
+print a; // global
+```
+
+Illegal patterns:
+
+```javascript
+fun bad() {
+  var a = "first";
+  var a = "second"; // error: duplicate declaration in the same scope
+}
+
+var a = 1;
+{
+  var a = a + 2; // error: cannot read a in its own initializer
+}
+```
+
+- All variables (including functions) must be declared before use. Using an undeclared name is a compile-time error.
+
+```javascript
+var a = 3;
+f(a, 4); // error: f is not declared
+```
+
+- return is only allowed inside functions; using it at top level is a parse error.
+
+```javascript
+return "at top level"; // parse error
+```
+
+## Control flow
+
+- if, while, and for look like C. The for header is (init; condition; update).
+
+```javascript
+for (var i = 0; i < 3; i = i + 1) {
+  print i;
+}
+```
+
+- break exits the innermost loop; continue skips to the next iteration. They also work inside nested blocks within a loop.
+
+**Note that continue does not work currently!!**
+
+```javascript
+var i = 0;
+while (i < 5) {
+  i = i + 1;
+  if (i == 3) continue;
+  if (i == 4) break;
+  print i;
+}
+// prints: 1 2
+```
+
+## Functions, arity, and return
+
+- Define with fun name(params) { ... }.
+- Functions are first-class: pass as values, return from functions, store in arrays/maps.
+- Anonymous functions use the same fun(...) { ... } form.
+
+```javascript
+fun add(a, b) { return a + b; }
+var mul = fun(a, b) { return a * b; };
+print add(3, 4);
+print mul(3, 4);
+print fun(x) { return x * 2; }(10); // immediately invoked
+```
+
+- If a function does not hit a return, it returns nil.
+
+```javascript
+var noReturn = fun(x) { print "Processing: " + x; };
+print noReturn("test"); // nil
+```
+
+- Arity check: calling with the wrong number of arguments is a runtime error.
+
+```javascript
+fun f(a, b) { print a + b; }
+f(1); // runtime error: wrong number of arguments
+```
+
+## Closures and lexical scope
+
+- Rhythm has lexical closures; inner functions capture variables from their enclosing scopes.
+
+```javascript
+var x = "outer";
+fun makeGreeter() {
+  var greeting = "Hello";
+  return fun(name) { print greeting + " " + name + " from " + x; };
+}
+var greet = makeGreeter();
+greet("Alice"); // Hello Alice from outer
+```
+
+- Captured variables are live and shared by closures (captured by reference).
+
+```javascript
+fun makeCounter() {
+  var count = 0;
+  return fun() { count = count + 1; return count; };
+}
+var c1 = makeCounter();
+var c2 = makeCounter();
+print c1(); // 1
+print c1(); // 2
+print c2(); // 1
+```
+
+- Closures in loops capture the same loop variable. If you allocate functions in a loop, they will all see the final value unless you close over a fresh parameter.
+
+```javascript
+var fs = [];
+for (var i = 0; i < 3; i = i + 1) {
+  push(fs, fun() { return i; });
+}
+print fs[0](); // 3
+print fs[1](); // 3
+print fs[2](); // 3
+
+fun capture(n) { return fun() { return n; }; }
+var fs2 = [];
+for (var i = 0; i < 3; i = i + 1) push(fs2, capture(i));
+print fs2[0](); // 0
+print fs2[1](); // 1
+print fs2[2](); // 2
+```
+
+- Recursion and mutual recursion are supported.
+
+```javascript
+fun fib(n) { if (n < 2) return n; return fib(n-1) + fib(n-2); }
+print fib(6); // 8
+```
+
+## Arrays
+
+- Arrays are dynamic, mutable, and passed by reference.
+
+```javascript
+var a = [];              // empty array
+push(a, 1);
+push(a, "hello");
+print len(a);            // 2
+print a[1];              // hello
+
+a = [1,2,3,4,5];
+fun sum(xs) {
+  var s = 0;
+  for (var i = 0; i < len(xs); i = i + 1) s = s + xs[i];
+  return s;
+}
+printf("sum=%d\n", sum(a)); // sum=15
+```
+
+- Indexing
+  - Indices are 0-based integers.
+  - Non-integer index is a runtime error.
+  - Out-of-bounds access is a runtime error.
+  - Nested indexing works for arrays of arrays.
+
+```javascript
+var m = [[1,2], [3,4]];
+print m[1][0]; // 3
+```
+
+## Maps
+
+- Map literals use { key: value, ... }. Keys can be numbers or strings (and commonly identifiers as keys without quotes).
+- Get/set with m[key]. A missing key returns nil.
+- Delete by assigning nil to the key.
+- Iterate with for_each(map, fun(k, v){ ... }).
+
+```javascript
+var i = 42;
+var m = { i: "hello", "hey": "jude" };
+print m[42];       // hello
+print m["hey"];    // jude
+
+m[i] = 7;
+m[false] = [1,2,3];      // example of mixed value types
+print m;
+
+m[i] = nil;              // delete key 42
+printf("size %d\n", len(m));
+
+for_each(m, fun(k, v) {
+  printf("%s -> %s\n", k, v);
+});
+```
+
+## Property access sugar
+
+For string keys that are valid identifiers, you can use dot access as sugar for m["key"]:
+
+```javascript
+var node = { "value": 5, "left": nil, "right": nil };
+print node.value;         // 5
+node.left = { "value": 3 };
+print node.left.value;    // 3
+```
+
+
+
+## Common errors to expect
+
+- Using a name before it’s declared: compile error.
+- Duplicating a var name in the same scope: compile error.
+- return outside of a function: parse error.
+- Wrong number of function arguments: runtime error.
+- Array index not an integer or out of bounds: runtime error.
+
+These rules are shown in examples under rhythm/examples.
