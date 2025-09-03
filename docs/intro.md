@@ -197,37 +197,37 @@ for (var i=0; i<10; i=i+1) printf("iter %d, "i);
 
 ## Native functions
 
-| Name | Signature | Returns | Brief description |
-|---|---|---|---|
-| clock | clock() | Number | Current time in seconds (floating point). |
-| printf | printf(fmt, ...args) | nil | Print using C-style formatting. Supports %d (integer), %f (floating), %s (stringified value). |
-| sprintf | sprintf(fmt, ...args) | String | Like printf, but returns the formatted string instead of printing. |
-| len | len(x) | Number | Length of Array or Map size or String length. |
-| push | push(arr, value) | nil | Append value to the end of arr (Array). |
-| pop | pop(arr) | Any or nil | Remove and return the last element of arr; returns nil if empty. |
-| readline | readline() | String or false | Read one line from stdin (without trailing newline). Returns false on EOF. |
-| split | split(str, sep) | Array<String> | Split str by the delimiter sep (string), returning an array of substrings. |
-| assert | assert(cond[, msg]) | nil | If cond is false, throws a runtime error with optional message. |
-| for_each | for_each(arr, fn) | nil | Call fn(elem) for each element of arr from index 0..len(arr)-1. |
-| tonumber | tonumber(x) | Number or nil | Convert x to Number. Numbers pass through; strings are parsed; returns nil if not parseable. |
-| slurp | slurp(path) | String | Read entire file at path into a string; throws on IO error. |
-| from_json | from_json(jsonStr) | Any | Parse JSON string into Rhythm values (Map, Array, Number, Bool, String, nil). Throws on invalid JSON. |
-| to_json | to_json(value) | String | Serialize a Rhythm value to a JSON string. Map keys are converted to strings. |
-| floor | floor(x) | Number | Largest integer <= x. |
-| ceil | ceil(x) | Number | Smallest integer >= x. |
-| sin | sin(x) | Number | Sine of x (radians). |
-| cos | cos(x) | Number | Cosine of x (radians). |
-| tan | tan(x) | Number | Tangent of x (radians). |
-| asin | asin(x) | Number | Arc-sine, result in [-pi/2, pi/2]. |
-| acos | acos(x) | Number | Arc-cosine, result in [0, pi]. |
-| atan | atan(x) | Number | Arc-tangent, result in (-pi/2, pi/2). |
-| log | log(x) | Number | Natural logarithm ln(x). |
-| log10 | log10(x) | Number | Base-10 logarithm. |
-| sqrt | sqrt(x) | Number | Square root of x. |
-| exp | exp(x) | Number | e^x. |
-| fabs | fabs(x) | Number | Absolute value. |
-| pow | pow(x, y) | Number | x raised to the power y. |
-| atan2 | atan2(y, x) | Number | Arc-tangent of y/x using signs to determine the quadrant. |
-| fmod | fmod(x, y) | Number | Floating-point remainder of x/y with the sign of x. |
-| random_real | random_real(); random_real(hi); random_real(lo, hi) | Number | Uniform real in [0,1) with no args; in [0,hi) with one arg; in [lo,hi) with two args. |
-| random_int | random_int(lo, hi) | Number | Uniform integer in the inclusive range [lo, hi]. |
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `clock()` | `clock() -> Number` | Returns current time in seconds since epoch |
+| `printf(format, ...)` | `printf(String, ...) -> Nil` | Prints formatted output to stdout using C-style format specifiers |
+| `sprintf(format, ...)` | `sprintf(String, ...) -> String` | Returns formatted string using C-style format specifiers |
+| `len(container)` | `len(Array\|Map\|String) -> Number` | Returns length of array, map, or string |
+| `push(array, value)` | `push(Array, Any) -> Any` | Appends value to end of array (modifies array in-place), returns the value |
+| `pop(array)` | `pop(Array) -> Any` | Removes and returns last element from array |
+| `readline()` | `readline() -> String\|Bool` | Reads a line from stdin; returns `false` on EOF |
+| `split(string, delimiter)` | `split(String, String) -> Array` | Splits string by delimiter, returns array of substrings |
+| `assert(condition, message?)` | `assert(Bool, Any?) -> Nil` | Throws runtime error if condition is false; optional message |
+| `for_each(map, function)` | `for_each(Map, Function) -> Nil` | Calls function(key, value) for each entry in map |
+| `tonumber(value)` | `tonumber(String\|Number\|Bool) -> Number` | Converts string, number, or boolean to number |
+| `slurp()` | `slurp() -> String` | Reads entire stdin content as a single string |
+| `from_json(string)` | `from_json(String) -> Any` | Parses JSON string into Rhythm values |
+| `to_json(value)` | `to_json(Any) -> String` | Serializes Rhythm value to JSON string |
+| `floor(x)` | `floor(Number) -> Number` | Returns largest integer ≤ x |
+| `ceil(x)` | `ceil(Number) -> Number` | Returns smallest integer ≥ x |
+| `sin(x)` | `sin(Number) -> Number` | Returns sine of x (radians) |
+| `cos(x)` | `cos(Number) -> Number` | Returns cosine of x (radians) |
+| `tan(x)` | `tan(Number) -> Number` | Returns tangent of x (radians) |
+| `asin(x)` | `asin(Number) -> Number` | Returns arcsine of x (radians) |
+| `acos(x)` | `acos(Number) -> Number` | Returns arccosine of x (radians) |
+| `atan(x)` | `atan(Number) -> Number` | Returns arctangent of x (radians) |
+| `log(x)` | `log(Number) -> Number` | Returns natural logarithm of x |
+| `log10(x)` | `log10(Number) -> Number` | Returns base-10 logarithm of x |
+| `sqrt(x)` | `sqrt(Number) -> Number` | Returns square root of x |
+| `exp(x)` | `exp(Number) -> Number` | Returns e raised to power x |
+| `fabs(x)` | `fabs(Number) -> Number` | Returns absolute value of x |
+| `pow(x, y)` | `pow(Number, Number) -> Number` | Returns x raised to power y |
+| `atan2(y, x)` | `atan2(Number, Number) -> Number` | Returns arctangent of y/x (radians) |
+| `fmod(x, y)` | `fmod(Number, Number) -> Number` | Returns floating-point remainder of x/y |
+| `random_real(a, b, n)` | `random_real(Number, Number, Number) -> Array` | Returns array of n random floats between a and b |
+| `random_int(a, b, n)` | `random_int(Number, Number, Number) -> Array` | Returns array of n random integers between a and b (inclusive) |
