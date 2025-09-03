@@ -3,6 +3,7 @@
 // Note that the accessor syntax root.left is syntax sugar for root["left"]. 
 
 // insert a new node of `value` into a binary search tree rooted at `root`
+// and return the root of the binary search tree
 fun insert(root, value) {
     if (root == nil) return {"value": value, "left": nil, "right": nil};
     if (value < root.value)
