@@ -1,15 +1,19 @@
 // Binary Search Tree with in-order traversal
-// Node represented as {"value": val, "left": left_node, "right": right_node}
+// Node represented as a Map: {"value": val, "left": left_node, "right": right_node}
+// Note that the accessor syntax root.left is syntax sugar for root["left"]. 
 
+// insert a new node of `value` into a binary search tree rooted at `root`
 fun insert(root, value) {
     if (root == nil) return {"value": value, "left": nil, "right": nil};
     if (value < root.value)
-        root.left = insert(root.left, value);
+        root.left = insert(root.left, value); 
     else
         root.right = insert(root.right, value);
     return root;
 }
 
+
+// print the binary tree rooted at `node`, with `depth` indent
 fun print_tree(node, depth) {
     if (node == nil) return;
 
@@ -34,8 +38,13 @@ for (var i = 0; i < len(values); i = i + 1) {
 print "Binary Search Tree (rotated 90° clockwise):";
 print_tree(tree, 0);
 
-print "experimenting x.y syntax";
 
-print tree.left.left;
-tree.left.left = {"value":100};
-print_tree(tree, 0);
+// in-order printouts of binary tree
+fun traverse_inorder(root) {
+	if (root == nil) return;
+	traverse_inorder(root.left);
+	printf("%d ", root.value);
+	traverse_inorder(root.right);
+}
+print "in order traversal of tree"; 
+traverse_inorder(tree);
