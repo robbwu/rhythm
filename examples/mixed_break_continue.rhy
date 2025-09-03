@@ -1,0 +1,11 @@
+var i = 0;
+var seen = [];
+while (true) {
+  i = i + 1;
+  if (i == 2) continue;  // skip 2
+  if (i == 5) break;     // stop at 5
+  push(seen, i);
+}
+print seen; // expect [1, 3, 4]
+assert(len(seen) == 3 and seen[0] == 1 and seen[1] == 3 and seen[2] == 4);
+print "OK mix break/continue";

@@ -1,0 +1,12 @@
+// Ensure locals declared in a block inside the loop are cleaned up on continue
+var sum = 0;
+for (var i = 0; i < 5; i = i + 1) {
+  {
+    var t = i * 10;
+    if (i < 3) continue; // t should be popped when we continue before end of block
+    sum = sum + t;       // executes for i==3,4
+  }
+}
+print sum; // expect 70 (30 + 40)
+assert(sum == 70);
+print "OK continue in block with local";

@@ -1,0 +1,11 @@
+// Continue affects only the innermost loop
+var cnt = 0;
+for (var i = 0; i < 3; i = i + 1) {
+  for (var j = 0; j < 3; j = j + 1) {
+    if (j == 1) continue; // skip j==1 each inner iteration
+    cnt = cnt + 1;        // counts j==0 and j==2
+  }
+}
+print cnt; // expect 6 (2 per i, 3 outer iterations)
+assert(cnt == 6);
+print "OK nested-continue";
