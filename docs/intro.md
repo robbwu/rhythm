@@ -180,3 +180,54 @@ line2: world
 line3:
 line4: fourth line
 ```
+
+
+## Program structure, control flow, ...
+
+Each `*.rhy` file is considered a script for execution. When running with
+`beat a.rhy`, the script `a.rhy` will be executed line by line, statement by statement.
+
+Common control flows include `if`, `for`, and `while`, which looks exactly the same
+as in C. For example:
+
+```javascript
+for (var i=0; i<10; i=i+1) printf("iter %d, "i);
+```
+
+
+## Native functions
+
+| Name | Signature | Returns | Brief description |
+|---|---|---|---|
+| clock | clock() | Number | Current time in seconds (floating point). |
+| printf | printf(fmt, ...args) | nil | Print using C-style formatting. Supports %d (integer), %f (floating), %s (stringified value). |
+| sprintf | sprintf(fmt, ...args) | String | Like printf, but returns the formatted string instead of printing. |
+| len | len(x) | Number | Length of Array or Map size or String length. |
+| push | push(arr, value) | nil | Append value to the end of arr (Array). |
+| pop | pop(arr) | Any or nil | Remove and return the last element of arr; returns nil if empty. |
+| readline | readline() | String or false | Read one line from stdin (without trailing newline). Returns false on EOF. |
+| split | split(str, sep) | Array<String> | Split str by the delimiter sep (string), returning an array of substrings. |
+| assert | assert(cond[, msg]) | nil | If cond is false, throws a runtime error with optional message. |
+| for_each | for_each(arr, fn) | nil | Call fn(elem) for each element of arr from index 0..len(arr)-1. |
+| tonumber | tonumber(x) | Number or nil | Convert x to Number. Numbers pass through; strings are parsed; returns nil if not parseable. |
+| slurp | slurp(path) | String | Read entire file at path into a string; throws on IO error. |
+| from_json | from_json(jsonStr) | Any | Parse JSON string into Rhythm values (Map, Array, Number, Bool, String, nil). Throws on invalid JSON. |
+| to_json | to_json(value) | String | Serialize a Rhythm value to a JSON string. Map keys are converted to strings. |
+| floor | floor(x) | Number | Largest integer <= x. |
+| ceil | ceil(x) | Number | Smallest integer >= x. |
+| sin | sin(x) | Number | Sine of x (radians). |
+| cos | cos(x) | Number | Cosine of x (radians). |
+| tan | tan(x) | Number | Tangent of x (radians). |
+| asin | asin(x) | Number | Arc-sine, result in [-pi/2, pi/2]. |
+| acos | acos(x) | Number | Arc-cosine, result in [0, pi]. |
+| atan | atan(x) | Number | Arc-tangent, result in (-pi/2, pi/2). |
+| log | log(x) | Number | Natural logarithm ln(x). |
+| log10 | log10(x) | Number | Base-10 logarithm. |
+| sqrt | sqrt(x) | Number | Square root of x. |
+| exp | exp(x) | Number | e^x. |
+| fabs | fabs(x) | Number | Absolute value. |
+| pow | pow(x, y) | Number | x raised to the power y. |
+| atan2 | atan2(y, x) | Number | Arc-tangent of y/x using signs to determine the quadrant. |
+| fmod | fmod(x, y) | Number | Floating-point remainder of x/y with the sign of x. |
+| random_real | random_real(); random_real(hi); random_real(lo, hi) | Number | Uniform real in [0,1) with no args; in [0,hi) with one arg; in [lo,hi) with two args. |
+| random_int | random_int(lo, hi) | Number | Uniform integer in the inclusive range [lo, hi]. |

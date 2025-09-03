@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Quick Reference Card – Your Topic</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /*
+      ─────────────────────────────────────────────────────────────────────
+      QUICK REFERENCE CARD (Print‑ready, OpenMP‑style)
+      - Single HTML file; easy to edit.
+      - Use the CSS variables below to theme.
+      - Designed for landscape Letter by default; works on A4 too.
+      - Content flows into 3 columns per page using CSS columns.
+      - Print to PDF: set margins = None, background graphics = ON.
+      ─────────────────────────────────────────────────────────────────────
+    */
+
+    :root{
+      --brand: #00539f;         /* Header bar + accents */
+      --brand-2: #f39c12;       /* Secondary accent */
+      --ink: #111;              /* Primary text */
+      --muted: #555;            /* Secondary text */
+      --paper: #ffffff;         /* Background */
+      --rule: #e3e6eb;          /* Dividers */
+      --code-bg: #f6f8fa;       /* Code blocks */
+      --kbd-bg: #222;           /* <kbd> background */
+      --kbd-ink: #fff;          /* <kbd> text */
+      --radius: 8px;            /* Card rounding */
+    }
+
+    /* Page & print setup */
+    @page {
+      size: Letter landscape; /* Change to A4 if needed */
+      margin: 0.4in;          /* Printer margins */
+    }
+
+    html, body { height: 100%; }
+    body{
+      font: 12px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--ink);
+      background: var(--paper);
+      margin: 0;
+    }
+
+    /* Header band */
+    .header{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(90deg, var(--brand), #093a72);
+      color: #fff;
+      padding: 10px 16px;
+      border-bottom: 3px solid var(--brand-2);
+    }
+    .header .title{
+      font-size: 20px;
+      letter-spacing: .3px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .header .meta{
+      font-size: 11px;
+      opacity: .9;
+      text-align: right;
+    }
+
+    /* 3-column flow per page */
+    .columns{
+      column-count: 3;
+      column-gap: 16px;
+      padding: 10px 16px 16px;
+    }
+    .break{ break-after: column; }
+
+    /* Section cards */
+    .card{
+      break-inside: avoid;
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 0 rgba(0,0,0,.03);
+      margin: 0 0 12px;
+      overflow: hidden;
+    }
+    .card h2{
+      margin: 0;
+      padding: 8px 10px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .2px;
+      color: #fff;
+      background: var(--brand);
+      border-bottom: 1px solid #083569;
+    }
+    .card .body{ padding: 8px 10px; }
+
+    /* Definition rows */
+    .kv{ display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; }
+    .kv div{ padding: 2px 0; }
+    .kv .k{ color: var(--muted); }
+    .kv .v{ font-weight: 600; }
+
+    /* Tables */
+    table{ width: 100%; border-collapse: collapse; font-size: 11px; }
+    th, td{ padding: 6px 8px; border-top: 1px solid var(--rule); vertical-align: top; }
+    th{ text-align: left; font-weight: 700; background: #fafbfc; }
+    tr:nth-child(even) td{ background: #fcfdff; }
+
+    /* Inline labels */
+    .pill{
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 1px 6px; border-radius: 999px; background: var(--brand-2); color:#111;
+    }
+
+    /* Code & keyboard */
+    code{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; background: var(--code-bg); padding: 1px 4px; border-radius: 4px; }
+    pre{ background: var(--code-bg); padding: 8px; border-radius: 6px; overflow: auto; border: 1px solid var(--rule); }
+    kbd{ background: var(--kbd-bg); color: var(--kbd-ink); padding: 1px 5px; border-radius: 4px; font-size: 10px; }
+
+    /* Utility */
+    .muted{ color: var(--muted); }
+    .tiny{ font-size: 10px; }
+    .tip{ border-left: 3px solid var(--brand-2); background: #fff8ea; padding: 6px 8px; border-radius: 6px; }
+
+    /* Page footer */
+    .footer{ color: var(--muted); font-size: 10px; text-align:center; padding: 6px 0 10px; }
+
+    /* On-screen helper only; hidden when printing */
+    @media screen{
+      body{ max-width: 1280px; margin: 0 auto; }
+      .screen-note{ margin: 10px 16px 0; }
+    }
+    @media print{
+      .screen-note{ display: none; }
+      a[href]::after{ content: ""; }
+    }
+  </style>
+</head>
+<body>
+  <!-- On-screen tip; won't print -->
+  <div class="screen-note tiny muted">
+    💡 Edit this file, then use your browser’s Print → Save as PDF with <strong>landscape</strong> orientation, <strong>no margins</strong>, and <strong>background graphics ON</strong>.
+  </div>
+
+  <header class="header">
+    <div class="title">Rhythm Language & Beat Interpreter – Quick Reference</div>
+    <div class="meta">
+      v1.0 · Updated <span id="stamp">2025‑08‑26</span><br/>
+      github.com/robbwu/rhythm · CC‑BY 4.0
+    </div>
+  </header>
+
+  <main class="columns">
+    <!-- ===== Column 1 ===== -->
+    <section class="card">
+      <h2>Core Syntax</h2>
+      <div class="body">
+        <ul class="tiny" style="margin:0; padding-left:16px;">
+          <li>Rhythm is dynamically typed small laugnage suitable for using as pseudocode</li>
+          <li>Avoid false sharing: pad structs/arrays.</li>
+          <li>Initialize reductions; don’t read uninit vars.</li>
+          <li>Use correct schedule for workload skew.</li>
+          <li>Guard non‑threadsafe libraries.</li>
+        </ul>
+        <pre>
+          
+        </pre>
+       
+        <div class="tip tiny" style="margin-top:8px;">Keep lines ≤ ~70 characters so nothing wraps awkwardly in print.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Common Options</h2>
+      <div class="body">
+        <table>
+          <thead>
+            <tr><th>Flag / Option</th><th>Effect</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>-O3</code></td><td>Optimize heavily (example).</td></tr>
+            <tr><td><code>-g</code></td><td>Include debug info.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Memory Model</h2>
+      <div class="body">
+        <table>
+          <thead>
+            <tr><th>Construct</th><th>Guarantee</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>atomic</code></td><td>Atomic read‑modify‑write on variable <em>x</em>.</td></tr>
+            <tr><td><code>barrier</code></td><td>All threads reach this point before continuing.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="break"></div>
+
+    <!-- ===== Column 2 ===== -->
+    <section class="card">
+      <h2>Patterns & Idioms</h2>
+      <div class="body">
+        <pre><code>// Parallel for (skeleton)
+#pragma omp parallel for
+for (int i=0; i<n; ++i){
+  // work(i)
+}
+        </code></pre>
+        <pre><code>// Reduction (skeleton)
+#pragma omp parallel for reduction(+:sum)
+for (int i=0; i<n; ++i){
+  sum += a[i];
+}
+        </code></pre>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Environment Variables</h2>
+      <div class="body">
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>OMP_NUM_THREADS</code></td><td>Max threads in team.</td></tr>
+            <tr><td><code>OMP_SCHEDULE</code></td><td>Runtime loop schedule policy.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Gotchas <span class="pill">Checklist</span></h2>
+      <div class="body">
+        <ul class="tiny" style="margin:0; padding-left:16px;">
+          <li>Avoid false sharing: pad structs/arrays.</li>
+          <li>Initialize reductions; don’t read uninit vars.</li>
+          <li>Use correct schedule for workload skew.</li>
+          <li>Guard non‑threadsafe libraries.</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="break"></div>
+
+    <!-- ===== Column 3 ===== -->
+    <section class="card">
+      <h2>CLI Examples</h2>
+      <div class="body">
+        <pre><code># Compile & run (example)
+cc -fopenmp main.c -o app && OMP_NUM_THREADS=8 ./app
+        </code></pre>
+        <table>
+          <thead>
+            <tr><th>Goal</th><th>Command</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Pin threads</td><td><code>export OMP_PROC_BIND=close</code></td></tr>
+            <tr><td>Schedule</td><td><code>export OMP_SCHEDULE=dynamic,64</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Quick Specs</h2>
+      <div class="body kv tiny">
+        <div class="k">Version</div><div class="v">X.Y (edit me)</div>
+        <div class="k">Compiler flags</div><div class="v"><code>-fopenmp</code> / <code>/openmp:llvm</code></div>
+        <div class="k">Docs</div><div class="v">spec.pdf §2–§8</div>
+        <div class="k">License</div><div class="v">CC‑BY 4.0</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Legend</h2>
+      <div class="body tiny">
+        <p><kbd>Monospace</kbd> = literal; <code>&lt;&gt;</code> = placeholder; <span class="pill">Checklist</span> = action items.</p>
+        <p class="muted">Keep this section tiny; prioritize space for high‑value content.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    Generated from single‑file HTML template. Tweak <code>:root</code> color variables to rebrand. Add more cards; keep each under ~14 lines.
+  </footer>
+</body>
+</html>
