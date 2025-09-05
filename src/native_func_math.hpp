@@ -135,10 +135,10 @@ public:
     // return milli-seconds since Unix epoch, as a double
     Value call(RuntimeContext*, std::vector<Value> args) override {
         if (args.size() != arity()) {
-            throw RuntimeError({}, "uniform_random_real needs three args");
+            throw RuntimeError({}, "random_int needs three args");
         }
         if (!std::holds_alternative<double>(args[0]) || !std::holds_alternative<double>(args[1])) {
-            throw RuntimeError({}, "uniform_random_real needs two real numbers and an integer");
+            throw RuntimeError({}, "random_int needs two int numbers and an integer size");
         }
         double a = std::get<double>(args[0]);
         double b = std::get<double>(args[1]);

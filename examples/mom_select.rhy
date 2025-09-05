@@ -1,0 +1,103 @@
+// a, b are
+fun swap(A, i, j){
+    var t = A[i];
+    A[i] = A[j];
+    A[j] = t;
+}
+
+var inf = 1e308; 
+
+// return median of up to five element, i.e. hi-lo <= 5
+// if less than 5 elements, inf are added to make it 5.
+// 
+fun median_of_five(A, lo, hi) {
+	if (hi - lo < 3) return inf; 
+	for(var i=lo; i<hi; i=i+1) {
+		for(var j=i+1; j<hi; j=j+1) {
+			if (A[j]<A[i]) swap(A, i, j); 
+		}
+	}
+	return A[lo+2];
+}
+
+fun min(a,b) {
+	if (a < b) return a;
+	return b; 
+}
+
+// find the k-th smallest element in A[lo:hi];
+// equivalent to Asorted[k], where Asorted is the sorted A[lo:hi]
+// returns the index of 
+fun momsel(A, lo, hi, k) {
+	var n = hi - lo;
+	if (n < 25) {
+		for(var i=lo; i<=lo+k; i=i+1) {
+			for(var j=i+1; j<hi; j=j+1) {
+				if (A[j]<A[i]) swap(A, i, j); 
+			}
+		}
+		return A[lo+k];
+	}
+   
+	var m = ceil(n/5);
+	var M = [];
+	for (var i=0; i<m; i=i+1) 
+		push(M, median_of_five(A, lo+5*i, min(lo+5*(i+1), hi))); 
+	var mom = momsel(M, 0, m, floor(m/2));
+    var p = partition(A, lo, hi, mom);
+	if (k < (p-lo) ) return momsel(A, lo, p, k);
+	else if (k>(p-lo)) return momsel(A, p, hi, k-(p-lo));
+	return A[p];
+}
+
+
+
+// given pivot value (which must appear in A[lo:hi)), rearrange in place and
+// return the final index p where A[p] == pivot.
+// post: for all i < p, A[i] <= A[p]; and for all j > p, A[j] > A[p]
+fun partition(A, lo, hi, pivot) {
+	var pIndex;
+    // Find the index of the pivot in the current subarray
+    for (pIndex = lo; pIndex < hi; pIndex = pIndex + 1) {
+        if (A[pIndex] == pivot) {
+            break;
+        }
+    }
+    // Move pivot to the end of the subarray
+    swap(A, pIndex, hi - 1);
+    
+    var store = lo;
+    // Partition the array into elements <= pivot and > pivot
+    for (var i = lo; i < hi - 1; i = i + 1) {
+        if (A[i] <= pivot) {
+            swap(A, i, store);
+            store = store + 1;
+        }
+    }
+    // Move pivot to its correct position
+    swap(A, store, hi - 1);
+    
+    return store;
+}
+
+A = [10, -1, 7, 7, 7, 0, 23, 5, 5, 5, 5, 12, 12, 12, 9, 9, 9, 9, 9,
+     8, 1000, -100, 16, 16, 16, 2, 2, 2, 2, 2, 50, 50, 50, 3, 3];
+
+var s28 = momsel(A, 0, 35, 28);   // expected: 16  (0-indexed kth smallest)
+assert (s28 == 16);
+
+
+// larger test cases
+var N = 100;
+A = [];
+for (var i=0; i<N; i=i+1) push(A, i);
+// shuffle them
+for (var i=N-1; i>0; i=i-10) {
+	var j = random_int(0, i, 1);
+	swap(A, i, j[0]);
+}
+
+for (var i=0; i<N; i=i+1) {
+	assert( momsel(A, 0, N, i) == i); 
+}
+
