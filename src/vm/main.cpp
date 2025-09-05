@@ -8,6 +8,7 @@
 #include "vm.hpp"
 #include "version.hpp"
 #include "compiler.hpp"
+#include "vm/vm_exception.hpp"
 
 bool printAst = false;
 bool noLoop = false;
@@ -77,7 +78,17 @@ void runPrompt(VM &vm, Compiler &compiler)
 {
     std::cout << "> ";
     for (std::string line; std::getline(std::cin, line);) {
-        run(vm, compiler,  line);
+        try {
+            run(vm, compiler,  line);
+        } catch (const CompileException& e) {
+            std::cerr << "Compile error: " << e.what() << std::endl;
+        } catch (const VMRuntimeError& e) {
+            std::cerr << e.what() << std::endl;
+        } catch (const std::exception& e) {
+            // some compile error will throw std::runtime_error and
+            // will be caught here; FIXME: use a more specific exception type
+            std::cerr << "Error: " << e.what() << std::endl;
+        }
         std::cout << "> ";
     }
 }
