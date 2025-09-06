@@ -163,4 +163,4 @@ public:
     std::string toString()  override { return "<native fn>"; }
 };
 
-} // namespace cclox
+} // namespace native
