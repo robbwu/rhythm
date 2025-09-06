@@ -53,6 +53,7 @@ public:
         globals["slurp"] = new SlurpCallable();
         globals["from_json"] = new FromJsonCallable();
         globals["to_json"] = new ToJsonCallable();
+        globals["inf"] = new InfCallable(); // positive infinity
 
         using namespace native::NativeMathFunctionNames;
         using namespace native;

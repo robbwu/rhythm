@@ -6,6 +6,7 @@
 #include <ranges>
 #include <string_view>
 #include <chrono>
+#include <limits>
 
 
 #include "exception.hpp"
@@ -472,4 +473,20 @@ public:
     }
 
     std::string toString() override { return "<native fn>"; }
+};
+
+class InfCallable final : public LoxCallable {
+public:
+    // zero arguments
+    int arity() override { return 0; }
+
+    // return milli-seconds since Unix epoch, as a double
+    Value call(RuntimeContext*, std::vector<Value> values) override {
+        if (values.size() != arity() )
+            throw RuntimeError({}, "inf() requires 0 argument");
+
+        return std::numeric_limits<double>::infinity();
+    }
+
+    std::string toString()  override { return "<native fn>"; }
 };

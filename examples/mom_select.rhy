@@ -5,13 +5,12 @@ fun swap(A, i, j){
     A[j] = t;
 }
 
-var inf = 1e308; 
 
 // return median of up to five element, i.e. hi-lo <= 5
 // if less than 5 elements, inf are added to make it 5.
 // 
 fun median_of_five(A, lo, hi) {
-	if (hi - lo < 3) return inf; 
+	if (hi - lo < 3) return inf(); 
 	for(var i=lo; i<hi; i=i+1) {
 		for(var j=i+1; j<hi; j=j+1) {
 			if (A[j]<A[i]) swap(A, i, j); 
@@ -101,3 +100,4 @@ for (var i=0; i<N; i=i+1) {
 	assert( momsel(A, 0, N, i) == i); 
 }
 
+print "OK"; 
