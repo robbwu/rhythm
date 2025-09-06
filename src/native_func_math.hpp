@@ -144,13 +144,13 @@ public:
         double b = std::get<double>(args[1]);
         double n = (int)std::get<double>(args[2]);
         if (!is_integer(a) || !is_integer(b) || !is_integer(n)) {
-            throw RuntimeError({}, "uniform_random_real needs three integer numbers");
+            throw RuntimeError({}, "random_int needs three integer numbers");
         }
         if (a  >= b) {
-            throw RuntimeError({}, "uniform_random_real(a,b,n):  a should be less than b");
+            throw RuntimeError({}, "random_int(a,b,n):  a should be less than b");
         }
         if (n < 1) {
-            throw RuntimeError({}, "uniform_random_real(a,b,n): n cannot be less than 1");
+            throw RuntimeError({}, "random_int(a,b,n): n cannot be less than 1");
         }
         std::uniform_int_distribution<> dis((int)a, (int)b);
         std::vector<Value> results{}; results.reserve((int)n);
