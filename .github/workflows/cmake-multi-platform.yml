@@ -115,8 +115,7 @@ jobs:
             build-base \
             cmake \
             musl-dev \
-            linux-headers \
-            libstdc++-static
+            linux-headers
 
       - name: Configure CMake for musl static build
         run: >
