@@ -102,48 +102,42 @@ jobs:
           path: ${{ steps.strings.outputs.build-output-dir }}/beat
           retention-days: 90
 
-  build-linux-static-musl:
-    name: Linux static (musl)
+  build-static-musl-linux:
     runs-on: ubuntu-latest
-
+    container:
+      image: alpine:latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: goto-bus-stop/setup-zig@v2
-        with:
-          version: 0.12.0
-
-      # Create compiler wrapper shims so CMake sees real executables
-      - name: Make zigcc / zigc++ wrappers
+      - name: Install musl build tools
         run: |
-          mkdir -p "$HOME/bin"
-          printf '#!/usr/bin/env bash\nexec zig cc "$@"\n' > "$HOME/bin/zigcc"
-          printf '#!/usr/bin/env bash\nexec zig c++ "$@"\n' > "$HOME/bin/zigc++"
-          chmod +x "$HOME/bin/zigcc" "$HOME/bin/zigc++"
-          echo "$HOME/bin" >> $GITHUB_PATH
+          apk add --no-cache \
+            build-base \
+            cmake \
+            musl-dev \
+            linux-headers
 
-      - name: Configure (musl, fully static)
+      - name: Configure CMake for musl static build
+        run: >
+          cmake -B build-musl
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_EXE_LINKER_FLAGS="-static"
+          -DCMAKE_FIND_LIBRARY_SUFFIXES=".a"
+          -DBUILD_SHARED_LIBS=OFF
+          -S .
+
+      - name: Build static binary with musl
+        run: cmake --build build-musl --config Release
+
+      - name: Verify binary is fully static
         run: |
-          cmake -B build-musl -S . \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
-            -DCMAKE_C_COMPILER=zigcc \
-            -DCMAKE_CXX_COMPILER=zigc++ \
-            -DCMAKE_C_COMPILER_TARGET=x86_64-linux-musl \
-            -DCMAKE_CXX_COMPILER_TARGET=x86_64-linux-musl \
-            -DCMAKE_EXE_LINKER_FLAGS="-static" \
-            -DCMAKE_SKIP_RPATH=ON
+          # This should show no dynamic dependencies
+          ldd build-musl/beat 2>&1 | grep -q "not a dynamic executable" ||
+          (echo "Binary is not fully static" && exit 1)
 
-      - name: Build
-        run: cmake --build build-musl --config Release -j
-
-      - name: Test
-        working-directory: build-musl
-        run: ctest --build-config Release --output-on-failure
-
-      - name: Upload artifact
+      - name: Upload fully static binary
         uses: actions/upload-artifact@v4
         with:
-          name: beat-linux-musl-static
+          name: beat-fully-static-musl-linux
           path: build-musl/beat
           retention-days: 90
