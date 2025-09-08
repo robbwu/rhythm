@@ -173,6 +173,6 @@ jobs:
 
       - name: Copy static binary to server
         run: |
-          scp static-binary/beat ${{ secrets.COSC_RHYTHMBOT_SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.DEPLOY_PATH }}/beat
+          scp static-binary/beat ${{ secrets.COSC_RHYTHMBOT_SERVER_USER }}@${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }}:/home/rhythmbot/beat
           # If you want to keep the binary name with version/timestamp
           # scp static-binary/beat ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.DEPLOY_PATH }}/beat-$(date +%Y%m%d-%H%M%S)
