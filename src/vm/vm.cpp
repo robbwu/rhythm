@@ -133,8 +133,36 @@ InterpretResult VM::run(int ret_frame) {
                 stack.back() = (stack.back() == b);
                 break;
             }
-            case OP_GREATER:  BINARY_OP(>); break;
-            case OP_LESS:     BINARY_OP(<); break;
+            case OP_GREATER:  {
+                // BINARY_OP(<); break;
+                Value b = pop();
+                // Value a = pop();
+                if (std::holds_alternative<double>(b)) {
+                    bool c = std::get<double>(stack.back()) > std::get<double>(b);
+                    stack.back() = c;
+                } else if (std::holds_alternative<std::string>(b)) {
+                    bool c = std::get<std::string>(stack.back()) > std::get<std::string>(b);
+                    stack.back() = c;
+                } else {
+                    error(0, "binary op > operands must both be numbers or strings");
+                }
+                break;
+            }
+            case OP_LESS: {
+                // BINARY_OP(<); break;
+                Value b = pop();
+                // Value a = pop();
+                if (std::holds_alternative<double>(b)) {
+                    bool c = std::get<double>(stack.back()) < std::get<double>(b);
+                    stack.back() = c;
+                } else if (std::holds_alternative<std::string>(b)) {
+                    bool c = std::get<std::string>(stack.back()) < std::get<std::string>(b);
+                    stack.back() = c;
+                } else {
+                    error(0, "binary op < operands must both be numbers or strings");
+                }
+                break;
+            }
             case OP_DEFINE_GLOBAL: {
                 auto name = READ_STRING();
                 globals[name] = pop();

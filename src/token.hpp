@@ -154,7 +154,7 @@ enum class FunctionType {
 };
 
 
-
+// false, nil are falsy; everything else is truthy
 inline bool is_truthy(const Value& value) {
     if (std::holds_alternative<bool>(value)) {
         return std::get<bool>(value);

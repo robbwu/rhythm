@@ -53,7 +53,7 @@ fun momsel(A, lo, hi, k) {
 
 // given pivot value (which must appear in A[lo:hi)), rearrange in place and
 // return the final index p where A[p] == pivot.
-// post: for all i < p, A[i] <= A[p]; and for all j > p, A[j] > A[p]
+// post-condition: for all i < p, A[i] <= A[p]; and for all j > p, A[j] > A[p]
 fun partition(A, lo, hi, pivot) {
 	var pIndex;
     // Find the index of the pivot in the current subarray
