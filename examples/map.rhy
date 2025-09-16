@@ -16,12 +16,11 @@ m[i] = nil;
 print m;
 printf("size of map m is %d\n", len(m));
 
-fun lamb(k, v) {
-    printf("key is %s, value is %s\n", k, v);
+var ks = keys(m);
+print ks; 
+assert (len(ks) == len(m));
+
+for (var i=0; i<len(ks); i=i+1) {
+  printf("k=%s v=%s\n", ks[i], m[ks[i]]);
 }
-
-for_each(m, lamb);
-
-for_each(m, fun (k, v ) {
-    printf("%s -> %s\n", k, v);
-});
+print "OK";

@@ -48,7 +48,8 @@ public:
         globals["readline"] = new ReadlineCallable();
         globals["split"] = new SplitCallable();
         globals["assert"] = new AssertCallable();
-        globals["for_each"] = new ForEachCallable();
+        // globals["for_each"] = new ForEachCallable();
+        globals["keys"] = new KeysCallable();
         globals["tonumber"] = new ToNumberCallable();
         globals["slurp"] = new SlurpCallable();
         globals["from_json"] = new FromJsonCallable();

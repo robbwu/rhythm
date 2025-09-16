@@ -1,0 +1,29 @@
+// does any subset of X sum to T?
+fun subsetSum(X, T) {
+    if (T == 0) return true;
+    else if (T < 0 or len(X) == 0) return false;
+    
+    var ks = keys(X); 
+    var x = ks[0]; // take the first element in X; 
+  
+
+    // temporarily remove x
+    X[x] = nil;
+
+    // case 1: include x
+    var withx = subsetSum(X, T - x);
+
+    // case 2: exclude x
+    var withoutx = subsetSum(X, T);
+
+    // restore x (backtrack)
+    X[x] = true;
+
+    return withx or withoutx;
+}
+
+// example
+var X = { 3: true, 34: true, 4: true, 12: true, 5: true, 2: true };
+assert( subsetSum(X, 9) == true);   // expects true
+assert( subsetSum(X, 30) == false);  // expects false
+print "OK";

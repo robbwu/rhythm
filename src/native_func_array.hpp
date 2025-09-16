@@ -73,6 +73,8 @@ public:
     std::string toString()  override { return "<native fn>"; }
 };
 
+
+
 class ForEachCallable final : public LoxCallable {
 public:
     int arity() override { return 2; }
@@ -97,6 +99,29 @@ public:
             context->callFunction(f, {it.first, it.second});
         }
         return nullptr;
+    }
+    std::string toString()  override { return "<native fn>"; }
+};
+
+
+class KeysCallable final : public LoxCallable {
+public:
+    int arity() override { return 1; }
+
+    Value call(RuntimeContext* context, std::vector<Value> arguments) override {
+        if (arguments.size() != arity()) {
+            throw RuntimeError({}, "for_each(m, f) needs two argument");
+        }
+        if (!std::holds_alternative<std::shared_ptr<Map>>(arguments[0])) {
+            throw RuntimeError({}, "for_each(m, f), m must be an map");
+        }
+        auto m = std::get<std::shared_ptr<Map>>(arguments[0]);
+        std::vector<Value> results;
+        results.reserve(m->data.size());
+        for (const auto& [k, _] : m->data) {
+            results.push_back(k);
+        }
+        return std::make_shared<Array>(results);
     }
     std::string toString()  override { return "<native fn>"; }
 };
