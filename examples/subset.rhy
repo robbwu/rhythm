@@ -12,7 +12,6 @@ fun subsetSum(X, T) {
 
     // case 1: include x
     var withx = subsetSum(X, T - x);
-
     // case 2: exclude x
     var withoutx = subsetSum(X, T);
 

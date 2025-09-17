@@ -490,3 +490,24 @@ public:
 
     std::string toString()  override { return "<native fn>"; }
 };
+
+class SubstringCallable final : public LoxCallable {
+public:
+    // zero arguments
+    int arity() override { return 3; }
+
+    // return milli-seconds since Unix epoch, as a double
+    Value call(RuntimeContext*, std::vector<Value> values) override {
+        if (values.size() != arity() )
+            throw RuntimeError({}, "inf() requires 0 argument");
+        auto &str = std::get<std::string>(values[0]);
+        auto start = (int)std::get<double>(values[1]);
+        auto end = (int)std::get<double>(values[2]);
+        if (start < 0 || end > str.size() || start > end) {
+            throw RuntimeError({}, "substring() indices out of range");
+        }
+        return str.substr(start, end - start);
+    }
+
+    std::string toString()  override { return "<native fn>"; }
+};

@@ -1,0 +1,32 @@
+
+
+// Returns true if the string A can be split into words in word_dict
+fun splittable(A, word_dict) {
+    // Base case: if the string is empty, it is considered splittable
+    if (len(A) == 0) {
+        return true;
+    }
+    
+    // Iterate over the string and try to split it
+    for (var i = 1; i <= len(A); i = i + 1) {
+        // Check if the prefix A[0:i] is a valid word
+        var prefix = substring(A, 0, i);
+        if (word_dict[prefix] != nil) {
+            // If the prefix is a word, recursively
+            // check the rest of the string
+            var rest = substring(A, i, len(A));
+            if (splittable(rest, word_dict)) {
+                return true;
+            }
+        }
+    }
+    
+    // If no valid split found, return false
+    return false;
+}
+
+// Example usage
+var word_dict = {"can": true, "the": true, "string": true, "be": true, "segmented": true};
+var A = "canthestringbe";
+print splittable(A, word_dict);
+print splittable("helloworld", word_dict); 

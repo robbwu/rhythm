@@ -48,13 +48,13 @@ public:
         globals["readline"] = new ReadlineCallable();
         globals["split"] = new SplitCallable();
         globals["assert"] = new AssertCallable();
-        // globals["for_each"] = new ForEachCallable();
         globals["keys"] = new KeysCallable();
         globals["tonumber"] = new ToNumberCallable();
         globals["slurp"] = new SlurpCallable();
         globals["from_json"] = new FromJsonCallable();
         globals["to_json"] = new ToJsonCallable();
         globals["inf"] = new InfCallable(); // positive infinity
+        globals["substring"] = new SubstringCallable();
 
         using namespace native::NativeMathFunctionNames;
         using namespace native;
