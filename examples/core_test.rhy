@@ -1,0 +1,10 @@
+var A = [2, 3, -1, 5];
+
+print core.max(A);
+
+A = core.make_array(3, 0);
+print A;
+B = core.make_array(4, A);
+print B;
+A[1]=1;
+print B; 

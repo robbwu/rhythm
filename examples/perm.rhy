@@ -1,0 +1,25 @@
+
+// input: A is set of distinct numbers; P is partial permutation array
+fun permutation(A, P) {
+    if (len(A) == 0) {
+        print P;
+        return; 
+    }
+
+    var ks = keys(A);
+    for (var i=0; i<len(ks); i=i+1) {
+        var c = ks[i];
+        if (c == len(P)) continue; 
+        A[c] = nil;
+        push(P, c);
+        permutation(A, P);
+        pop(P);
+        A[c] = true; 
+    }
+}
+
+var n = 4; var A = {}; 
+for (var i=0; i<n; i=i+1) A[i] = true;
+
+permutation(A, []);
+

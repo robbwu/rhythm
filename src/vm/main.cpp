@@ -9,6 +9,7 @@
 #include "version.hpp"
 #include "compiler.hpp"
 #include "vm/vm_exception.hpp"
+#include "vm/core_lib.hpp"
 
 bool printAst = false;
 bool noLoop = false;
@@ -122,6 +123,20 @@ int main(int argc, char **argv) {
 
     Compiler compiler(nullptr);
     VM vm{};
+
+    try {
+        std::string core_source(CORE_LIB_SOURCE);
+        run(vm, compiler, core_source);
+    } catch (const CompileException& e) {
+        std::cerr << "Failed to load core library: " << e.what() << std::endl;
+        return 1;
+    } catch (const VMRuntimeError& e) {
+        std::cerr << "Failed to load core library: " << e.what() << std::endl;
+        return 1;
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to load core library: " << e.what() << std::endl;
+        return 1;
+    }
 
     // Count non-option arguments
     int script_args = 0;

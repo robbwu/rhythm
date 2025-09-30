@@ -1,0 +1,2 @@
+// binary tree node can be represented as a map:
+// root = {"left": { 
