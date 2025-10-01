@@ -110,10 +110,23 @@ add_executable( beat
         src/ast_printer.cpp
 )
 
+add_executable(transpose
+        src/transpose/main.cpp
+        src/transpose/javascript_generator.cpp
+        src/transpose/runtime.cpp
+        src/scanner.cpp
+        src/parser.cpp
+        src/expr.cpp
+        src/statement.cpp
+        src/resolver.cpp
+        src/interpreter.cpp
+        src/ast_printer.cpp
+)
+
 include(CTest)  # defines BUILD_TESTING and enable_testing()
 if(BUILD_TESTING)
 
-    # Helper to add a test that runs a .rhy script
+    # Helper to add a test that runs a .rhy script with the beat VM
     function(add_rhythm_test name script_path)
         add_test(
             NAME    ${name}
@@ -123,6 +136,19 @@ if(BUILD_TESTING)
         set_tests_properties(${name} PROPERTIES
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             LABELS "examples"
+            TIMEOUT 20
+    )
+    endfunction()
+
+    # Helper to add a test that runs a .rhy script with the transpose backend
+    function(add_transpose_test name script_path)
+        add_test(
+            NAME    ${name}
+            COMMAND $<TARGET_FILE:transpose> ${script_path}
+    )
+        set_tests_properties(${name} PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            LABELS "examples;transpose"
             TIMEOUT 20
     )
     endfunction()
@@ -160,6 +186,21 @@ if(BUILD_TESTING)
     add_rhythm_test(examples_avl                     ${EX}/avl.rhy)
     add_rhythm_test(examples_nqueen                  ${EX}/nqueen.rhy)
 
+    add_transpose_test(transpose_for                     ${EX}/for.rhy)
+    add_transpose_test(transpose_array                   ${EX}/array.rhy)
+    add_transpose_test(transpose_bisection               ${EX}/bisection.rhy)
+    add_transpose_test(transpose_mergesort               ${EX}/mergesort.rhy)
+    add_transpose_test(transpose_qsort                   ${EX}/qsort.rhy)
+    add_transpose_test(transpose_sqrt_newton             ${EX}/sqrt.rhy)
+    add_transpose_test(transpose_continue_while          ${EX}/continue_while.rhy)
+    add_transpose_test(transpose_continue_nested         ${EX}/continue_nested.rhy)
+    add_transpose_test(transpose_continue_for            ${EX}/continue_for.rhy)
+    add_transpose_test(transpose_continue_hits_increment ${EX}/continue_hits_increment.rhy)
+    add_transpose_test(transpose_continue_block_scope    ${EX}/continue_block_scope.rhy)
+    add_transpose_test(transpose_mixed_break_continue    ${EX}/mixed_break_continue.rhy)
+    add_transpose_test(transpose_avl                     ${EX}/avl.rhy)
+    add_transpose_test(transpose_nqueen                  ${EX}/nqueen.rhy)
+
 
     # Optionally check for an "OK" marker when present
     foreach(t
@@ -172,6 +213,20 @@ if(BUILD_TESTING)
       examples_continue_hits_increment
       examples_continue_block_scope
       examples_mixed_break_continue
+  )
+        set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION "OK")
+    endforeach()
+
+    foreach(t
+      transpose_for
+      transpose_array
+      transpose_sqrt_newton
+      transpose_continue_while
+      transpose_continue_nested
+      transpose_continue_for
+      transpose_continue_hits_increment
+      transpose_continue_block_scope
+      transpose_mixed_break_continue
   )
         set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION "OK")
     endforeach()
