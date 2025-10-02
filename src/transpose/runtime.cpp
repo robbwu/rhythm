@@ -3,7 +3,8 @@
 namespace transpose {
 
 std::string runtimePrelude() {
-    return R"JS(
+    static const char* const parts[] = {
+        R"JS(
 const __rt = (() => {
   const fs = require('fs');
 
@@ -223,7 +224,8 @@ const __rt = (() => {
     throw runtimeError(line, '+ can only be between two numbers or two strings');
   }
 
-  function binaryNumberOp(left, right, line, op, message) {
+)JS",
+        R"JS(  function binaryNumberOp(left, right, line, op, message) {
     return op(ensureNumber(left, line, message), ensureNumber(right, line, message));
   }
 
@@ -453,7 +455,8 @@ const __rt = (() => {
 
     globals.clock = makeNative('clock', () => Date.now() / 1000, 0);
 
-    globals.printf = makeNative('printf', (...args) => {
+)JS",
+        R"JS(    globals.printf = makeNative('printf', (...args) => {
       if (args.length === 0) {
         throw runtimeError(null, 'printf needs a format string');
       }
@@ -634,7 +637,8 @@ const __rt = (() => {
         if (val === null) {
           return null;
         }
-        if (typeof val === 'boolean' || typeof val === 'number' || typeof val === 'string') {
+)JS",
+        R"JS(        if (typeof val === 'boolean' || typeof val === 'number' || typeof val === 'string') {
           return val;
         }
         if (Array.isArray(val)) {
@@ -736,7 +740,15 @@ const __rt = (() => {
     globals: createGlobals(),
   };
 })();
-)JS";
+)JS",
+    };
+    std::string prelude;
+    prelude.reserve(20936);
+    for (const char* part : parts) {
+        prelude.append(part);
+    }
+    return prelude;
+
 }
 
 }  // namespace transpose
