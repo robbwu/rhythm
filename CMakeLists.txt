@@ -123,7 +123,7 @@ add_executable(transpose
         src/ast_printer.cpp
 )
 
-find_program(NODE_EXECUTABLE NAMES node node.exe)
+find_program(NODE_EXECUTABLE NAMES node)
 if(NODE_EXECUTABLE)
     file(TO_CMAKE_PATH "${NODE_EXECUTABLE}" TRANSPOSE_NODE_COMMAND)
 else()
