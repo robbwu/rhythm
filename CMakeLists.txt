@@ -130,9 +130,12 @@ else()
     set(TRANSPOSE_NODE_COMMAND "node")
 endif()
 
-string(REPLACE "\"" "\\\"" TRANSPOSE_NODE_COMMAND_ESCAPED "${TRANSPOSE_NODE_COMMAND}")
-target_compile_definitions(transpose PRIVATE TRANSPOSE_NODE_COMMAND=${TRANSPOSE_NODE_COMMAND_LITERAL})
-
+set(TRANSPOSE_NODE_COMMAND_LITERAL "\"${TRANSPOSE_NODE_COMMAND}\"")
+# target_compile_definitions(transpose PRIVATE TRANSPOSE_NODE_COMMAND=${TRANSPOSE_NODE_COMMAND_LITERAL})
+target_compile_definitions(transpose
+    PRIVATE
+        TRANSPOSE_NODE_COMMAND="${TRANSPOSE_NODE_COMMAND}"
+)
 include(CTest)  # defines BUILD_TESTING and enable_testing()
 if(BUILD_TESTING)
 
