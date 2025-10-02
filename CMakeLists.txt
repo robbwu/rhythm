@@ -130,7 +130,7 @@ else()
     set(TRANSPOSE_NODE_COMMAND "node")
 endif()
 
-set(TRANSPOSE_NODE_COMMAND_LITERAL "\"${TRANSPOSE_NODE_COMMAND}\"")
+string(REPLACE "\"" "\\\"" TRANSPOSE_NODE_COMMAND_ESCAPED "${TRANSPOSE_NODE_COMMAND}")
 target_compile_definitions(transpose PRIVATE TRANSPOSE_NODE_COMMAND=${TRANSPOSE_NODE_COMMAND_LITERAL})
 
 include(CTest)  # defines BUILD_TESTING and enable_testing()
@@ -242,7 +242,8 @@ if(BUILD_TESTING)
         set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION "OK")
     endforeach()
 
-    foreach(t
+    if(NODE_EXECUTABLE)
+        foreach(t
       transpose_for
       transpose_array
       transpose_sqrt_newton
@@ -253,8 +254,9 @@ if(BUILD_TESTING)
       transpose_continue_block_scope
       transpose_mixed_break_continue
   )
-        set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION "OK")
-    endforeach()
+            set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION "OK")
+        endforeach()
+    endif()
 
     # Negative tests (parser/semantic errors expected)
     # negative cases not working yet as they crash instead of returning non-zero
