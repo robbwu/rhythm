@@ -3,7 +3,6 @@
 #include "expr.hpp"
 #include "statement.hpp"
 #include "token.hpp"
-#include <unordered_set>
 
 class CompileException: public std::runtime_error {
     public:
@@ -35,7 +34,6 @@ public:
     // except that locals store meta-info about the local variable, the VM stack storing the values only
     // because statements have net-zero effect on stack
     std::vector<Local> locals;
-    std::unordered_set<std::string> globalVariables;
 
     Compiler(Compiler* enclosing ): enclosing(enclosing) {}
 
@@ -77,7 +75,6 @@ public:
     inline void clear() {
         chunk.clear_byteclodes();
         chunk.clear_lines();
-        globalVariables.clear();
     }
 
     inline void beginScope() {

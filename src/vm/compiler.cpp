@@ -276,13 +276,6 @@ void Compiler::visit(const VarStmt &stmt) {
             }
         }
         locals.push_back({stmt.name, -1, false});
-    } else {
-        auto result = globalVariables.insert(stmt.name.lexeme);
-        if (!result.second) {
-            throw CompileException(std::format("L:{} T:IDENTIFIER V:{}: Already a variable with this name in this scope.",
-                                             stmt.name.line,
-                                             stmt.name.lexeme));
-        }
     }
     if (stmt.initializer) {
         stmt.initializer->accept(*this);
