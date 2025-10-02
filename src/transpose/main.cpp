@@ -28,6 +28,7 @@ void printUsage() {
     std::cout << "Options:" << std::endl;
     std::cout << "  -h, --help       Show this help message" << std::endl;
     std::cout << "  -v, --version    Show version information" << std::endl;
+    std::cout << "  -n, --no-loop    Disable loop constructs (forces recursion)" << std::endl;
     std::cout << "      --emit-js    Print generated JavaScript and exit" << std::endl;
 }
 
@@ -129,6 +130,10 @@ int main(int argc, char** argv) {
         if (arg == "-v" || arg == "--version") {
             printVersion();
             return 0;
+        }
+        if (arg == "-n" || arg == "--no-loop") {
+            noLoop = true;
+            continue;
         }
         if (arg == "--emit-js") {
             emitJs = true;

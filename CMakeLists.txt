@@ -201,6 +201,17 @@ if(BUILD_TESTING)
     add_transpose_test(transpose_avl                     ${EX}/avl.rhy)
     add_transpose_test(transpose_nqueen                  ${EX}/nqueen.rhy)
 
+    add_test(
+        NAME    transpose_no_loop_forbidden
+        COMMAND $<TARGET_FILE:transpose> --no-loop ${EX}/for.rhy
+    )
+    set_tests_properties(transpose_no_loop_forbidden PROPERTIES
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        LABELS            "transpose;negative"
+        WILL_FAIL         TRUE
+        TIMEOUT           20
+    )
+
 
     # Optionally check for an "OK" marker when present
     foreach(t
