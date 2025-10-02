@@ -199,7 +199,7 @@ if(BUILD_TESTING)
     add_rhythm_test(examples_avl                     ${EX}/avl.rhy)
     add_rhythm_test(examples_nqueen                  ${EX}/nqueen.rhy)
 
-    if(NODE_EXECUTABLE)
+    if(NODE_EXECUTABLE AND NOT WIN32)
         add_transpose_test(transpose_for                     ${EX}/for.rhy)
         add_transpose_test(transpose_array                   ${EX}/array.rhy)
         add_transpose_test(transpose_bisection               ${EX}/bisection.rhy)
@@ -215,19 +215,25 @@ if(BUILD_TESTING)
         add_transpose_test(transpose_avl                     ${EX}/avl.rhy)
         add_transpose_test(transpose_nqueen                  ${EX}/nqueen.rhy)
     else()
-        message(STATUS "Node.js not found; skipping transpose example tests")
+        if(NOT NODE_EXECUTABLE)
+            message(STATUS "Node.js not found; skipping transpose example tests")
+        elseif(WIN32)
+            message(STATUS "Skipping transpose example tests on Windows.")
+        endif()
     endif()
 
-    add_test(
+    if(NOT WIN32)
+        add_test(
         NAME    transpose_no_loop_forbidden
         COMMAND $<TARGET_FILE:transpose> --no-loop ${EX}/for.rhy
     )
-    set_tests_properties(transpose_no_loop_forbidden PROPERTIES
+        set_tests_properties(transpose_no_loop_forbidden PROPERTIES
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         LABELS            "transpose;negative"
         WILL_FAIL         TRUE
         TIMEOUT           20
     )
+    endif()
 
 
     # Optionally check for an "OK" marker when present
@@ -245,7 +251,7 @@ if(BUILD_TESTING)
         set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION "OK")
     endforeach()
 
-    if(NODE_EXECUTABLE)
+    if(NODE_EXECUTABLE AND NOT WIN32)
         foreach(t
       transpose_for
       transpose_array
