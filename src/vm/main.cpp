@@ -9,7 +9,7 @@
 #include "version.hpp"
 #include "compiler.hpp"
 #include "vm/vm_exception.hpp"
-#include "vm/core_lib.hpp"
+#include "core/core_lib.hpp"
 
 bool printAst = false;
 bool noLoop = false;

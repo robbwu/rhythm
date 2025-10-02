@@ -2,7 +2,7 @@
 
 Rhythm is a dynamic typed language, meaning that variables do not have a fixed type (values do). Its syntax can be described as a cleaned up JavaScript, with notable differences in a few keywords (`fun` instead of `function`, `and` instead of `&&`, and `or` of `||`). Typically a JavaScript syntax highlighter works well enough for Rhythm code (as shown here).  Rhythm has first class function and lexical closure; no structure or class. It also has builtin dynamic array `Array` and hashtable `Map`.
 
-The `beat` CLI tool is a bytecode compiler and interpreter for the Rhythm language.
+The `beat` CLI tool is a bytecode compiler and interpreter for the Rhythm language. The `transpose` CLI transpiles Rhythm programs into JavaScript and runs them with Node.js.
 
 Here's an example code in Rhythm
 

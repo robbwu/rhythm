@@ -202,8 +202,8 @@ $ mkdir bulid && cd build
 $ cmake ..
 $ make -j
 ```
-You should see two binaries produced `rhythm` and `beat`.
-`rhythm` is a slower AST tree walker interpreter and not recommended for use; `beat` is the bytecode compiler and interpreter and should be used.
+You should see three binaries produced: `rhythm`, `beat`, and `transpose`.
+`rhythm` is a slower AST tree walker interpreter and not recommended for use; `beat` is the bytecode compiler and interpreter and should be used for the fastest native execution. `transpose` transpiles Rhythm programs to JavaScript and executes them with Node.js, which is helpful for experimenting with the language on platforms that already have Node installed. Use `transpose --emit-js` to dump the generated JavaScript, or `transpose --no-loop` to disable `for` and `while` constructs just like the native interpreters.
 
 ### Linux
 
