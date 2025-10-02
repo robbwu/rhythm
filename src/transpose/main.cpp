@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <optional>
 #include <random>
 #include <sstream>
 #include <string>
@@ -18,6 +19,10 @@
 #include "scanner.hpp"
 #include "transpose/javascript_generator.hpp"
 #include "version.hpp"
+
+#ifndef TRANSPOSE_NODE_COMMAND
+#define TRANSPOSE_NODE_COMMAND "node"
+#endif
 
 bool noLoop = false;
 
@@ -58,6 +63,68 @@ std::filesystem::path makeTemporaryScriptPath() {
     return dir / "rhythm-transpose.cjs";
 }
 
+std::string quoteArgument(const std::string& argument) {
+    std::string quoted = "\"";
+    for (char ch : argument) {
+        if (ch == '\"') {
+            quoted += '\\';
+        }
+        quoted += ch;
+    }
+    quoted += '"';
+    return quoted;
+}
+
+const std::string& nodeExecutable() {
+    static const std::string executable = TRANSPOSE_NODE_COMMAND;
+    return executable;
+}
+
+std::string buildNodeCommand(const std::filesystem::path& script) {
+    std::string command = quoteArgument(nodeExecutable());
+    command += ' ';
+    command += quoteArgument(script.string());
+    return command;
+}
+
+std::string buildNodeProbeCommand() {
+    std::string command = quoteArgument(nodeExecutable());
+    command += " --version";
+#ifdef _WIN32
+    command += " >NUL 2>&1";
+#else
+    command += " >/dev/null 2>&1";
+#endif
+    return command;
+}
+
+bool ensureNodeAvailable() {
+    static std::optional<bool> cached;
+    if (cached.has_value()) {
+        return *cached;
+    }
+
+    int status = std::system(buildNodeProbeCommand().c_str());
+    bool available = false;
+
+    if (status == -1) {
+        available = false;
+    } else {
+#ifdef _WIN32
+        available = (status == 0);
+#else
+        if (WIFEXITED(status)) {
+            available = (WEXITSTATUS(status) == 0);
+        } else {
+            available = false;
+        }
+#endif
+    }
+
+    cached = available;
+    return available;
+}
+
 int executeSource(const std::string& source, bool emitJs) {
     auto tokens = scanSource(source);
     Parser parser(tokens);
@@ -78,6 +145,11 @@ int executeSource(const std::string& source, bool emitJs) {
         return 0;
     }
 
+    if (!ensureNodeAvailable()) {
+        throw std::runtime_error(
+            "Node.js runtime not found. Install Node.js or re-run with --emit-js to inspect the output.");
+    }
+
     auto tempPath = makeTemporaryScriptPath();
 
     {
@@ -89,7 +161,7 @@ int executeSource(const std::string& source, bool emitJs) {
     }
 
     int exitCode = 0;
-    std::string command = "node \"" + tempPath.string() + "\"";
+    std::string command = buildNodeCommand(tempPath);
     int status = std::system(command.c_str());
 
     if (status == -1) {
