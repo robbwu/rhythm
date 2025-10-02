@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <system_error>
+#include <utility>
 #include <vector>
 
 #ifndef _WIN32
@@ -18,6 +19,7 @@
 #include "resolver.hpp"
 #include "scanner.hpp"
 #include "transpose/javascript_generator.hpp"
+#include "core/core_lib.hpp"
 #include "version.hpp"
 
 #ifndef TRANSPOSE_NODE_COMMAND
@@ -126,9 +128,22 @@ bool ensureNodeAvailable() {
 }
 
 int executeSource(const std::string& source, bool emitJs) {
-    auto tokens = scanSource(source);
-    Parser parser(tokens);
-    auto statements = parser.parse();
+    auto coreTokens = scanSource(std::string(CORE_LIB_SOURCE));
+    Parser coreParser(coreTokens);
+    auto coreStatements = coreParser.parse();
+
+    auto userTokens = scanSource(source);
+    Parser userParser(userTokens);
+    auto userStatements = userParser.parse();
+
+    std::vector<std::unique_ptr<Stmt>> statements;
+    statements.reserve(coreStatements.size() + userStatements.size());
+    for (auto& stmt : coreStatements) {
+        statements.push_back(std::move(stmt));
+    }
+    for (auto& stmt : userStatements) {
+        statements.push_back(std::move(stmt));
+    }
 
     Interpreter interpreter;
     Resolver resolver(&interpreter);
