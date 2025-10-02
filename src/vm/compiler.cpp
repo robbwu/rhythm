@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <format>
 
 #include "compiler.hpp"
 #include "token.hpp"
@@ -263,7 +264,25 @@ void Compiler::visit(const PrintStmt &stmt) {
 
 void Compiler::visit(const VarStmt &stmt) {
     if (scopeDepth > 0) {
+        for (int i = locals.size() - 1; i >= 0; --i) {
+            const auto &local = locals[i];
+            if (local.depth != -1 && local.depth < scopeDepth) {
+                break;
+            }
+            if (local.name.lexeme == stmt.name.lexeme) {
+                throw CompileException(std::format("L:{} T:IDENTIFIER V:{}: Already a variable with this name in this scope.",
+                                                 stmt.name.line,
+                                                 stmt.name.lexeme));
+            }
+        }
         locals.push_back({stmt.name, -1, false});
+    } else {
+        auto result = globalVariables.insert(stmt.name.lexeme);
+        if (!result.second) {
+            throw CompileException(std::format("L:{} T:IDENTIFIER V:{}: Already a variable with this name in this scope.",
+                                             stmt.name.line,
+                                             stmt.name.lexeme));
+        }
     }
     if (stmt.initializer) {
         stmt.initializer->accept(*this);
