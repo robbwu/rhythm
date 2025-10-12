@@ -140,6 +140,13 @@ button.primary:not(:disabled):hover {
   color: #52606d;
 }
 
+.execution-time {
+  margin: 0;
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: #52606d;
+}
+
 .output-group {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

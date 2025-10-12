@@ -10,6 +10,7 @@ const stdoutBlock = document.getElementById("stdout");
 const stderrBlock = document.getElementById("stderr");
 const stderrSection = document.getElementById("stderrSection");
 const statusBar = document.getElementById("status");
+const executionTimeLabel = document.getElementById("executionTime");
 
 let modulePromise = null;
 
@@ -41,6 +42,21 @@ function setStderrOutput(text) {
   }
 }
 
+function setExecutionTime(durationMs) {
+  if (!executionTimeLabel) {
+    return;
+  }
+
+  if (typeof durationMs !== "number" || !Number.isFinite(durationMs)) {
+    executionTimeLabel.textContent = "";
+    executionTimeLabel.classList.add("hidden");
+    return;
+  }
+
+  executionTimeLabel.textContent = `Execution time: ${durationMs.toFixed(2)} ms`;
+  executionTimeLabel.classList.remove("hidden");
+}
+
 function clearOutputs() {
   stdoutBlock.textContent = "";
   setStderrOutput("");
@@ -56,6 +72,7 @@ async function loadModule() {
 async function compileSource({ run }) {
   setButtonsDisabled(true);
   clearOutputs();
+  setExecutionTime(null);
 
   try {
     const module = await loadModule();
@@ -73,6 +90,7 @@ async function compileSource({ run }) {
 
     if (!run) {
       setStatus("Compilation succeeded.", "success");
+      setExecutionTime(null);
       return;
     }
 
@@ -81,6 +99,7 @@ async function compileSource({ run }) {
     const message = error && error.message ? error.message : String(error);
     setStatus(`Compilation failed: ${message}`, "error");
     setStderrOutput(message);
+    setExecutionTime(null);
   } finally {
     setButtonsDisabled(false);
   }
@@ -88,9 +107,11 @@ async function compileSource({ run }) {
 
 async function executeJavascript(js) {
   setStatus("Running program&hellip;", "info");
+  setExecutionTime(null);
 
   const stdin = normaliseInput(stdinInput.value);
   window.__rhythmIO = { stdin: [...stdin], stdout: [], stderr: [] };
+  const start = performance.now();
 
   try {
     const runner = new Function(`${js}\n//# sourceURL=rhythm_transpiled.js`);
@@ -112,6 +133,9 @@ async function executeJavascript(js) {
       : error.message || String(error);
     setStderrOutput(stderrMessage);
     setStatus("Program terminated with an exception.", "error");
+  } finally {
+    const elapsed = performance.now() - start;
+    setExecutionTime(elapsed);
   }
 }
 
