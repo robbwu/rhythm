@@ -165,7 +165,7 @@ if (EMSCRIPTEN)
             "-sEXPORT_ES6=1"
             "-sEXPORT_NAME=TransposeModule"
             "-sALLOW_MEMORY_GROWTH=1"
-            "-sEXCEPTION_HANDLING=1")
+            "-sDISABLE_EXCEPTION_CATCHING=0")
 
     add_custom_target(rhythm_web_assets ALL
             COMMAND ${CMAKE_COMMAND} -E make_directory ${WEB_APP_OUTPUT_DIR}
