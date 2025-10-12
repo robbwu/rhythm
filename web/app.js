@@ -119,7 +119,7 @@ function flushOutputs(io) {
   const stdoutLines = Array.isArray(io.stdout) ? io.stdout : [];
   const stderrLines = Array.isArray(io.stderr) ? io.stderr : [];
 
-  stdoutBlock.textContent = stdoutLines.join("\n");
+  stdoutBlock.textContent = stdoutLines.join("");
   setStderrOutput(stderrLines.join("\n"));
 }
 
