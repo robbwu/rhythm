@@ -8,6 +8,7 @@ const compileRunButton = document.getElementById("compileRun");
 const jsOutput = document.getElementById("jsOutput");
 const stdoutBlock = document.getElementById("stdout");
 const stderrBlock = document.getElementById("stderr");
+const stderrSection = document.getElementById("stderrSection");
 const statusBar = document.getElementById("status");
 
 let modulePromise = null;
@@ -30,9 +31,19 @@ function normaliseInput(text) {
   return normalised.split("\n");
 }
 
+function setStderrOutput(text) {
+  const content = text || "";
+  stderrBlock.textContent = content;
+
+  if (stderrSection) {
+    const hasContent = content.trim().length > 0;
+    stderrSection.classList.toggle("hidden", !hasContent);
+  }
+}
+
 function clearOutputs() {
   stdoutBlock.textContent = "";
-  stderrBlock.textContent = "";
+  setStderrOutput("");
 }
 
 async function loadModule() {
@@ -69,7 +80,7 @@ async function compileSource({ run }) {
   } catch (error) {
     const message = error && error.message ? error.message : String(error);
     setStatus(`Compilation failed: ${message}`, "error");
-    stderrBlock.textContent = message;
+    setStderrOutput(message);
   } finally {
     setButtonsDisabled(false);
   }
@@ -99,14 +110,17 @@ async function executeJavascript(js) {
     const stderrMessage = io.stderr.length
       ? io.stderr.join("\n")
       : error.message || String(error);
-    stderrBlock.textContent = stderrMessage;
+    setStderrOutput(stderrMessage);
     setStatus("Program terminated with an exception.", "error");
   }
 }
 
 function flushOutputs(io) {
-  stdoutBlock.textContent = io.stdout.join("\n");
-  stderrBlock.textContent = io.stderr.join("\n");
+  const stdoutLines = Array.isArray(io.stdout) ? io.stdout : [];
+  const stderrLines = Array.isArray(io.stderr) ? io.stderr : [];
+
+  stdoutBlock.textContent = stdoutLines.join("\n");
+  setStderrOutput(stderrLines.join("\n"));
 }
 
 function initialiseUI() {

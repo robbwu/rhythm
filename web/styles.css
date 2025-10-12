@@ -87,6 +87,10 @@ body {
   color: inherit;
 }
 
+.code-input {
+  min-height: 340px;
+}
+
 .stdin-input {
   min-height: 120px;
 }
@@ -142,6 +146,10 @@ button.primary:not(:disabled):hover {
   gap: 1rem;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .output-block {
   min-height: 150px;
   margin: 0;
@@ -185,6 +193,52 @@ button.primary:not(:disabled):hover {
   background: #1f2933;
 }
 
+.foldable {
+  border: 1px solid #d2d6dc;
+  border-radius: 12px;
+  background: #f2f4f8;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.foldable summary {
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 1rem;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.foldable summary:focus-visible {
+  outline: 2px solid #5063f0;
+  outline-offset: 2px;
+}
+
+.foldable summary::-webkit-details-marker {
+  display: none;
+}
+
+.foldable summary::before {
+  content: "\25BC";
+  font-size: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.foldable[open] summary::before {
+  transform: rotate(0deg);
+}
+
+.foldable:not([open]) summary::before {
+  transform: rotate(-90deg);
+}
+
+.foldable-content {
+  padding: 0 1rem 1rem;
+}
+
 @media (max-width: 720px) {
   .panel {
     padding: 1rem;
@@ -194,6 +248,10 @@ button.primary:not(:disabled):hover {
   .code-output,
   .stdin-input {
     min-height: 180px;
+  }
+
+  .code-input {
+    min-height: 260px;
   }
 }
 

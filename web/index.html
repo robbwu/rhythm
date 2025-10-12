@@ -45,17 +45,6 @@
 
       <section class="panel">
         <div class="panel-header">
-          <h2>Generated JavaScript</h2>
-        </div>
-        <textarea
-          id="jsOutput"
-          class="code-output"
-          spellcheck="false"
-          aria-label="Generated JavaScript"
-          readonly
-        ></textarea>
-
-        <div class="panel-header">
           <h2>Program output</h2>
         </div>
         <div class="output-group">
@@ -63,11 +52,24 @@
             <h3>stdout</h3>
             <pre id="stdout" class="output-block" aria-label="Program stdout"></pre>
           </div>
-          <div>
+          <div id="stderrSection" class="hidden">
             <h3>stderr</h3>
             <pre id="stderr" class="output-block error" aria-label="Program stderr"></pre>
           </div>
         </div>
+
+        <details class="foldable" id="jsSection" open>
+          <summary>Generated JavaScript</summary>
+          <div class="foldable-content">
+            <textarea
+              id="jsOutput"
+              class="code-output"
+              spellcheck="false"
+              aria-label="Generated JavaScript"
+              readonly
+            ></textarea>
+          </div>
+        </details>
       </section>
     </main>
 
