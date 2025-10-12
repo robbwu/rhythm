@@ -56,13 +56,14 @@ function run() {
   const capturedStderr = normaliseOutput(context.__rhythmIO.stderr);
 
   assert(capturedStderr.length === 0, `Expected no stderr output, got: ${capturedStderr.join('\n')}`);
+  const stdoutCombined = capturedStdout.join('');
   assert(
-    capturedStdout.includes('121393'),
-    `Expected stdout to include Fibonacci result 121393, got: ${capturedStdout.join(', ')}`,
+    stdoutCombined.includes('121393\n'),
+    `Expected stdout to include Fibonacci result "121393\\n", got: ${JSON.stringify(stdoutCombined)}`,
   );
   assert(
-    capturedStdout.includes('OK'),
-    `Expected stdout to include "OK", got: ${capturedStdout.join(', ')}`,
+    stdoutCombined.includes('OK\n'),
+    `Expected stdout to include "OK\\n", got: ${JSON.stringify(stdoutCombined)}`,
   );
 }
 

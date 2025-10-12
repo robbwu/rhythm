@@ -145,14 +145,16 @@ const __rt = (() => {
     return error;
   }
 
-  function emitBrowserStdout(text) {
+  function emitBrowserStdout(text, options = {}) {
+    const appendNewline = Boolean(options.appendNewline);
+    const payload = appendNewline ? text + '\n' : text;
     if (!io) {
       if (typeof console !== 'undefined' && console.log) {
         console.log(text);
       }
       return;
     }
-    io.stdout.push(text);
+    io.stdout.push(payload);
     if (typeof console !== 'undefined' && console.log) {
       console.log(text);
     }
@@ -441,7 +443,7 @@ const __rt = (() => {
     if (isNode) {
       console.log(text);
     } else {
-      emitBrowserStdout(text);
+      emitBrowserStdout(text, { appendNewline: true });
     }
     return null;
   }
