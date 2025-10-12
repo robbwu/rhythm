@@ -225,6 +225,38 @@ in the Windows Subsystem for Linux (WSL).
 The build process is the same as in MacOS case.
 
 
+### Browser build (WebAssembly)
+
+You can run the `transpose` transpiler fully in the browser by compiling it with
+Emscripten. This produces a static site with a simple editor, input box, and a
+"Compile &amp; Run" workflow that executes entirely on the client.
+
+1. Install [Emscripten](https://emscripten.org/docs/getting_started/downloads.html)
+   and activate its environment (e.g. `source emsdk_env.sh`). Emscripten 3.1.59+
+   is recommended so the generated module can be loaded as an ES module.
+2. Configure and build the WebAssembly target:
+
+   ```bash
+   emcmake cmake -S . -B build/web
+   cmake --build build/web --target transpose_wasm
+   ```
+
+   The build produces `transpose_wasm.js` and `transpose_wasm.wasm` in
+   `build/web/` and copies the browser UI assets from `web/` into the same
+   directory.
+3. Serve the directory with any static file server, then open `index.html` in a
+   browser:
+
+   ```bash
+   python -m http.server 8000 --directory build/web
+   ```
+
+The page provides a Rhythm editor, optional stdin input area, a toggle to force
+recursion (`--no-loop`), and panes for the generated JavaScript plus stdout and
+stderr. Everything runs locally—no backend services are required once the files
+are built.
+
+
 # Known Bugs & Limitations
 
 ## No `continue` in loops

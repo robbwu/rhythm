@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rhythm Web Transpiler</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <h1>Rhythm Web Transpiler</h1>
+      <p class="tagline">
+        Compile Rhythm code to JavaScript directly in your browser and run it
+        without any server round-trips.
+      </p>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Source</h2>
+          <label class="toggle">
+            <input type="checkbox" id="noLoop" />
+            Disable loop constructs (force recursion)
+          </label>
+        </div>
+        <textarea
+          id="source"
+          class="code-input"
+          spellcheck="false"
+          aria-label="Rhythm source code"
+        ></textarea>
+        <div class="actions">
+          <button id="compile" type="button">Compile</button>
+          <button id="compileRun" type="button" class="primary">Compile &amp; Run</button>
+        </div>
+        <label class="stdin-label" for="stdinInput">Program input (optional)</label>
+        <textarea
+          id="stdinInput"
+          class="stdin-input"
+          spellcheck="false"
+          aria-label="Program standard input"
+        ></textarea>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Generated JavaScript</h2>
+        </div>
+        <textarea
+          id="jsOutput"
+          class="code-output"
+          spellcheck="false"
+          aria-label="Generated JavaScript"
+          readonly
+        ></textarea>
+
+        <div class="panel-header">
+          <h2>Program output</h2>
+        </div>
+        <div class="output-group">
+          <div>
+            <h3>stdout</h3>
+            <pre id="stdout" class="output-block" aria-label="Program stdout"></pre>
+          </div>
+          <div>
+            <h3>stderr</h3>
+            <pre id="stderr" class="output-block error" aria-label="Program stderr"></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="status-bar" id="status" data-tone="info">
+      Loading transpiler&hellip;
+    </footer>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
