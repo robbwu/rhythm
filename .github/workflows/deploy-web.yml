@@ -16,11 +16,16 @@ jobs:
         run: emcmake cmake -S . -B build/web -DCMAKE_BUILD_TYPE=Release
       - name: Build transpose_wasm target
         run: cmake --build build/web --target transpose_wasm
+      - name: Stage deployable assets
+        run: |
+          mkdir -p deploy
+          cp -r build/web/. deploy/
+          cp -r web/. deploy/
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: web-build
-          path: build/web/
+          path: deploy/
 
   deploy:
     needs: build
