@@ -6,29 +6,32 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     container:
       image: emscripten/emsdk:3.1.59
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install deployment dependencies
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends rsync openssh-client
-
       - name: Configure web build
         run: emcmake cmake -S . -B build/web -DCMAKE_BUILD_TYPE=Release
-
       - name: Build transpose_wasm target
         run: cmake --build build/web --target transpose_wasm
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web/
 
-      - name: Stage deployable assets
-        run: |
-          mkdir -p deploy
-          cp -r build/web/. deploy/
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest # No container here!
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: deploy
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.5.3
@@ -41,11 +44,5 @@ jobs:
           ssh-keyscan -H ${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }} >> ~/.ssh/known_hosts
 
       - name: Sync web assets to server
-        env:
-          TARGET_HOST: "${{ secrets.COSC_RHYTHMBOT_SERVER_USER }}@${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }}"
-          TARGET_PATH: "/home/rhythmbot/rhythm-web"
         run: |
-          # ssh "$TARGET_HOST" "rm -rf \"$TARGET_PATH\" && mkdir -p \"$TARGET_PATH\""
-          # scp static-binary/beat ${{ secrets.COSC_RHYTHMBOT_SERVER_USER }}@${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }}:/home/rhythmbot/beat
-
           scp -r deploy/. ${{ secrets.COSC_RHYTHMBOT_SERVER_USER }}@${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }}:/home/rhythmbot/rhythm-web/
