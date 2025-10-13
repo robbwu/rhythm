@@ -114,6 +114,7 @@ add_executable(transpose
         src/transpose/main.cpp
         src/transpose/javascript_generator.cpp
         src/transpose/runtime.cpp
+        src/transpose/transpiler.cpp
         src/scanner.cpp
         src/parser.cpp
         src/expr.cpp
@@ -136,6 +137,44 @@ target_compile_definitions(transpose
     PRIVATE
         TRANSPOSE_NODE_COMMAND="${TRANSPOSE_NODE_COMMAND}"
 )
+
+if (EMSCRIPTEN)
+    set(WEB_APP_OUTPUT_DIR ${CMAKE_BINARY_DIR}/web)
+
+    add_executable(transpose_wasm
+            src/transpose/wasm_interface.cpp
+            src/transpose/transpiler.cpp
+            src/transpose/javascript_generator.cpp
+            src/transpose/runtime.cpp
+            src/scanner.cpp
+            src/parser.cpp
+            src/expr.cpp
+            src/statement.cpp
+            src/resolver.cpp
+            src/interpreter.cpp
+            src/ast_printer.cpp)
+
+    set_target_properties(transpose_wasm PROPERTIES
+            OUTPUT_NAME "transpose_wasm"
+            RUNTIME_OUTPUT_DIRECTORY ${WEB_APP_OUTPUT_DIR})
+
+    target_compile_options(transpose_wasm PRIVATE -fexceptions)
+    target_link_options(transpose_wasm PRIVATE
+            --bind
+            "-sMODULARIZE=1"
+            "-sEXPORT_ES6=1"
+            "-sEXPORT_NAME=TransposeModule"
+            "-sALLOW_MEMORY_GROWTH=1"
+            "-sDISABLE_EXCEPTION_CATCHING=0")
+
+    add_custom_target(rhythm_web_assets ALL
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${WEB_APP_OUTPUT_DIR}
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_SOURCE_DIR}/web
+                    ${WEB_APP_OUTPUT_DIR}
+            COMMENT "Copy Rhythm web assets")
+    add_dependencies(rhythm_web_assets transpose_wasm)
+endif()
 include(CTest)  # defines BUILD_TESTING and enable_testing()
 if(BUILD_TESTING)
 
@@ -198,6 +237,17 @@ if(BUILD_TESTING)
     add_rhythm_test(examples_mixed_break_continue    ${EX}/mixed_break_continue.rhy)
     add_rhythm_test(examples_avl                     ${EX}/avl.rhy)
     add_rhythm_test(examples_nqueen                  ${EX}/nqueen.rhy)
+
+    add_test(
+        NAME    transpose_emit_js_smoke
+        COMMAND $<TARGET_FILE:transpose> --emit-js ${EX}/for.rhy
+    )
+    set_tests_properties(transpose_emit_js_smoke PROPERTIES
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        LABELS "transpose;emit-js"
+        PASS_REGULAR_EXPRESSION "const __rt ="
+        TIMEOUT 20
+    )
 
     if(NODE_EXECUTABLE AND NOT WIN32)
         add_transpose_test(transpose_for                     ${EX}/for.rhy)
@@ -265,6 +315,18 @@ if(BUILD_TESTING)
   )
             set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION "OK")
         endforeach()
+
+        add_test(
+            NAME    transpose_browser_runtime
+            COMMAND ${NODE_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/browser_runtime_test.cjs
+                    $<TARGET_FILE:transpose>
+                    ${EX}/for.rhy
+        )
+        set_tests_properties(transpose_browser_runtime PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            LABELS "transpose;browser"
+            TIMEOUT 20
+        )
     endif()
 
     # Negative tests (parser/semantic errors expected)

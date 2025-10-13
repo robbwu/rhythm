@@ -1,7 +1,7 @@
 #pragma once
 #include <functional>
-#include <iostream>
-#include <ostream>
+#include <sstream>
+#include <stdexcept>
 #include <vector>
 
 #include "expr.hpp"
@@ -462,12 +462,21 @@ private:
     }
 
     static void error(const Token& token, const std::string& msg) {
+        std::ostringstream stream;
+        stream << token.line << " at ";
+
         if (token.type == TokenType::END_TOKEN) {
-            std::cout << token.line << " at end, " << msg << std::endl;
+            stream << "end";
         } else {
-            std::cout << token.line << " at " << token.lexeme << msg << std::endl;
+            stream << '\'' << token.lexeme << '\'';
         }
-        throw std::runtime_error(token.lexeme);
+
+        if (!msg.empty()) {
+            stream << ": " << msg;
+        }
+
+        auto message = stream.str();
+        throw std::runtime_error(message);
     }
 
 public:

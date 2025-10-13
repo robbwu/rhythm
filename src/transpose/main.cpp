@@ -14,12 +14,7 @@
 #include <sys/wait.h>
 #endif
 
-#include "interpreter.hpp"
-#include "parser.hpp"
-#include "resolver.hpp"
-#include "scanner.hpp"
-#include "transpose/javascript_generator.hpp"
-#include "core/core_lib.hpp"
+#include "transpose/transpiler.hpp"
 #include "version.hpp"
 
 #ifndef TRANSPOSE_NODE_COMMAND
@@ -44,11 +39,6 @@ void printVersion() {
     std::cout << "Commit: " << GIT_COMMIT_HASH << " (" << GIT_COMMIT_DATE << ") " << GIT_COMMIT_MESSAGE << std::endl;
     std::cout << "Build commit " << GIT_DIRTY_FLAG << std::endl;
     std::cout << "Built: " << BUILD_DATE << std::endl;
-}
-
-std::vector<Token> scanSource(const std::string& source) {
-    Scanner scanner(source);
-    return scanner.scanTokens();
 }
 
 std::filesystem::path makeTemporaryScriptPath() {
@@ -128,29 +118,7 @@ bool ensureNodeAvailable() {
 }
 
 int executeSource(const std::string& source, bool emitJs) {
-    auto coreTokens = scanSource(std::string(CORE_LIB_SOURCE));
-    Parser coreParser(coreTokens);
-    auto coreStatements = coreParser.parse();
-
-    auto userTokens = scanSource(source);
-    Parser userParser(userTokens);
-    auto userStatements = userParser.parse();
-
-    std::vector<std::unique_ptr<Stmt>> statements;
-    statements.reserve(coreStatements.size() + userStatements.size());
-    for (auto& stmt : coreStatements) {
-        statements.push_back(std::move(stmt));
-    }
-    for (auto& stmt : userStatements) {
-        statements.push_back(std::move(stmt));
-    }
-
-    Interpreter interpreter;
-    Resolver resolver(&interpreter);
-    resolver.resolve(statements);
-
-    transpose::JavascriptGenerator generator;
-    auto js = generator.generate(statements);
+    auto js = transpose::transpileToJavascript(source);
 
     if (emitJs) {
         std::cout << js;

@@ -6,13 +6,36 @@ std::string runtimePrelude() {
     static const char* const parts[] = {
         R"JS(
 const __rt = (() => {
-  const fs = require('fs');
+  const globalScope = typeof globalThis !== 'undefined'
+    ? globalThis
+    : (typeof self !== 'undefined' ? self : this);
+  const isNode = typeof process !== 'undefined' && process.versions && process.versions.node;
+  const fs = isNode ? require('fs') : null;
+
+  const io = (() => {
+    if (isNode) {
+      return null;
+    }
+    const existing = globalScope.__rhythmIO;
+    if (existing && typeof existing === 'object') {
+      if (!Array.isArray(existing.stdin)) existing.stdin = [];
+      if (!Array.isArray(existing.stdout)) existing.stdout = [];
+      if (!Array.isArray(existing.stderr)) existing.stderr = [];
+      return existing;
+    }
+    const fresh = { stdin: [], stdout: [], stderr: [] };
+    globalScope.__rhythmIO = fresh;
+    return fresh;
+  })();
 
   const STDIN_FD = 0;
   let stdinBuffer = '';
   let stdinEOF = false;
 
   function readChunk() {
+    if (!isNode) {
+      return 0;
+    }
     const chunk = Buffer.alloc(4096);
     let bytesRead = 0;
     try {
@@ -31,7 +54,36 @@ const __rt = (() => {
     return bytesRead;
   }
 
+  function normalizeBrowserInput() {
+    if (!io) {
+      return;
+    }
+    if (Array.isArray(io.stdin)) {
+      return;
+    }
+    if (typeof io.stdin === 'string') {
+      const trimmed = io.stdin;
+      io.stdin = trimmed.length === 0 ? [] : trimmed.split(/\r?\n/);
+      return;
+    }
+    io.stdin = [];
+  }
+
   function readLine() {
+    if (!isNode) {
+      normalizeBrowserInput();
+      if (!io || io.stdin.length === 0) {
+        return false;
+      }
+      const value = io.stdin.shift();
+      if (value === false) {
+        return false;
+      }
+      if (value === null || typeof value === 'undefined') {
+        return '';
+      }
+      return String(value);
+    }
     while (true) {
       const newlineIndex = stdinBuffer.indexOf('\n');
       if (newlineIndex !== -1) {
@@ -62,6 +114,15 @@ const __rt = (() => {
   }
 
   function readAllRemaining() {
+    if (!isNode) {
+      normalizeBrowserInput();
+      if (!io || io.stdin.length === 0) {
+        return '';
+      }
+      const remaining = io.stdin.map((value) => (value === null || typeof value === 'undefined') ? '' : String(value)).join('\n');
+      io.stdin.length = 0;
+      return remaining;
+    }
     let result = '';
     if (stdinBuffer.length > 0) {
       result += stdinBuffer;
@@ -82,6 +143,48 @@ const __rt = (() => {
     const error = new Error(prefix + message);
     error.__isRhythmError = true;
     return error;
+  }
+
+  function emitBrowserStdout(text, options = {}) {
+    const appendNewline = Boolean(options.appendNewline);
+    const payload = appendNewline ? text + '\n' : text;
+    if (!io) {
+      if (typeof console !== 'undefined' && console.log) {
+        console.log(text);
+      }
+      return;
+    }
+    io.stdout.push(payload);
+    if (typeof console !== 'undefined' && console.log) {
+      console.log(text);
+    }
+  }
+
+  function emitBrowserStderr(text) {
+    if (!io) {
+      if (typeof console !== 'undefined' && console.error) {
+        console.error(text);
+      }
+      return;
+    }
+    io.stderr.push(text);
+    if (typeof console !== 'undefined' && console.error) {
+      console.error(text);
+    }
+  }
+
+  function handleError(err) {
+    const message = err && err.message ? err.message : String(err);
+    if (isNode) {
+      if (typeof console !== 'undefined' && console.error) {
+        console.error(message);
+      }
+      if (typeof process !== 'undefined' && process.exit) {
+        process.exit(1);
+      }
+      return;
+    }
+    emitBrowserStderr(message);
   }
 
   function isTruthy(value) {
@@ -336,7 +439,12 @@ const __rt = (() => {
   }
 
   function print(value) {
-    console.log(formatValue(value));
+    const text = formatValue(value);
+    if (isNode) {
+      console.log(text);
+    } else {
+      emitBrowserStdout(text, { appendNewline: true });
+    }
     return null;
   }
 
@@ -464,7 +572,11 @@ const __rt = (() => {
         throw runtimeError(null, 'first printf argument must be a string');
       }
       const formatted = formatPrintf(args[0], args.slice(1));
-      process.stdout.write(formatted);
+      if (isNode && typeof process !== 'undefined' && process.stdout && typeof process.stdout.write === 'function') {
+        process.stdout.write(formatted);
+      } else {
+        emitBrowserStdout(formatted);
+      }
       return null;
     }, -1, '<native printf>');
 
@@ -735,6 +847,7 @@ const __rt = (() => {
     callFunction,
     print,
     formatValue,
+    handleError,
     readLine,
     readAllRemaining,
     globals: createGlobals(),

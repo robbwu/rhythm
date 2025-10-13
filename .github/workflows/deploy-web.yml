@@ -1,0 +1,47 @@
+name: Deploy Rhythm Web App
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    container:
+      image: emscripten/emsdk:3.1.59
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deployment dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends rsync openssh-client
+
+      - name: Configure web build
+        run: emcmake cmake -S . -B build/web -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build transpose_wasm target
+        run: cmake --build build/web --target transpose_wasm
+
+      - name: Stage deployable assets
+        run: |
+          mkdir -p deploy
+          cp -r build/web/. deploy/
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.COSC3320_RHYTHMBOT_SSH }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Sync web assets to server
+        env:
+          TARGET: ${{ secrets.COSC_RHYTHMBOT_SERVER_USER }}@${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }}:/home/rhythmbot/rhythm-web/
+        run: |
+          rsync -avz --delete deploy/ "$TARGET"

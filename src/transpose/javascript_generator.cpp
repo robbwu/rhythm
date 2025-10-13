@@ -42,8 +42,7 @@ std::string JavascriptGenerator::generate(const std::vector<std::unique_ptr<Stmt
     indent_++;
     emitLine("if (err && err.__isRhythmError) {");
     indent_++;
-    emitLine("console.error(err.message);");
-    emitLine("process.exit(1);");
+    emitLine("__rt.handleError(err);");
     indent_--;
     emitLine("}");
     emitLine("throw err;");
