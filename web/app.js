@@ -1,6 +1,10 @@
 import TransposeModule from "./transpose_wasm.js";
+import { EditorView, basicSetup } from "codemirror";
+import { javascript } from "@codemirror/lang-javascript";
+import { keymap } from "@codemirror/view";
+import { indentWithTab } from "@codemirror/commands";
 
-const sourceInput = document.getElementById("source");
+const editorContainer = document.getElementById("editor");
 const stdinInput = document.getElementById("stdinInput");
 const noLoopToggle = document.getElementById("noLoop");
 const compileButton = document.getElementById("compile");
@@ -13,6 +17,47 @@ const statusBar = document.getElementById("status");
 const executionTimeLabel = document.getElementById("executionTime");
 
 let modulePromise = null;
+let editorView = null;
+
+// Emacs-style keybindings
+const emacsKeymap = keymap.of([
+  indentWithTab,
+  {
+    key: "Ctrl-a",
+    run: (view) => {
+      const selection = view.state.selection.main;
+      const line = view.state.doc.lineAt(selection.head);
+      view.dispatch({
+        selection: { anchor: line.from }
+      });
+      return true;
+    }
+  },
+  {
+    key: "Ctrl-e",
+    run: (view) => {
+      const selection = view.state.selection.main;
+      const line = view.state.doc.lineAt(selection.head);
+      view.dispatch({
+        selection: { anchor: line.to }
+      });
+      return true;
+    }
+  },
+  {
+    key: "Ctrl-k",
+    run: (view) => {
+      const selection = view.state.selection.main;
+      const line = view.state.doc.lineAt(selection.head);
+      const from = selection.head;
+      const to = selection.head === line.to ? Math.min(line.to + 1, view.state.doc.length) : line.to;
+      view.dispatch({
+        changes: { from, to }
+      });
+      return true;
+    }
+  }
+]);
 
 function setStatus(message, tone = "info") {
   statusBar.textContent = message;
@@ -78,7 +123,7 @@ async function compileSource({ run }) {
     const module = await loadModule();
     module.setNoLoop(noLoopToggle.checked);
 
-    const source = sourceInput.value;
+    const source = editorView.state.doc.toString();
     if (!source.trim()) {
       jsOutput.value = "";
       setStatus("No Rhythm source code to compile.", "info");
@@ -151,7 +196,25 @@ function flushOutputs(io) {
 }
 
 function initialiseUI() {
-  sourceInput.value = `print("Hello, Rhythm!");\n`;
+  // Initialize CodeMirror editor
+  editorView = new EditorView({
+    doc: 'print("Hello, Rhythm!");',
+    extensions: [
+      basicSetup,
+      javascript(),
+      emacsKeymap,
+      EditorView.domEventHandlers({
+        keydown(event, view) {
+          if (event.key === "Tab") {
+            event.preventDefault();
+            return false;
+          }
+        }
+      })
+    ],
+    parent: editorContainer
+  });
+
   stdinInput.value = "";
   setButtonsDisabled(true);
 
