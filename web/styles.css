@@ -56,6 +56,13 @@ body {
   gap: 1rem;
 }
 
+.panel-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
 .panel-header h2 {
   margin: 0;
   font-size: 1.1rem;
@@ -102,6 +109,22 @@ body {
 .actions {
   display: flex;
   gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.output-header {
+  align-items: flex-start;
+}
+
+.output-header .execution-time {
+  margin-left: 0;
+}
+
+.actions-header {
+  margin-left: auto;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 button {

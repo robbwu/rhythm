@@ -30,10 +30,6 @@
           spellcheck="false"
           aria-label="Rhythm source code"
         ></textarea>
-        <div class="actions">
-          <button id="compile" type="button">Compile</button>
-          <button id="compileRun" type="button" class="primary">Compile &amp; Run</button>
-        </div>
         <label class="stdin-label" for="stdinInput">Program input (optional)</label>
         <textarea
           id="stdinInput"
@@ -44,13 +40,19 @@
       </section>
 
       <section class="panel">
-        <div class="panel-header">
-          <h2>Program output</h2>
-          <p
-            id="executionTime"
-            class="execution-time hidden"
-            aria-live="polite"
-          ></p>
+        <div class="panel-header output-header">
+          <div class="panel-header-main">
+            <h2>Program output</h2>
+            <p
+              id="executionTime"
+              class="execution-time hidden"
+              aria-live="polite"
+            ></p>
+          </div>
+          <div class="actions actions-header">
+            <button id="compile" type="button">Compile</button>
+            <button id="compileRun" type="button" class="primary">Compile &amp; Run</button>
+          </div>
         </div>
         <div class="output-group">
           <div>

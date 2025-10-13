@@ -13,6 +13,112 @@ const statusBar = document.getElementById("status");
 const executionTimeLabel = document.getElementById("executionTime");
 
 let modulePromise = null;
+let baselineTryBlockContent = null;
+
+function parseTranspiledStructure(js) {
+  if (typeof js !== "string" || js.length === 0) {
+    return {
+      tryBlockContent: "",
+    };
+  }
+
+  const tryIndex = js.indexOf("try {");
+  if (tryIndex === -1) {
+    return {
+      tryBlockContent: "",
+    };
+  }
+
+  const catchIndex = js.indexOf("} catch", tryIndex);
+  if (catchIndex === -1) {
+    return {
+      tryBlockContent: "",
+    };
+  }
+
+  const blockStart = tryIndex + "try {".length;
+  let blockContent = js.slice(blockStart, catchIndex);
+  if (blockContent.startsWith("\n")) {
+    blockContent = blockContent.slice(1);
+  }
+
+  return {
+    tryBlockContent: blockContent,
+  };
+}
+
+function dedentBlock(text) {
+  if (!text) {
+    return "";
+  }
+
+  const lines = text.split("\n");
+  let minIndent = Infinity;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.length === 0) {
+      continue;
+    }
+    const match = line.match(/^[ \t]*/);
+    const indent = match ? match[0].length : 0;
+    if (indent < minIndent) {
+      minIndent = indent;
+    }
+  }
+
+  if (!Number.isFinite(minIndent)) {
+    return text;
+  }
+
+  const dedented = lines
+    .map((line) => line.slice(Math.min(minIndent, line.length)))
+    .join("\n");
+
+  return dedented;
+}
+
+function extractUserProgram(js) {
+  const { tryBlockContent } = parseTranspiledStructure(js);
+  if (!tryBlockContent) {
+    return js;
+  }
+
+  let userBlock = tryBlockContent;
+  if (typeof baselineTryBlockContent === "string" && baselineTryBlockContent.length > 0) {
+    if (userBlock.startsWith(baselineTryBlockContent)) {
+      userBlock = userBlock.slice(baselineTryBlockContent.length);
+    } else {
+      const trimmedBaseline = baselineTryBlockContent.trimEnd();
+      if (trimmedBaseline.length > 0 && userBlock.startsWith(trimmedBaseline)) {
+        userBlock = userBlock.slice(trimmedBaseline.length);
+      }
+    }
+  }
+
+  userBlock = userBlock.replace(/^\n+/, "");
+  const dedented = dedentBlock(userBlock);
+  const cleaned = dedented.trim();
+  if (cleaned.length === 0) {
+    return "";
+  }
+
+  return cleaned;
+}
+
+function ensureBaseline(module) {
+  if (baselineTryBlockContent !== null) {
+    return;
+  }
+
+  try {
+    const baselineJs = module.compile(" ");
+    const { tryBlockContent } = parseTranspiledStructure(baselineJs);
+    baselineTryBlockContent = tryBlockContent || "";
+  } catch (error) {
+    baselineTryBlockContent = "";
+  }
+}
 
 function setStatus(message, tone = "info") {
   statusBar.textContent = message;
@@ -64,7 +170,10 @@ function clearOutputs() {
 
 async function loadModule() {
   if (!modulePromise) {
-    modulePromise = TransposeModule();
+    modulePromise = TransposeModule().then((module) => {
+      ensureBaseline(module);
+      return module;
+    });
   }
   return modulePromise;
 }
@@ -86,7 +195,8 @@ async function compileSource({ run }) {
     }
 
     const js = module.compile(source);
-    jsOutput.value = js;
+    const userJs = extractUserProgram(js);
+    jsOutput.value = userJs;
 
     if (!run) {
       setStatus("Compilation succeeded.", "success");
