@@ -46,4 +46,6 @@ jobs:
           TARGET_PATH: "/home/rhythmbot/rhythm-web"
         run: |
           # ssh "$TARGET_HOST" "rm -rf \"$TARGET_PATH\" && mkdir -p \"$TARGET_PATH\""
-          scp -r deploy/. "$TARGET_HOST:$TARGET_PATH/"
+          # scp static-binary/beat ${{ secrets.COSC_RHYTHMBOT_SERVER_USER }}@${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }}:/home/rhythmbot/beat
+
+          scp -r deploy/. ${{ secrets.COSC_RHYTHMBOT_SERVER_USER }}@${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }}:/home/rhythmbot/rhythm-web/
