@@ -23,6 +23,18 @@ std::string compileToJavascript(const std::string& source) {
     }
 }
 
+std::string compileToJavascriptUserCodeOnly(const std::string& source) {
+    try {
+        return transpose::transpileToJavascriptUserCodeOnly(source);
+    } catch (const std::runtime_error& e) {
+        emscripten::val::global("Error").new_(std::string(e.what())).throw_();
+        return "";  // Never reached
+    } catch (const std::exception& e) {
+        emscripten::val::global("Error").new_(std::string(e.what())).throw_();
+        return "";  // Never reached
+    }
+}
+
 void setNoLoopFlag(bool value) {
     noLoop = value;
 }
@@ -31,6 +43,7 @@ void setNoLoopFlag(bool value) {
 
 EMSCRIPTEN_BINDINGS(transpose_module) {
     emscripten::function("compile", &compileToJavascript);
+    emscripten::function("compileUserCodeOnly", &compileToJavascriptUserCodeOnly);
     emscripten::function("setNoLoop", &setNoLoopFlag);
 }
 

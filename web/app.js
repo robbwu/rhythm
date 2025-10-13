@@ -86,7 +86,10 @@ async function compileSource({ run }) {
     }
 
     const js = module.compile(source);
-    jsOutput.value = js;
+
+    // For display purposes, show only the user's code without runtime bloat
+    const userCode = module.compileUserCodeOnly(source);
+    jsOutput.value = userCode;
 
     if (!run) {
       setStatus("Compilation succeeded.", "success");
