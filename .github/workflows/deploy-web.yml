@@ -42,6 +42,8 @@ jobs:
 
       - name: Sync web assets to server
         env:
-          TARGET: "${{ secrets.COSC_RHYTHMBOT_SERVER_USER }}@${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }}:/home/rhythmbot/rhythm-web/"
+          TARGET_HOST: "${{ secrets.COSC_RHYTHMBOT_SERVER_USER }}@${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }}"
+          TARGET_PATH: "/home/rhythmbot/rhythm-web"
         run: |
-          rsync -avz --delete deploy/ "$TARGET"
+          ssh "$TARGET_HOST" "rm -rf \"$TARGET_PATH\" && mkdir -p \"$TARGET_PATH\""
+          scp -r deploy/. "$TARGET_HOST:$TARGET_PATH/"
