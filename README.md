@@ -256,6 +256,14 @@ recursion (`--no-loop`), and panes for the generated JavaScript plus stdout and
 stderr. Everything runs locally—no backend services are required once the files
 are built.
 
+### Continuous deployment
+
+The repository ships with a GitHub Actions workflow that rebuilds the browser
+bundle using Emscripten and synchronises the static assets to the production
+host after every push to `main`. See
+[`docs/web-deployment.md`](docs/web-deployment.md) for details on the CI job and
+the steps required to prepare the server that serves the static site.
+
 
 # Known Bugs & Limitations
 
