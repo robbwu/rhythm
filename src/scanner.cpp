@@ -142,6 +142,7 @@ void Scanner::addToken(TokenType type, Value literal) {
     auto text = source.substr(start, current-start);
     Token token(type, text, literal, line);
     tokens.push_back(token);
+    lastTokenLine = line;  // Update the last token line
 }
 
 std::vector<Token> Scanner::scanTokens() {
@@ -149,7 +150,9 @@ std::vector<Token> Scanner::scanTokens() {
         start = current;
         scanToken();
     }
-    Token token(TokenType::END_TOKEN, "EOF", nullptr, line);
+    // Use lastTokenLine instead of line for END_TOKEN to avoid off-by-one errors
+    // when there are trailing newlines
+    Token token(TokenType::END_TOKEN, "EOF", nullptr, lastTokenLine);
     tokens.push_back(token);
     return tokens;
 }

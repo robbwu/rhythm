@@ -20,6 +20,7 @@ private:
     int start = 0;
     int current = 0;
     int line = 1;
+    int lastTokenLine = 1;  // Track the line of the last real token
     std::string source;
     std::vector<Token> tokens = {};
 
