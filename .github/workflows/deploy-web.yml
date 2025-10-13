@@ -37,14 +37,11 @@ jobs:
 
       - name: Add server to known hosts
         run: |
-          install -d -m 700 "$HOME/.ssh"
-          ssh-keyscan -H -t rsa,ecdsa,ed25519 \
-            ${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }} > "$HOME/.ssh/known_hosts"
-          chmod 600 "$HOME/.ssh/known_hosts"
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }} >> ~/.ssh/known_hosts
 
       - name: Sync web assets to server
         env:
           TARGET: "${{ secrets.COSC_RHYTHMBOT_SERVER_USER }}@${{ secrets.COSC_RHYTHMBOT_SERVER_HOST }}:/home/rhythmbot/rhythm-web/"
-          RSYNC_RSH: ssh -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts
         run: |
           rsync -avz --delete deploy/ "$TARGET"
