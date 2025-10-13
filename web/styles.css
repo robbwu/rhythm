@@ -87,8 +87,34 @@ body {
   color: inherit;
 }
 
+/* CodeMirror editor styling */
+.code-input .cm-editor {
+  height: 100%;
+  min-height: 340px;
+  border: none;
+  background-color: #fafbff;
+  font-family: "Source Code Pro", "Fira Code", monospace;
+  font-size: 0.95rem;
+}
+
+.code-input .cm-scroller {
+  overflow: auto;
+}
+
+.code-input .cm-gutters {
+  background-color: #f2f4f8;
+  border-right: 1px solid #d2d6dc;
+  color: #52606d;
+}
+
+.code-input .cm-activeLineGutter {
+  background-color: #e4e7eb;
+}
+
 .code-input {
   min-height: 340px;
+  padding: 0;
+  overflow: hidden;
 }
 
 .stdin-input {

@@ -52,6 +52,34 @@ std::string JavascriptGenerator::generate(const std::vector<std::unique_ptr<Stmt
     return builder_.str();
 }
 
+std::string JavascriptGenerator::generateUserCodeOnly(const std::vector<std::unique_ptr<Stmt>>& statements, size_t skipCoreLibStatements) {
+    builder_.str("");
+    builder_.clear();
+    indent_ = 0;
+    scopeStack_.clear();
+    beginScope(true);
+
+    // Declare builtins as if they exist (for scoping)
+    const std::vector<std::string> builtins = {
+        "clock",      "printf",    "sprintf",  "len",        "push",      "pop",
+        "readline",   "split",     "assert",   "for_each",   "tonumber",  "slurp",
+        "keys",       "floor",     "ceil",     "sin",        "cos",       "tan",
+        "asin",       "acos",      "atan",     "log",        "log10",     "sqrt",
+        "exp",        "fabs",      "pow",      "atan2",      "fmod",      "from_json",
+        "to_json",    "inf",       "substring", "random_int"};
+
+    for (const auto& name : builtins) {
+        declareInCurrentScope(name);
+    }
+
+    // Only emit user statements (skip core library)
+    for (size_t i = skipCoreLibStatements; i < statements.size(); ++i) {
+        emitStatement(*statements[i]);
+    }
+
+    return builder_.str();
+}
+
 void JavascriptGenerator::emitLine(const std::string& line) {
     (*current_) << std::string(indent_ * 2, ' ') << line << '\n';
 }

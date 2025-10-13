@@ -14,6 +14,7 @@ class JavascriptGenerator : public ExprVisitor, public StmtVisitor {
 public:
     JavascriptGenerator();
     std::string generate(const std::vector<std::unique_ptr<Stmt>>& statements);
+    std::string generateUserCodeOnly(const std::vector<std::unique_ptr<Stmt>>& statements, size_t skipCoreLibStatements);
 
 private:
     std::ostringstream builder_;
