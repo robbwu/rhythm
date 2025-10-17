@@ -154,6 +154,16 @@ void Interpreter::visit(const Logical& logical) {
     _result = eval(*logical.right);
 };
 
+void Interpreter::visit(const Ternary& ternary) {
+    auto condition = eval(*ternary.condition);
+
+    if (isTruthy(condition)) {
+        _result = eval(*ternary.thenBranch);
+    } else {
+        _result = eval(*ternary.elseBranch);
+    }
+}
+
 void Interpreter::visit(const Call &call) {
     auto callee = eval(*call.callee);
     std::vector<Value> arguments;

@@ -243,6 +243,14 @@ void JavascriptGenerator::visit(const Logical& expr) {
     }
 }
 
+void JavascriptGenerator::visit(const Ternary& expr) {
+    auto condition = generateExpression(*expr.condition);
+    auto thenBranch = generateExpression(*expr.thenBranch);
+    auto elseBranch = generateExpression(*expr.elseBranch);
+    // JavaScript's ternary operator has the same syntax, but we need to wrap condition in isTruthy
+    exprResult_ = "__rt.isTruthy(" + condition + ") ? " + thenBranch + " : " + elseBranch;
+}
+
 void JavascriptGenerator::visit(const Grouping& expr) {
     exprResult_ = "(" + generateExpression(*expr.expression) + ")";
 }

@@ -22,6 +22,7 @@ public:
 
     void visit(const Binary& binary) override ;
     void visit(const Logical&) override ;
+    void visit(const Ternary&) override ;
     void visit(const Grouping& group) override ;
     void visit(const Literal& lit) override ;
     void visit(const Unary& unary) override ;

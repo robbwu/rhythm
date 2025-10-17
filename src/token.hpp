@@ -79,6 +79,7 @@ enum class TokenType {
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
     LEFT_BRACKET, RIGHT_BRACKET,
     COMMA, COLON, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR, PERCENT,
+    QUESTION,
 
     // One or two character tokens.
     BANG, BANG_EQUAL,

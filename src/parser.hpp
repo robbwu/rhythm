@@ -33,9 +33,9 @@ private:
         return assignment();
     }
     // assignment     → IDENTIFIER "=" assignment
-    //                | logic_or ;
+    //                | ternary ;
     std::unique_ptr<Expr> assignment() {
-        auto expr = logic_or(); // may match l-value if in assignment
+        auto expr = ternary(); // may match l-value if in assignment
 
         if (match({TokenType::EQUAL})) {
             Token equals = previous();
@@ -64,6 +64,23 @@ private:
         }
         return expr;
     }
+
+    // ternary        → logic_or ( "?" expression ":" ternary )? ;
+    std::unique_ptr<Expr> ternary() {
+        auto expr = logic_or();
+
+        if (match({TokenType::QUESTION})) {
+            Token question = previous();
+            auto thenBranch = expression();
+            consume(TokenType::COLON, "Expect ':' after then branch of ternary operator.");
+            auto elseBranch = ternary();  // Right-associative
+            return Ternary::create(std::move(expr), std::move(thenBranch),
+                                  std::move(elseBranch), question);
+        }
+
+        return expr;
+    }
+
     // logic_or       → logic_and ( "or" logic_and )* ;
     std::unique_ptr<Expr> logic_or() {
         auto expr = logic_and();

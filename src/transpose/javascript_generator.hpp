@@ -41,6 +41,7 @@ private:
     // ExprVisitor overrides
     void visit(const Binary& expr) override;
     void visit(const Logical& expr) override;
+    void visit(const Ternary& expr) override;
     void visit(const Grouping& expr) override;
     void visit(const Literal& expr) override;
     void visit(const Unary& expr) override;

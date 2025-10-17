@@ -112,6 +112,7 @@ public:
     void visit(const Binary&) override;
     void visit(const Literal&) override;
     void visit(const Logical&) override;
+    void visit(const Ternary&) override;
     void visit(const Grouping&) override;
     void visit(const Unary&) override;
     void visit(const Variable&) override;
