@@ -65,15 +65,15 @@ private:
         return expr;
     }
 
-    // ternary        → logic_or ( "?" expression ":" ternary )? ;
+    // ternary        → logic_or ( "?" assignment ":" assignment )? ;
     std::unique_ptr<Expr> ternary() {
         auto expr = logic_or();
 
         if (match({TokenType::QUESTION})) {
             Token question = previous();
-            auto thenBranch = expression();
+            auto thenBranch = assignment();
             consume(TokenType::COLON, "Expect ':' after then branch of ternary operator.");
-            auto elseBranch = ternary();  // Right-associative
+            auto elseBranch = assignment();
             return Ternary::create(std::move(expr), std::move(thenBranch),
                                   std::move(elseBranch), question);
         }
