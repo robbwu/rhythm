@@ -15,7 +15,9 @@ function installBrowserLikeGlobals({ jsPath, buildDir }) {
   if (typeof globalScope.window === "undefined") {
     globalScope.window = globalScope;
   }
-  globalScope.window.self = globalScope.window;
+  const windowObject = globalScope.window;
+
+  windowObject.self = windowObject;
 
   if (typeof globalScope.self === "undefined") {
     globalScope.self = globalScope;
@@ -43,19 +45,25 @@ function installBrowserLikeGlobals({ jsPath, buildDir }) {
   documentStub.getElementsByTagName = documentStub.getElementsByTagName ?? (() => []);
   documentStub.querySelector = documentStub.querySelector ?? (() => null);
   globalScope.document = documentStub;
-  globalScope.window.document = globalScope.document;
+  if (windowObject !== globalScope || typeof windowObject.document === "undefined") {
+    windowObject.document = globalScope.document;
+  }
 
   if (typeof globalScope.navigator === "undefined") {
     globalScope.navigator = { userAgent: "node.js", language: "en-US" };
   }
-  globalScope.window.navigator = globalScope.navigator;
+  if (windowObject !== globalScope || typeof windowObject.navigator === "undefined") {
+    windowObject.navigator = globalScope.navigator;
+  }
 
   if (typeof globalScope.location === "undefined") {
     globalScope.location = new URL(pathToFileURL(path.join(buildDir, "index.html")).href);
   } else if (!globalScope.location.href) {
     globalScope.location = new URL(globalScope.location.href, pathToFileURL(buildDir).href);
   }
-  globalScope.window.location = globalScope.location;
+  if (windowObject !== globalScope || typeof windowObject.location === "undefined") {
+    windowObject.location = globalScope.location;
+  }
 
   if (typeof globalScope.crypto === "undefined" && crypto?.webcrypto) {
     globalScope.crypto = crypto.webcrypto;
