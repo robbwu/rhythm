@@ -20,6 +20,18 @@ const buildVersion = (() => {
     return `${Date.now()}`;
   }
 
+  try {
+    if (typeof import.meta !== "undefined" && import.meta.url) {
+      const moduleUrl = new URL(import.meta.url);
+      const fromQuery = moduleUrl.searchParams.get("v");
+      if (fromQuery && fromQuery.trim().length > 0) {
+        return fromQuery.trim();
+      }
+    }
+  } catch (error) {
+    // Ignore malformed URLs and fall back to other strategies.
+  }
+
   const fromMeta = document.querySelector("meta[name='rhythm-build']")?.content;
   if (fromMeta && fromMeta.trim().length > 0) {
     return fromMeta.trim();

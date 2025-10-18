@@ -99,6 +99,39 @@
       Loading transpiler&hellip;
     </footer>
 
-    <script type="module" src="./app.js"></script>
+    <script type="module">
+      const buildVersion = (() => {
+        const fromMeta = document
+          .querySelector("meta[name='rhythm-build']")
+          ?.getAttribute("content");
+        if (fromMeta && fromMeta.trim().length > 0) {
+          return fromMeta.trim();
+        }
+
+        const lastModified = document.lastModified || "";
+        const numeric = lastModified.replace(/\D/g, "");
+        if (numeric.length > 0) {
+          return numeric;
+        }
+
+        return `${Date.now()}`;
+      })();
+
+      const moduleUrl = new URL("./app.js", import.meta.url);
+      if (buildVersion && buildVersion.length > 0) {
+        moduleUrl.searchParams.set("v", buildVersion);
+      }
+
+      import(moduleUrl.href).catch((error) => {
+        console.error("Failed to load Rhythm app.js module", error);
+        const statusBar = document.getElementById("status");
+        if (statusBar) {
+          statusBar.textContent = `Failed to load Rhythm app.js module: ${
+            error && error.message ? error.message : error
+          }`;
+          statusBar.dataset.tone = "error";
+        }
+      });
+    </script>
   </body>
 </html>
