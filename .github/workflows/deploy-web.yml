@@ -21,6 +21,9 @@ jobs:
           mkdir -p deploy
           cp -r build/web/web/. deploy/
           cp -r web/. deploy/
+          if [ -f build/web/web/build-info.js ]; then
+            cp build/web/web/build-info.js deploy/build-info.js
+          fi
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
