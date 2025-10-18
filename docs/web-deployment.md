@@ -80,3 +80,23 @@ Once these steps are complete, every successful push to `main` will rebuild the
 web assets and publish them to the server automatically. If you need to trigger
 an ad-hoc deployment without pushing a commit, run the workflow manually from
 GitHub's **Actions** tab via the `workflow_dispatch` event.
+
+## Local smoke test
+
+After building the WebAssembly bundle locally, you can verify that the
+generated `transpose_wasm` artefacts load and compile Rhythm programs without
+starting a browser. Run the Node.js helper script from the repository root and
+point it at the build output directory (defaults to `build/web`):
+
+```bash
+node scripts/check-transpose-wasm.mjs [path/to/build/web]
+```
+
+The script imports `transpose_wasm.js` inside a lightweight, browser-like
+environment, supplies a local `locateFile` implementation that resolves the
+accompanying `.wasm`, and executes a smoke test that compiles a small Rhythm
+snippet. It exits with a non-zero status and prints the captured stderr if
+instantiation or compilation fails, making it easy to reproduce loader issues
+in CI or on a developer workstation. When the wrapper and binary are out of
+sync, the helper surfaces a rebuild hint instead of the opaque WebAssembly
+`LinkError` seen in the browser console.
