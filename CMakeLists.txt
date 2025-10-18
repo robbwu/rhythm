@@ -165,6 +165,7 @@ if (EMSCRIPTEN)
             "-sEXPORT_ES6=1"
             "-sEXPORT_NAME=TransposeModule"
             "-sALLOW_MEMORY_GROWTH=1"
+            "-sASSERTIONS"
             "-sDISABLE_EXCEPTION_CATCHING=0")
 
     add_custom_target(rhythm_web_assets ALL
