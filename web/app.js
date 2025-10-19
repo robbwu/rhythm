@@ -1,4 +1,5 @@
 import TransposeModule from "./transpose_wasm.js";
+import { BUILD_INFO } from "./build-info.js";
 import { EditorView, basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { keymap } from "@codemirror/view";
@@ -15,9 +16,53 @@ const stderrBlock = document.getElementById("stderr");
 const stderrSection = document.getElementById("stderrSection");
 const statusBar = document.getElementById("status");
 const executionTimeLabel = document.getElementById("executionTime");
+const buildInfoContainer = document.getElementById("buildInfo");
+const buildInfoLink = document.getElementById("buildInfoLink");
+const buildInfoMessage = document.getElementById("buildInfoMessage");
 
 let modulePromise = null;
 let editorView = null;
+
+function renderBuildInfo() {
+  if (!buildInfoContainer || !buildInfoLink || !buildInfoMessage) {
+    return;
+  }
+
+  const info = BUILD_INFO || {};
+  const commitShort = info.commitShort || info.commitHash || "";
+
+  if (!commitShort || commitShort === "unknown") {
+    buildInfoContainer.classList.add("hidden");
+    return;
+  }
+
+  const linkTarget = info.commitUrl || "";
+  buildInfoLink.textContent = commitShort;
+
+  if (linkTarget) {
+    buildInfoLink.href = linkTarget;
+    buildInfoLink.setAttribute("rel", "noopener noreferrer");
+  } else {
+    buildInfoLink.removeAttribute("href");
+  }
+
+  const message = info.commitMessage && info.commitMessage !== "unknown"
+    ? String(info.commitMessage).trim()
+    : "";
+  const truncatedMessage = message.length > 80 ? `${message.slice(0, 77)}…` : message;
+  buildInfoMessage.textContent = truncatedMessage ? `— ${truncatedMessage}` : "";
+
+  const tooltipParts = [];
+  if (info.commitMessage) {
+    tooltipParts.push(info.commitMessage);
+  }
+  if (info.commitDate) {
+    tooltipParts.push(`Committed on ${info.commitDate}`);
+  }
+  buildInfoContainer.title = tooltipParts.join("\n");
+
+  buildInfoContainer.classList.remove("hidden");
+}
 
 // Emacs-style keybindings
 const emacsKeymap = keymap.of([
@@ -234,5 +279,6 @@ function initialiseUI() {
   compileRunButton.addEventListener("click", () => compileSource({ run: true }));
 }
 
+renderBuildInfo();
 initialiseUI();
 

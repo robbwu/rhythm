@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.20)
 project(rhythm VERSION 1.0.0 LANGUAGES CXX)
 
+function(json_escape OUTPUT_VAR INPUT_VALUE)
+    set(_value "${INPUT_VALUE}")
+    string(REPLACE "\\" "\\\\" _value "${_value}")
+    string(REPLACE "\"" "\\\"" _value "${_value}")
+    string(REPLACE "\n" "\\n" _value "${_value}")
+    string(REPLACE "\r" "\\r" _value "${_value}")
+    set(${OUTPUT_VAR} "${_value}" PARENT_SCOPE)
+endfunction()
+
 # Set C++ standard to C++23
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -30,6 +39,14 @@ execute_process(
 )
 
 execute_process(
+        COMMAND git rev-parse HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_COMMIT_HASH_FULL
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+)
+
+execute_process(
         COMMAND git log -1 --format=%cd --date=short
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         OUTPUT_VARIABLE GIT_COMMIT_DATE
@@ -41,6 +58,14 @@ execute_process(
         COMMAND git log -1 --format=%s
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         OUTPUT_VARIABLE GIT_COMMIT_MESSAGE
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+)
+
+execute_process(
+        COMMAND git config --get remote.origin.url
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_REMOTE_URL
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_QUIET
 )
@@ -69,6 +94,10 @@ if(NOT GIT_COMMIT_HASH)
     set(GIT_COMMIT_HASH "unknown")
 endif()
 
+if(NOT GIT_COMMIT_HASH_FULL)
+    set(GIT_COMMIT_HASH_FULL "")
+endif()
+
 if(NOT GIT_COMMIT_DATE)
     set(GIT_COMMIT_DATE "unknown")
 endif()
@@ -76,6 +105,45 @@ endif()
 if(NOT GIT_COMMIT_MESSAGE)
     set(GIT_COMMIT_MESSAGE "unknown")
 endif()
+
+set(GITHUB_COMMIT_URL "")
+if(GIT_REMOTE_URL MATCHES "github\\.com[:/]([^\\s]+)(\\.git)?$")
+    set(GITHUB_REPO_PATH "${CMAKE_MATCH_1}")
+    string(REGEX REPLACE "\\.git$" "" GITHUB_REPO_PATH "${GITHUB_REPO_PATH}")
+    string(REPLACE ":" "/" GITHUB_REPO_PATH "${GITHUB_REPO_PATH}")
+    set(GIT_COMMIT_IDENTIFIER "${GIT_COMMIT_HASH_FULL}")
+    if(NOT GIT_COMMIT_IDENTIFIER)
+        set(GIT_COMMIT_IDENTIFIER "${GIT_COMMIT_HASH}")
+    endif()
+    if(GIT_COMMIT_IDENTIFIER)
+        set(GITHUB_COMMIT_URL "https://github.com/${GITHUB_REPO_PATH}/commit/${GIT_COMMIT_IDENTIFIER}")
+    endif()
+endif()
+
+set(BUILD_INFO_OUTPUT_DIR ${CMAKE_BINARY_DIR}/generated/web)
+file(MAKE_DIRECTORY ${BUILD_INFO_OUTPUT_DIR})
+set(BUILD_INFO_JS_PATH ${BUILD_INFO_OUTPUT_DIR}/build-info.js)
+json_escape(BUILD_INFO_COMMIT_SHORT_ESC "${GIT_COMMIT_HASH}")
+json_escape(BUILD_INFO_COMMIT_HASH_ESC "${GIT_COMMIT_HASH_FULL}")
+json_escape(BUILD_INFO_MESSAGE_ESC "${GIT_COMMIT_MESSAGE}")
+json_escape(BUILD_INFO_URL_ESC "${GITHUB_COMMIT_URL}")
+json_escape(BUILD_INFO_DATE_ESC "${GIT_COMMIT_DATE}")
+set(BUILD_INFO_JS_CONTENT "export const BUILD_INFO = {\n")
+string(APPEND BUILD_INFO_JS_CONTENT "  \"commitShort\": \"${BUILD_INFO_COMMIT_SHORT_ESC}\",\n")
+string(APPEND BUILD_INFO_JS_CONTENT "  \"commitHash\": \"${BUILD_INFO_COMMIT_HASH_ESC}\",\n")
+string(APPEND BUILD_INFO_JS_CONTENT "  \"commitMessage\": \"${BUILD_INFO_MESSAGE_ESC}\",\n")
+string(APPEND BUILD_INFO_JS_CONTENT "  \"commitUrl\": \"${BUILD_INFO_URL_ESC}\",\n")
+string(APPEND BUILD_INFO_JS_CONTENT "  \"commitDate\": \"${BUILD_INFO_DATE_ESC}\"\n")
+string(APPEND BUILD_INFO_JS_CONTENT "};\n")
+file(WRITE ${BUILD_INFO_JS_PATH} "${BUILD_INFO_JS_CONTENT}")
+
+set(BUILD_INFO_STAGING_DIR ${CMAKE_BINARY_DIR}/web)
+file(MAKE_DIRECTORY ${BUILD_INFO_STAGING_DIR})
+configure_file(
+        ${BUILD_INFO_JS_PATH}
+        ${BUILD_INFO_STAGING_DIR}/build-info.js
+        COPYONLY
+)
 
 # Generate version header
 configure_file(
@@ -172,6 +240,9 @@ if (EMSCRIPTEN)
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${CMAKE_SOURCE_DIR}/web
                     ${WEB_APP_OUTPUT_DIR}
+            COMMAND ${CMAKE_COMMAND} -E copy
+                    ${BUILD_INFO_JS_PATH}
+                    ${WEB_APP_OUTPUT_DIR}/build-info.js
             COMMENT "Copy Rhythm web assets")
     add_dependencies(rhythm_web_assets transpose_wasm)
 endif()

@@ -30,6 +30,27 @@ body {
   line-height: 1.5;
 }
 
+.build-info {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.build-info__link {
+  color: #ffe08a;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.build-info__link:focus-visible,
+.build-info__link:hover {
+  color: #fff2c6;
+}
+
 .layout {
   flex: 1;
   display: grid;
