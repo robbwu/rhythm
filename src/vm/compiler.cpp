@@ -71,6 +71,30 @@ void Compiler::visit(const Logical &expr) {
     }
 };
 
+void Compiler::visit(const Ternary &expr) {
+    // Compile: condition ? thenBranch : elseBranch
+    // 1. Evaluate condition
+    expr.condition->accept(*this);
+
+    // 2. If false, jump to else branch
+    int elseJump = emitJump(OP_JUMP_IF_FALSE, expr.question.line);
+
+    // 3. Condition was true: pop condition, evaluate then branch
+    chunk.write(OP_POP, expr.question.line);
+    expr.thenBranch->accept(*this);
+
+    // 4. Jump over else branch
+    int endJump = emitJump(OP_JUMP, expr.question.line);
+
+    // 5. Else branch: pop condition, evaluate else branch
+    patchJump(elseJump);
+    chunk.write(OP_POP, expr.question.line);
+    expr.elseBranch->accept(*this);
+
+    // 6. End of ternary
+    patchJump(endJump);
+};
+
 void Compiler::visit(const Grouping &expr) {
     expr.expression->accept(*this);
 };

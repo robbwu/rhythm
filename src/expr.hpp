@@ -5,6 +5,7 @@
 
 class Binary;
 class Logical;
+class Ternary;
 class Grouping;
 class Literal;
 class Unary;
@@ -24,6 +25,7 @@ public:
 
     virtual void visit(const Binary&) = 0;
     virtual void visit(const Logical&) = 0;
+    virtual void visit(const Ternary&) = 0;
     virtual void visit(const Grouping&) = 0;
     virtual void visit(const Literal&) = 0;
     virtual void visit(const Unary&) = 0;
@@ -90,6 +92,34 @@ public:
     }
     int get_line() const override {
         return op.line;
+    }
+};
+
+class Ternary : public Expr {
+public:
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Expr> thenBranch;
+    std::unique_ptr<Expr> elseBranch;
+    Token question;  // for line number reporting
+
+    Ternary(std::unique_ptr<Expr> _condition, std::unique_ptr<Expr> _thenBranch,
+            std::unique_ptr<Expr> _elseBranch, Token _question)
+        : condition(std::move(_condition)), thenBranch(std::move(_thenBranch)),
+          elseBranch(std::move(_elseBranch)), question(_question) {}
+
+    static std::unique_ptr<Ternary> create(
+        std::unique_ptr<Expr> _condition,
+        std::unique_ptr<Expr> _thenBranch,
+        std::unique_ptr<Expr> _elseBranch,
+        Token _question) {
+        return std::make_unique<Ternary>(std::move(_condition), std::move(_thenBranch),
+                                        std::move(_elseBranch), _question);
+    }
+    void accept(ExprVisitor& visitor) const override {
+        return visitor.visit(*this);
+    }
+    int get_line() const override {
+        return question.line;
     }
 };
 

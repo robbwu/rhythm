@@ -217,6 +217,11 @@ void Resolver::visit(const Logical& expr) {
     resolve(expr.left.get());
     resolve(expr.right.get());
 }
+void Resolver::visit(const Ternary& expr) {
+    resolve(expr.condition.get());
+    resolve(expr.thenBranch.get());
+    resolve(expr.elseBranch.get());
+}
 void Resolver::visit(const Unary& expr) {
     resolve(expr.right.get());
 }

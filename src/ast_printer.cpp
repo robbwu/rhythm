@@ -34,6 +34,16 @@ void  AstPrinter::visit(const Logical& logical) {
     return parenthesize(logical.op.lexeme, {logical.left.get(), logical.right.get()});
 }
 
+void AstPrinter::visit(const Ternary& ternary) {
+    std::cout << "(? ";
+    ternary.condition->accept(*this);
+    std::cout << " ";
+    ternary.thenBranch->accept(*this);
+    std::cout << " : ";
+    ternary.elseBranch->accept(*this);
+    std::cout << ")";
+}
+
 void AstPrinter::visit(const Grouping& group) {
     return parenthesize("group", {group.expression.get()});
 }
