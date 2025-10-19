@@ -76,6 +76,22 @@ int Chunk::disassembleInstruction(int offset) {
             return simpleInstruction("OP_SUBSCRIPT", offset);
         case OP_SUBSCRIPT_ASSIGNMENT:
             return simpleInstruction("OP_SUBSCRIPT_ASSIGNMENT", offset);
+        case OP_POSTFIX_INC_LOCAL:
+            return byteInstruction("OP_POSTFIX_INC_LOCAL", offset);
+        case OP_POSTFIX_DEC_LOCAL:
+            return byteInstruction("OP_POSTFIX_DEC_LOCAL", offset);
+        case OP_POSTFIX_INC_GLOBAL:
+            return constantInstruction("OP_POSTFIX_INC_GLOBAL", offset);
+        case OP_POSTFIX_DEC_GLOBAL:
+            return constantInstruction("OP_POSTFIX_DEC_GLOBAL", offset);
+        case OP_POSTFIX_INC_UPVALUE:
+            return byteInstruction("OP_POSTFIX_INC_UPVALUE", offset);
+        case OP_POSTFIX_DEC_UPVALUE:
+            return byteInstruction("OP_POSTFIX_DEC_UPVALUE", offset);
+        case OP_POSTFIX_INC_SUBSCRIPT:
+            return simpleInstruction("OP_POSTFIX_INC_SUBSCRIPT", offset);
+        case OP_POSTFIX_DEC_SUBSCRIPT:
+            return simpleInstruction("OP_POSTFIX_DEC_SUBSCRIPT", offset);
         case OP_CLOSURE: {
             offset++;
             uint8_t constant = m_bytecodes[offset++];

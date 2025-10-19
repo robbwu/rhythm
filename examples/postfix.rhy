@@ -1,0 +1,36 @@
+// Validate postfix increment/decrement across assignment targets.
+var x = 4;
+assert(x++ == 4);
+assert(x == 5);
+assert(x-- == 5);
+assert(x == 4);
+
+var y = 10;
+assert(y-- == 10);
+assert(y == 9);
+assert(y++ == 9);
+assert(y == 10);
+
+var items = [1, 3];
+assert(items[0]++ == 1);
+assert(items[0] == 2);
+assert(items[1]-- == 3);
+assert(items[1] == 2);
+
+var bag = { "count": 7, "other": 5 };
+assert(bag.count++ == 7);
+assert(bag.count == 8);
+assert(bag["other"]-- == 5);
+assert(bag["other"] == 4);
+
+var nested = {
+  "inner": { "value": 11 },
+  "list": [6]
+};
+assert(nested.inner.value++ == 11);
+assert(nested.inner.value == 12);
+assert(nested.list[0]-- == 6);
+assert(nested.list[0] == 5);
+
+print "OK postfix";
+

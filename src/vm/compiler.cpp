@@ -115,6 +115,56 @@ void Compiler::visit(const Unary &expr) {
     chunk.write(opcode, expr.op.line);
 };
 
+void Compiler::visit(const Postfix& expr) {
+    bool isIncrement = expr.op.type == TokenType::PLUS_PLUS;
+    int line = expr.op.line;
+
+    if (const auto* variable = dynamic_cast<const Variable*>(expr.operand.get())) {
+        int local = resolveLocal(variable->name);
+        if (local != -1) {
+            chunk.write(isIncrement ? OP_POSTFIX_INC_LOCAL : OP_POSTFIX_DEC_LOCAL, line);
+            chunk.write(local, line);
+            return;
+        }
+
+        int upvalue = resolveUpvalue(variable->name);
+        if (upvalue != -1) {
+            chunk.write(isIncrement ? OP_POSTFIX_INC_UPVALUE : OP_POSTFIX_DEC_UPVALUE, line);
+            chunk.write(upvalue, line);
+            return;
+        }
+
+        int constant = chunk.addConstant(variable->name.lexeme);
+        if (constant >= 256) {
+            throw CompileException("cannot compile >= 256 constants");
+        }
+        chunk.write(isIncrement ? OP_POSTFIX_INC_GLOBAL : OP_POSTFIX_DEC_GLOBAL, line);
+        chunk.write(constant, line);
+        return;
+    }
+
+    if (const auto* subscript = dynamic_cast<const Subscript*>(expr.operand.get())) {
+        subscript->object->accept(*this);
+        subscript->index->accept(*this);
+        chunk.write(isIncrement ? OP_POSTFIX_INC_SUBSCRIPT : OP_POSTFIX_DEC_SUBSCRIPT, line);
+        return;
+    }
+
+    if (const auto* property = dynamic_cast<const PropertyAccess*>(expr.operand.get())) {
+        property->object->accept(*this);
+        int constant = chunk.addConstant(property->name.lexeme);
+        if (constant >= 256) {
+            throw CompileException("cannot compile >= 256 constants");
+        }
+        chunk.write(OP_CONSTANT, property->name.line);
+        chunk.write(constant, property->name.line);
+        chunk.write(isIncrement ? OP_POSTFIX_INC_SUBSCRIPT : OP_POSTFIX_DEC_SUBSCRIPT, property->name.line);
+        return;
+    }
+
+    throw CompileException("Invalid postfix operand");
+}
+
 void Compiler::visit(const Variable &expr) {
     int arg = resolveLocal(expr.name);
     if (arg != -1) {

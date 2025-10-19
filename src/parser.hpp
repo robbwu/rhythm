@@ -156,7 +156,16 @@ private:
             auto right = unary();
             return Unary::create(op, std::move(right));
         }
-        return call();
+        return postfix();
+    }
+
+    std::unique_ptr<Expr> postfix() {
+        auto expr = call();
+        while (match({TokenType::PLUS_PLUS, TokenType::MINUS_MINUS})) {
+            Token op = previous();
+            expr = Postfix::create(std::move(expr), op);
+        }
+        return expr;
     }
 
     // call           → primary ( "(" arguments? ")" )* ;

@@ -336,6 +336,97 @@ InterpretResult VM::run(int ret_frame) {
                 }
                 break;
             }
+            case OP_POSTFIX_INC_LOCAL:
+            case OP_POSTFIX_DEC_LOCAL: {
+                uint8_t slot = READ_BYTE();
+                Value& value = stack[frame->frame_pointer + slot];
+                if (!std::holds_alternative<double>(value)) {
+                    error(0, "Postfix operator requires a number");
+                }
+                double old = std::get<double>(value);
+                double delta = instruction == OP_POSTFIX_INC_LOCAL ? 1.0 : -1.0;
+                value = old + delta;
+                push(old);
+                break;
+            }
+            case OP_POSTFIX_INC_GLOBAL:
+            case OP_POSTFIX_DEC_GLOBAL: {
+                auto name = READ_STRING();
+                auto it = globals.find(name);
+                if (it == globals.end()) {
+                    error(0, std::format("global variable {} not found", name));
+                }
+                Value& value = it->second;
+                if (!std::holds_alternative<double>(value)) {
+                    error(0, "Postfix operator requires a number");
+                }
+                double old = std::get<double>(value);
+                double delta = instruction == OP_POSTFIX_INC_GLOBAL ? 1.0 : -1.0;
+                value = old + delta;
+                push(old);
+                break;
+            }
+            case OP_POSTFIX_INC_UPVALUE:
+            case OP_POSTFIX_DEC_UPVALUE: {
+                uint8_t slot = READ_BYTE();
+                auto upvalue = frame->closure->upvalues[slot];
+                if (!upvalue) {
+                    error(0, "Invalid upvalue for postfix operator");
+                }
+                Value* location = upvalue->location;
+                if (!std::holds_alternative<double>(*location)) {
+                    error(0, "Postfix operator requires a number");
+                }
+                double old = std::get<double>(*location);
+                double delta = instruction == OP_POSTFIX_INC_UPVALUE ? 1.0 : -1.0;
+                *location = old + delta;
+                push(old);
+                break;
+            }
+            case OP_POSTFIX_INC_SUBSCRIPT:
+            case OP_POSTFIX_DEC_SUBSCRIPT: {
+                double delta = instruction == OP_POSTFIX_INC_SUBSCRIPT ? 1.0 : -1.0;
+                Value index = pop();
+                Value obj = pop();
+                if (std::holds_alternative<std::shared_ptr<Array>>(obj)) {
+                    if (!std::holds_alternative<double>(index)) {
+                        error(0, "array index must be a number");
+                    }
+                    double ind = std::get<double>(index);
+                    if (!is_integer(ind)) {
+                        error(0, "index must be an integer");
+                    }
+                    auto array = std::get<std::shared_ptr<Array>>(obj);
+                    int idx = (int)ind;
+                    if (idx < 0 || idx >= (int)array->data.size()) {
+                        error(0, std::format("Index out of bounds: {} (size: {})", idx, array->data.size()));
+                    }
+                    Value& slot = array->data[idx];
+                    if (!std::holds_alternative<double>(slot)) {
+                        error(0, "Postfix operator requires a number");
+                    }
+                    double old = std::get<double>(slot);
+                    slot = old + delta;
+                    push(old);
+                    break;
+                }
+                if (std::holds_alternative<std::shared_ptr<Map>>(obj)) {
+                    auto map = std::get<std::shared_ptr<Map>>(obj);
+                    auto it = map->data.find(index);
+                    if (it == map->data.end()) {
+                        error(0, "Postfix operator requires an existing numeric value");
+                    }
+                    if (!std::holds_alternative<double>(it->second)) {
+                        error(0, "Postfix operator requires a number");
+                    }
+                    double old = std::get<double>(it->second);
+                    it->second = old + delta;
+                    push(old);
+                    break;
+                }
+                error(0, std::format("OP_SUBSCRIPT obj can only be Array or Map"));
+                break;
+            }
             case OP_CLOSURE: {
                 auto func = std::get<LoxCallable*>(READ_CONSTANT());
                 auto beat_func = dynamic_cast<BeatFunction*>(func);

@@ -294,6 +294,41 @@ const __rt = (() => {
     throw runtimeError(line, 'Only arrays and maps can be subscripted.');
   }
 
+  function postfixAdjustVariable(getter, setter, line, delta) {
+    const current = getter();
+    const numeric = ensureNumber(current, line, 'Postfix operator requires a number');
+    const next = numeric + delta;
+    setter(next);
+    return current;
+  }
+
+  function postfixAdjustIndex(target, index, line, delta) {
+    if (Array.isArray(target)) {
+      ensureNumber(index, line, 'array index must be a number');
+      ensureInteger(index, line, 'index must be an integer');
+      const idx = index;
+      if (idx < 0 || idx >= target.length) {
+        throw runtimeError(line, `Index out of bounds: ${idx} (size: ${target.length})`);
+      }
+      const current = target[idx];
+      const numeric = ensureNumber(current, line, 'Postfix operator requires a number');
+      const next = numeric + delta;
+      target[idx] = next;
+      return current;
+    }
+    if (isMap(target)) {
+      if (!target.has(index)) {
+        throw runtimeError(line, 'Postfix operator requires an existing numeric value');
+      }
+      const current = target.get(index);
+      const numeric = ensureNumber(current, line, 'Postfix operator requires a number');
+      const next = numeric + delta;
+      target.set(index, next);
+      return current;
+    }
+    throw runtimeError(line, 'subscript must be of an array or map');
+  }
+
   function isCallable(fn) {
     return typeof fn === 'function' && fn.__loxCallable === true;
   }
@@ -843,6 +878,8 @@ const __rt = (() => {
     makeMap,
     getIndex,
     setIndex,
+    postfixAdjustVariable,
+    postfixAdjustIndex,
     getProperty,
     callFunction,
     print,

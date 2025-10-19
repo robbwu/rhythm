@@ -26,6 +26,7 @@ public:
     void visit(const Grouping& group) override ;
     void visit(const Literal& lit) override ;
     void visit(const Unary& unary) override ;
+    void visit(const Postfix& postfix) override;
     void visit(const Variable&) override;
     void visit(const Assignment&) override;
     void visit(const Call&) override;
