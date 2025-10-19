@@ -1,3 +1,4 @@
+import TransposeModule from "./transpose_wasm.js";
 import { EditorView, basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { keymap } from "@codemirror/view";
@@ -15,86 +16,7 @@ const stderrSection = document.getElementById("stderrSection");
 const statusBar = document.getElementById("status");
 const executionTimeLabel = document.getElementById("executionTime");
 
-const buildVersion = (() => {
-  if (typeof document === "undefined") {
-    return `${Date.now()}`;
-  }
-
-  const fromMeta = document.querySelector("meta[name='rhythm-build']")?.content;
-  if (fromMeta && fromMeta.trim().length > 0) {
-    return fromMeta.trim();
-  }
-
-  const scriptEl = document.querySelector("script[type='module'][src*='app.js']");
-  if (scriptEl) {
-    try {
-      const scriptUrl = new URL(scriptEl.src, window.location.href);
-      const fromQuery = scriptUrl.searchParams.get("v");
-      if (fromQuery && fromQuery.trim().length > 0) {
-        return fromQuery.trim();
-      }
-    } catch (error) {
-      // Ignore malformed URLs and continue to other fallbacks.
-    }
-  }
-
-  const lastModified = document.lastModified;
-  if (lastModified && lastModified.length > 0) {
-    const numeric = lastModified.replace(/\D/g, "");
-    if (numeric.length > 0) {
-      return numeric;
-    }
-  }
-
-  return `${Date.now()}`;
-})();
-
-const transposeBaseUrl = new URL("./", import.meta.url);
-let transposeModuleFactoryPromise = null;
 let modulePromise = null;
-
-function versionedAssetUrl(relativePath) {
-  const url = new URL(relativePath, transposeBaseUrl);
-  if (buildVersion && buildVersion.length > 0) {
-    url.searchParams.set("v", buildVersion);
-  }
-  return url;
-}
-
-async function getTransposeModuleFactory() {
-  if (!transposeModuleFactoryPromise) {
-    const moduleUrl = versionedAssetUrl("transpose_wasm.js");
-    transposeModuleFactoryPromise = import(moduleUrl.href)
-      .then((mod) => {
-        if (mod && typeof mod.default === "function") {
-          return mod.default;
-        }
-        if (typeof mod === "function") {
-          return mod;
-        }
-        throw new Error("Failed to load transpose_wasm.js module factory.");
-      })
-      .catch((error) => {
-        transposeModuleFactoryPromise = null;
-        throw error;
-      });
-  }
-  return transposeModuleFactoryPromise;
-}
-
-function isInstantiationLinkError(error) {
-  if (!error) {
-    return false;
-  }
-  const message = typeof error === "string" ? error : error.message;
-  if (!message) {
-    return false;
-  }
-  return /function import requires a callable|WebAssembly\.instantiate.*LinkError/i.test(
-    message
-  );
-}
-
 let editorView = null;
 
 // Emacs-style keybindings
@@ -187,28 +109,7 @@ function clearOutputs() {
 
 async function loadModule() {
   if (!modulePromise) {
-    modulePromise = (async () => {
-      const factory = await getTransposeModuleFactory();
-      try {
-        return await factory({
-          locateFile(path) {
-            const url = versionedAssetUrl(path);
-            return url.href;
-          }
-        });
-      } catch (error) {
-        transposeModuleFactoryPromise = null;
-        modulePromise = null;
-        if (isInstantiationLinkError(error)) {
-          const help =
-            "WebAssembly module failed to load. Please hard-refresh the page (Shift+Reload) to clear cached files.";
-          const wrapped = new Error(help);
-          wrapped.cause = error;
-          throw wrapped;
-        }
-        throw error;
-      }
-    })();
+    modulePromise = TransposeModule();
   }
   return modulePromise;
 }
