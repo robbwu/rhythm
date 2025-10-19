@@ -137,6 +137,14 @@ string(APPEND BUILD_INFO_JS_CONTENT "  \"commitDate\": \"${BUILD_INFO_DATE_ESC}\
 string(APPEND BUILD_INFO_JS_CONTENT "};\n")
 file(WRITE ${BUILD_INFO_JS_PATH} "${BUILD_INFO_JS_CONTENT}")
 
+set(BUILD_INFO_STAGING_DIR ${CMAKE_BINARY_DIR}/web)
+file(MAKE_DIRECTORY ${BUILD_INFO_STAGING_DIR})
+configure_file(
+        ${BUILD_INFO_JS_PATH}
+        ${BUILD_INFO_STAGING_DIR}/build-info.js
+        COPYONLY
+)
+
 # Generate version header
 configure_file(
         ${CMAKE_SOURCE_DIR}/src/version.hpp.in
