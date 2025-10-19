@@ -16,6 +16,8 @@ jobs:
         run: emcmake cmake -S . -B build/web -DCMAKE_BUILD_TYPE=Release
       - name: Build transpose_wasm target
         run: cmake --build build/web --target transpose_wasm
+      - name: Build web asset bundle
+        run: cmake --build build/web --target rhythm_web_assets
       - name: Stage deployable assets
         run: |
           mkdir -p deploy
