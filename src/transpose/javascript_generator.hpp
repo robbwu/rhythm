@@ -45,6 +45,7 @@ private:
     void visit(const Grouping& expr) override;
     void visit(const Literal& expr) override;
     void visit(const Unary& expr) override;
+    void visit(const Postfix& expr) override;
     void visit(const Variable& expr) override;
     void visit(const Assignment& expr) override;
     void visit(const SubscriptAssignment& expr) override;

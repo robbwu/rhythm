@@ -63,6 +63,14 @@ void AstPrinter::visit(const Unary& unary) {
     parenthesize(unary.op.lexeme, {unary.right.get()});
 }
 
+void AstPrinter::visit(const Postfix& postfix) {
+    std::cout << "(" << postfix.op.lexeme << "_post ";
+    if (postfix.operand) {
+        postfix.operand->accept(*this);
+    }
+    std::cout << ")";
+}
+
 void AstPrinter::visit(const ArrayLiteral& alit) {
     std::cout << "[";
     for (const auto& arg : alit.elements) {

@@ -226,6 +226,10 @@ void Resolver::visit(const Unary& expr) {
     resolve(expr.right.get());
 }
 
+void Resolver::visit(const Postfix& expr) {
+    resolve(expr.operand.get());
+}
+
 void Resolver::visit(const BreakStmt& stmt) {
     // Break statements don't need variable resolution
 }

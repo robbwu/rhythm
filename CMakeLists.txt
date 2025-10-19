@@ -244,6 +244,19 @@ endif()
 include(CTest)  # defines BUILD_TESTING and enable_testing()
 if(BUILD_TESTING)
 
+    # Helper to add a test that runs a .rhy script with the tree-walker interpreter
+    function(add_interpreter_test name script_path)
+        add_test(
+            NAME    ${name}
+            COMMAND $<TARGET_FILE:rhythm> ${script_path}
+        )
+        set_tests_properties(${name} PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            LABELS "interpreter"
+            TIMEOUT 20
+        )
+    endfunction()
+
     # Helper to add a test that runs a .rhy script with the beat VM
     function(add_rhythm_test name script_path)
         add_test(
@@ -303,6 +316,9 @@ if(BUILD_TESTING)
     add_rhythm_test(examples_mixed_break_continue    ${EX}/mixed_break_continue.rhy)
     add_rhythm_test(examples_avl                     ${EX}/avl.rhy)
     add_rhythm_test(examples_nqueen                  ${EX}/nqueen.rhy)
+    add_rhythm_test(examples_postfix                 ${EX}/postfix.rhy)
+
+    add_interpreter_test(interpreter_postfix         ${EX}/postfix.rhy)
 
     add_test(
         NAME    transpose_emit_js_smoke
@@ -330,6 +346,7 @@ if(BUILD_TESTING)
         add_transpose_test(transpose_mixed_break_continue    ${EX}/mixed_break_continue.rhy)
         add_transpose_test(transpose_avl                     ${EX}/avl.rhy)
         add_transpose_test(transpose_nqueen                  ${EX}/nqueen.rhy)
+        add_transpose_test(transpose_postfix                 ${EX}/postfix.rhy)
     else()
         if(NOT NODE_EXECUTABLE)
             message(STATUS "Node.js not found; skipping transpose example tests")
@@ -382,6 +399,8 @@ if(BUILD_TESTING)
             set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION "OK")
         endforeach()
 
+        set_tests_properties(transpose_postfix PROPERTIES PASS_REGULAR_EXPRESSION "OK postfix")
+
         add_test(
             NAME    transpose_browser_runtime
             COMMAND ${NODE_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/browser_runtime_test.cjs
@@ -394,6 +413,9 @@ if(BUILD_TESTING)
             TIMEOUT 20
         )
     endif()
+
+    set_tests_properties(examples_postfix PROPERTIES PASS_REGULAR_EXPRESSION "OK postfix")
+    set_tests_properties(interpreter_postfix PROPERTIES PASS_REGULAR_EXPRESSION "OK postfix")
 
     # Negative tests (parser/semantic errors expected)
     # negative cases not working yet as they crash instead of returning non-zero

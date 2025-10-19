@@ -12,6 +12,17 @@
 
 using nullptr_t = std::nullptr_t;
 
+namespace {
+
+double ensure_numeric_for_postfix(const Value& value, const Token& op) {
+    if (!std::holds_alternative<double>(value)) {
+        throw RuntimeError(op, "Postfix operator requires a number.");
+    }
+    return std::get<double>(value);
+}
+
+}
+
 Interpreter::Interpreter() {
     globals = std::make_shared<Environment>(nullptr);
     env = globals;
@@ -74,6 +85,91 @@ void Interpreter::visit(const Unary &unary) {
         default:
             _result = nullptr;
     }
+}
+
+void Interpreter::visit(const Postfix& postfix) {
+    double delta = postfix.op.type == TokenType::PLUS_PLUS ? 1.0 : -1.0;
+
+    auto apply_to_value = [&](Value& slot) {
+        double number = ensure_numeric_for_postfix(slot, postfix.op);
+        Value oldValue = slot;
+        slot = number + delta;
+        return oldValue;
+    };
+
+    if (auto variable = dynamic_cast<Variable*>(postfix.operand.get())) {
+        auto location = varLocations.find(variable);
+        if (location != varLocations.end()) {
+            Value slot = env->getAt(location->second.distance, location->second.index);
+            Value oldValue = apply_to_value(slot);
+            env->assignAt(location->second.distance, location->second.index, slot);
+            _result = oldValue;
+            return;
+        }
+
+        Value slot = globals->get(variable->name);
+        Value oldValue = apply_to_value(slot);
+        globals->assign(variable->name, slot);
+        _result = oldValue;
+        return;
+    }
+
+    if (auto subscript = dynamic_cast<Subscript*>(postfix.operand.get())) {
+        Value obj = eval(*subscript->object);
+        Value index = eval(*subscript->index);
+
+        if (std::holds_alternative<std::shared_ptr<Array>>(obj)) {
+            if (!std::holds_alternative<double>(index)) {
+                throw RuntimeError(subscript->bracket, "array index must be a number");
+            }
+            double ind = std::get<double>(index);
+            if (!is_integer(ind)) {
+                throw RuntimeError(subscript->bracket, "index must be an integer");
+            }
+            auto& array = std::get<std::shared_ptr<Array>>(obj);
+            auto idx = static_cast<int>(ind);
+            if (idx < 0 || idx >= static_cast<int>(array->data.size())) {
+                throw RuntimeError(subscript->bracket,
+                    "Index out of bounds: " + std::to_string(idx) +
+                    " (size: " + std::to_string(array->data.size()) + ")");
+            }
+            Value& slot = array->data[idx];
+            Value oldValue = apply_to_value(slot);
+            _result = oldValue;
+            return;
+        }
+
+        if (std::holds_alternative<std::shared_ptr<Map>>(obj)) {
+            auto map = std::get<std::shared_ptr<Map>>(obj);
+            auto it = map->data.find(index);
+            if (it == map->data.end()) {
+                throw RuntimeError(postfix.op, "Postfix operator requires an existing numeric value.");
+            }
+            Value oldValue = apply_to_value(it->second);
+            _result = oldValue;
+            return;
+        }
+
+        throw RuntimeError(subscript->bracket, "subscript must be of an array or map");
+    }
+
+    if (auto property = dynamic_cast<PropertyAccess*>(postfix.operand.get())) {
+        Value obj = eval(*property->object);
+        if (!std::holds_alternative<std::shared_ptr<Map>>(obj)) {
+            throw RuntimeError(property->name, "Only maps can have properties accessed with dot notation");
+        }
+        auto map = std::get<std::shared_ptr<Map>>(obj);
+        Value key = property->name.lexeme;
+        auto it = map->data.find(key);
+        if (it == map->data.end()) {
+            throw RuntimeError(property->name, "Postfix operator requires an existing numeric value.");
+        }
+        Value oldValue = apply_to_value(it->second);
+        _result = oldValue;
+        return;
+    }
+
+    throw RuntimeError(postfix.op, "Invalid assignment target for postfix operator");
 }
 
 void Interpreter::visit(const Binary &expr) {

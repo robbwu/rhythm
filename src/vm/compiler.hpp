@@ -115,6 +115,7 @@ public:
     void visit(const Ternary&) override;
     void visit(const Grouping&) override;
     void visit(const Unary&) override;
+    void visit(const Postfix&) override;
     void visit(const Variable&) override;
     void visit(const Assignment&) override;
     void visit(const Call&) override;

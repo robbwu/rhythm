@@ -2,6 +2,7 @@
 
 #include <iomanip>
 #include <utility>
+#include <stdexcept>
 
 #include "token.hpp"
 #include "transpose/runtime.hpp"
@@ -285,6 +286,36 @@ void JavascriptGenerator::visit(const Unary& expr) {
     } else {
         exprResult_ = "__rt.unaryNot(" + right + ")";
     }
+}
+
+void JavascriptGenerator::visit(const Postfix& expr) {
+    const std::string delta = expr.op.type == TokenType::PLUS_PLUS ? "1" : "-1";
+    const auto line = std::to_string(expr.op.line);
+
+    if (const auto* variable = dynamic_cast<const Variable*>(expr.operand.get())) {
+        const auto& name = variable->name.lexeme;
+        exprResult_ = "__rt.postfixAdjustVariable(() => " + name +
+                      ", value => (" + name + " = value), " + line + ", " + delta + ")";
+        return;
+    }
+
+    if (const auto* subscript = dynamic_cast<const Subscript*>(expr.operand.get())) {
+        auto object = generateExpression(*subscript->object);
+        auto index = generateExpression(*subscript->index);
+        exprResult_ = "__rt.postfixAdjustIndex(" + object + ", " + index + ", " +
+                      std::to_string(subscript->bracket.line) + ", " + delta + ")";
+        return;
+    }
+
+    if (const auto* property = dynamic_cast<const PropertyAccess*>(expr.operand.get())) {
+        auto object = generateExpression(*property->object);
+        auto key = escapeString(property->name.lexeme);
+        exprResult_ = "__rt.postfixAdjustIndex(" + object + ", " + key + ", " +
+                      std::to_string(property->name.line) + ", " + delta + ")";
+        return;
+    }
+
+    throw std::runtime_error("Invalid postfix operand");
 }
 
 void JavascriptGenerator::visit(const Variable& expr) {

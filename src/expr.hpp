@@ -9,6 +9,7 @@ class Ternary;
 class Grouping;
 class Literal;
 class Unary;
+class Postfix;
 class Variable;
 class Assignment;
 class SubscriptAssignment;
@@ -29,6 +30,7 @@ public:
     virtual void visit(const Grouping&) = 0;
     virtual void visit(const Literal&) = 0;
     virtual void visit(const Unary&) = 0;
+    virtual void visit(const Postfix&) = 0;
     virtual void visit(const Variable&) = 0;
     virtual void visit(const Assignment&) = 0;
     virtual void visit(const Call&) = 0;
@@ -179,6 +181,27 @@ public:
     void accept(ExprVisitor& visitor) const override {
         return visitor.visit(*this);
     }
+    int get_line() const override {
+        return op.line;
+    }
+};
+
+class Postfix : public Expr {
+public:
+    std::unique_ptr<Expr> operand;
+    Token op;
+
+    Postfix(std::unique_ptr<Expr> operand, Token op)
+        : operand(std::move(operand)), op(op) {}
+
+    static std::unique_ptr<Postfix> create(std::unique_ptr<Expr> operand, Token op) {
+        return std::make_unique<Postfix>(std::move(operand), op);
+    }
+
+    void accept(ExprVisitor& visitor) const override {
+        visitor.visit(*this);
+    }
+
     int get_line() const override {
         return op.line;
     }
