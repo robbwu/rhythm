@@ -43,11 +43,11 @@ void Compiler::visit(const Binary &expr) {
 
 void Compiler::visit(const Literal &expr) {
     int constant = chunk.addConstant(expr.value);
-    if (constant >= 256) {
-        throw CompileException("cannot compile >= 256 constants");
+    if (constant >= 65536) {
+        throw CompileException("cannot compile >= 65536 constants");
     }
     chunk.write(OP_CONSTANT, expr.line);
-    chunk.write(constant, expr.line);
+    chunk.writeShort(constant, expr.line);
 }
 
 
@@ -135,11 +135,11 @@ void Compiler::visit(const Postfix& expr) {
         }
 
         int constant = chunk.addConstant(variable->name.lexeme);
-        if (constant >= 256) {
-            throw CompileException("cannot compile >= 256 constants");
+        if (constant >= 65536) {
+            throw CompileException("cannot compile >= 65536 constants");
         }
         chunk.write(isIncrement ? OP_POSTFIX_INC_GLOBAL : OP_POSTFIX_DEC_GLOBAL, line);
-        chunk.write(constant, line);
+        chunk.writeShort(constant, line);
         return;
     }
 
@@ -153,11 +153,11 @@ void Compiler::visit(const Postfix& expr) {
     if (const auto* property = dynamic_cast<const PropertyAccess*>(expr.operand.get())) {
         property->object->accept(*this);
         int constant = chunk.addConstant(property->name.lexeme);
-        if (constant >= 256) {
-            throw CompileException("cannot compile >= 256 constants");
+        if (constant >= 65536) {
+            throw CompileException("cannot compile >= 65536 constants");
         }
         chunk.write(OP_CONSTANT, property->name.line);
-        chunk.write(constant, property->name.line);
+        chunk.writeShort(constant, property->name.line);
         chunk.write(isIncrement ? OP_POSTFIX_INC_SUBSCRIPT : OP_POSTFIX_DEC_SUBSCRIPT, property->name.line);
         return;
     }
@@ -181,7 +181,7 @@ void Compiler::visit(const Variable &expr) {
     // TODO: this is wasteful--should deduplicate strings in globals contants
     int constant = chunk.addConstant(expr.name.lexeme);
     chunk.write(OP_GET_GLOBAL, expr.name.line);
-    chunk.write(constant, expr.name.line);
+    chunk.writeShort(constant, expr.name.line);
 
 };
 
@@ -203,7 +203,7 @@ void Compiler::visit(const Assignment &expr) {
 
     int constant = chunk.addConstant(expr.name.lexeme);
     chunk.write(OP_SET_GLOBAL, expr.name.line);
-    chunk.write(constant, expr.name.line);
+    chunk.writeShort(constant, expr.name.line);
 };
 
 // returns the slot index in the locals stack in both Compiler/VM (as they mirror)
@@ -289,11 +289,11 @@ void Compiler::visit(const Subscript &expr) {
 void Compiler::visit(const PropertyAccess &expr) {
     expr.object->accept(*this);
     int constant = chunk.addConstant(expr.name.lexeme);
-    if (constant >= 256) {
-        throw CompileException("cannot compile >= 256 constants");
+    if (constant >= 65536) {
+        throw CompileException("cannot compile >= 65536 constants");
     }
     chunk.write(OP_CONSTANT, expr.name.line);
-    chunk.write(constant, expr.name.line);
+    chunk.writeShort(constant, expr.name.line);
     chunk.write(OP_SUBSCRIPT, expr.object->get_line());
 };
 
@@ -315,9 +315,9 @@ void Compiler::visit(const FunctionExpr &expr) {
         func->chunk.disassembleChunk(std::format("BeatFunc: {}", func->name));
     int constant = chunk.addConstant((LoxCallable*)func);
     // chunk.write(OP_CONSTANT, expr.get_line());
-    // chunk.write(constant, expr.get_line());
+    // chunk.writeShort(constant, expr.get_line());
     chunk.write(OP_CLOSURE, expr.get_line());
-    chunk.write(constant, expr.get_line());
+    chunk.writeShort(constant, expr.get_line());
     for (int i=0; i<functionCompiler.upvalues.size(); i++) {
         chunk.write(functionCompiler.upvalues[i].isLocal ? 1 : 0, expr.get_line());
         chunk.write(functionCompiler.upvalues[i].index, expr.get_line());
@@ -359,11 +359,11 @@ void Compiler::visit(const VarStmt &stmt) {
 
     if (scopeDepth == 0) { // global variable declaration
         int constant = chunk.addConstant(stmt.name.lexeme);
-        if (constant >= 256) {
-            throw CompileException("cannot compile >= 256 constants");
+        if (constant >= 65536) {
+            throw CompileException("cannot compile >= 65536 constants");
         }
         chunk.write(OP_DEFINE_GLOBAL, stmt.name.line);
-        chunk.write(constant, stmt.name.line);
+        chunk.writeShort(constant, stmt.name.line);
     } else { // local variable declaration
         locals.back().depth = scopeDepth;
         // std::cout << "LocalV " << stmt.name.lexeme << " at depth " << scopeDepth << std::endl;
@@ -529,10 +529,10 @@ void Compiler::visit(const FunctionStmt &stmt) {
 
     int constant = chunk.addConstant((LoxCallable*)func);
     // chunk.write(OP_CONSTANT, stmt.name.line);
-    // chunk.write(constant, stmt.name.line);
+    // chunk.writeShort(constant, stmt.name.line);
     // chunk.write(OP_POP, stmt.name.line);
     chunk.write(OP_CLOSURE, stmt.name.line);
-    chunk.write(constant, stmt.name.line);
+    chunk.writeShort(constant, stmt.name.line);
     // std::cout << "upvalue count: " << func->upvalueCount << std::endl;
     // std::cout << "upvalues size: " << functionCompiler.upvalues.size() << std::endl;
     for (int i=0; i<functionCompiler.upvalues.size(); i++) {
@@ -542,11 +542,11 @@ void Compiler::visit(const FunctionStmt &stmt) {
 
     if (scopeDepth == 0) { // global variable declaration
         int constant = chunk.addConstant(stmt.name.lexeme);
-        if (constant >= 256) {
-            throw CompileException("cannot compile >= 256 constants");
+        if (constant >= 65536) {
+            throw CompileException("cannot compile >= 65536 constants");
         }
         chunk.write(OP_DEFINE_GLOBAL, stmt.name.line);
-        chunk.write(constant, stmt.name.line);
+        chunk.writeShort(constant, stmt.name.line);
     } else { // local variable declaration
         locals.back().depth = scopeDepth;
         // no need to emit any opcodes; just bookkeep the position of the local variables on

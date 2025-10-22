@@ -36,6 +36,13 @@ public:
         m_lines.push_back(line);
     }
 
+    void writeShort(uint16_t value, int line) {
+        m_bytecodes.push_back((uint8_t)(value >> 8));
+        m_lines.push_back(line);
+        m_bytecodes.push_back((uint8_t)(value & 0xff));
+        m_lines.push_back(line);
+    }
+
     int constantInstruction(const char* name, int offset);
     int byteInstruction(const char* name,int offset);
     int simpleInstruction(const char* name, int offset);

@@ -94,7 +94,9 @@ int Chunk::disassembleInstruction(int offset) {
             return simpleInstruction("OP_POSTFIX_DEC_SUBSCRIPT", offset);
         case OP_CLOSURE: {
             offset++;
-            uint8_t constant = m_bytecodes[offset++];
+            uint16_t constant = (uint16_t)(m_bytecodes[offset] << 8);
+            constant |= m_bytecodes[offset + 1];
+            offset += 2;
             printf("%-16s %4d ", "OP_CLOSURE", constant);
             auto callable = std::get<LoxCallable*>(m_constants[constant]);
             auto function = dynamic_cast<BeatFunction*>(callable);
@@ -135,11 +137,12 @@ int Chunk::addConstant(const Value& value) {
 }
 
  int Chunk::constantInstruction(const char* name, int offset) {
-    uint8_t constant = m_bytecodes[offset + 1];
+    uint16_t constant = (uint16_t)(m_bytecodes[offset + 1] << 8);
+    constant |= m_bytecodes[offset + 2];
     printf("%-16s %4d '", name, constant);
     std::cout << m_constants[constant];
     printf("'\n");
-    return offset + 2;
+    return offset + 3;
 }
 
 int Chunk::byteInstruction(const char* name,int offset) {

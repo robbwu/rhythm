@@ -42,7 +42,7 @@ InterpretResult VM::run(int ret_frame) {
 
 #define READ_BYTE() (*frame->ip++)
 #define READ_SHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
-#define READ_CONSTANT() (frame->closure->function->chunk.constants()[READ_BYTE()])
+#define READ_CONSTANT() (frame->closure->function->chunk.constants()[READ_SHORT()])
 #define READ_STRING() std::get<std::string>(READ_CONSTANT())
 #define BINARY_OP(op) \
     do { \
